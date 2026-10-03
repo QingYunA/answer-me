@@ -19,6 +19,7 @@ export const CONFIG_KEYS = Object.freeze({
   theme: { type: 'enum', choices: CHOICES.theme, default: 'blueprint', label: '默认主题' },
   mode: { type: 'enum', choices: CHOICES.mode, default: 'auto', label: '默认明暗模式' },
   style: { type: 'enum', choices: CHOICES.style, default: '80', label: 'STE 写作检查严格度' },
+  voice: { type: 'enum', choices: ['auto', 'elevenlabs', 'system', 'off'], default: 'auto', label: '视频旁白配音（auto：有 ELEVENLABS_API_KEY 用 ElevenLabs，否则用系统 TTS）' },
 });
 
 const TRUE = new Set(['on', 'true', 'yes', '1', '开', '开启', '打开']);

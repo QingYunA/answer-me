@@ -19,15 +19,15 @@ const STE_TREE = `ASD-STE100 | Simplified Technical English
 // ── tree ──
 test('tree: 单根 + 2~4 个子节点 → 组织图模式（根框 + 分栏 + 子列表）', () => {
   const html = render('tree', STE_TREE);
-  assert.match(html, /am-tree-box am-tree-box--root">ASD-STE100<small>Simplified Technical English<\/small>/);
+  assert.match(html, /am-tree-box am-tree-box--root"[^>]*>ASD-STE100<small>Simplified Technical English<\/small>/);
   assert.match(html, /am-tree-cols" style="--n: 2"/);
   assert.match(html, /<span class="am-tree-tag">Section 1<\/span> Words/);
   assert.match(html, /am-tree-sub">大写关键词，一词一义/);
-  assert.match(html, /<li><span class="am-tree-label">子项<\/span><\/li>/, '第三层嵌套为子列表');
+  assert.match(html, /<li[^>]*><span class="am-tree-label">子项<\/span><\/li>/, '第三层嵌套为子列表');
 });
 
 test('tree: * 前缀高亮节点', () => {
-  assert.match(render('tree', STE_TREE), /am-tree-box am-tree-box--hi">Part 2: Dictionary/);
+  assert.match(render('tree', STE_TREE), /am-tree-box am-tree-box--hi"[^>]*>Part 2: Dictionary/);
 });
 
 test('tree: 参数 list 或子节点 >4 时用纯列表模式', () => {

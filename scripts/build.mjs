@@ -16,6 +16,8 @@ const inlineAssets = {
         `export const VERSION = ${JSON.stringify(JSON.parse(read('../package.json')).version)};`,
         `export const BASE_CSS = ${JSON.stringify(read('../src/themes/base.css'))};`,
         `export const RUNTIME_JS = ${JSON.stringify(read('../src/runtime/page.js'))};`,
+        `export const VIDEO_CSS = ${JSON.stringify(read('../src/themes/video.css'))};`,
+        `export const VIDEO_JS = ${JSON.stringify(read('../src/runtime/video.js'))};`,
       ].join('\n'),
     }));
   },

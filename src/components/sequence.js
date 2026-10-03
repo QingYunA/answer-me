@@ -103,7 +103,8 @@ function layout({ participants: ps, steps }, { num, id }) {
   const body = [];
   let y = TOP + ACTOR_H + 22;
   let n = 0;
-  for (const s of prepared) {
+  for (const [k, s] of prepared.entries()) {
+    const start = body.length;
     if (s.kind === 'msg') {
       n++;
       const cls = `am-edge${s.dashed ? ' am-edge--dashed' : ''}`;
@@ -140,14 +141,15 @@ function layout({ participants: ps, steps }, { num, id }) {
       body.push(textLines(s.lines.slice(0, 1), width / 2, y + 10, LH, ' font-size="12"'));
       y += 34;
     }
+    body.splice(start, body.length - start, `<g data-step="${k}">${body.slice(start).join('')}</g>`);
   }
   const height = y + 6;
 
   const actors = ps.map((p, i) => {
     const x = xs[i];
     return `<line class="am-lifeline" x1="${f(x)}" y1="${TOP + ACTOR_H}" x2="${f(x)}" y2="${f(height - 4)}"/>`
-      + `<rect class="am-actor" x="${f(x - actorW[i] / 2)}" y="${TOP}" width="${f(actorW[i])}" height="${ACTOR_H}" rx="2"/>`
-      + textLines([p], x, TOP + ACTOR_H / 2, LH, ' font-weight="600"');
+      + `<g data-key="${esc(p)}"><rect class="am-actor" x="${f(x - actorW[i] / 2)}" y="${TOP}" width="${f(actorW[i])}" height="${ACTOR_H}" rx="2"/>`
+      + `${textLines([p], x, TOP + ACTOR_H / 2, LH, ' font-weight="600"')}</g>`;
   });
   return `${svgOpen(width, height, `时序图：${ps.join('、')}`)}${arrowDefs(id)}${actors.join('')}${body.join('')}</svg>`;
 }

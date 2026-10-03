@@ -6,3 +6,6 @@ coverage/
 bench/results/*.html
 bench/results/*.png
 bench/en/
+
+# 社交媒体宣传图（本地制作，不入库）
+docs/social/

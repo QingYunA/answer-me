@@ -1,6 +1,6 @@
 ---
 name: answer-me-with-html
-description: When an answer is complex, renders it as a one-page visual HTML explainer: the model writes only a short extended-Markdown draft; the bundled CLI handles templates, components, SVG auto-layout and an STE controlled-writing check, producing a single-file page in one call. Also use it when the user says `/answer-me-with-html config` or wants to change settings (auto-open browser, always-on mode, default theme). Use it proactively, without being asked, when the answer involves any of: 3+ interrelated concepts; a flow / protocol / architecture with branches or multiple actors; a comparison or trade-off across 3+ dimensions; a hierarchy (directories, modules, taxonomies); an evolution or phases; or the user says "explain how it works / I don’t get it / draw a diagram / explain this codebase / explain visually / 讲讲原理 / 没看懂 / 画个图 / 用 HTML 讲". Do not use for: short Q&A (clear in under ~150 words), commands to copy and run immediately, pure code changes, or when the user asks for plain text.
+description: When an answer is complex, renders it as a one-page visual HTML explainer: the model writes only a short extended-Markdown draft; the bundled CLI handles templates, components, SVG auto-layout and an STE controlled-writing check, producing a single-file page in one call. Also use it when the user asks for an explainer video ("3b1b style video", "make a video", "做个视频", "讲成视频"): the same draft format plus narration lines renders an animated, narrated player page and optionally an MP4. Also use it when the user says `/answer-me-with-html config` or wants to change settings (auto-open browser, always-on mode, default theme). Use it proactively, without being asked, when the answer involves any of: 3+ interrelated concepts; a flow / protocol / architecture with branches or multiple actors; a comparison or trade-off across 3+ dimensions; a hierarchy (directories, modules, taxonomies); an evolution or phases; or the user says "explain how it works / I don’t get it / draw a diagram / explain this codebase / explain visually / 讲讲原理 / 没看懂 / 画个图 / 用 HTML 讲". Do not use for: short Q&A (clear in under ~150 words), commands to copy and run immediately, pure code changes, or when the user asks for plain text.
 ---
 
 # Answer me with HTML：用一页 HTML 回答复杂问题
@@ -129,3 +129,40 @@ source: RFC 9293    # 其他任意键显示在页头元信息行
 - 英文用常见短词：use 不用 utilize，start 不用 commence，before 不用 prior to。
 - 中文不用虚动词（"进行优化"→"优化"，"加以说明"→"说明"），不连用三个以上"的"，不用套话（赋能、闭环、至关重要……）。
 - 故意展示的反例用 `~~删除线~~`，或放进状态为 `no` 的表格行，检查会跳过它们。
+
+## 6. 解释视频（am video，3Blue1Brown 风格）
+
+只在用户明确要视频时使用（"做个视频""讲成视频""3b1b 风格""explainer video"）。高频模式下也不要主动出视频。
+
+视频稿和页面稿格式相同，只多一条规则：以 `>` 开头的行是旁白，每行一拍。
+
+````bash
+node "${CLAUDE_SKILL_DIR}/scripts/am.mjs" video - --no-open <<'AM_EOF'
+---
+title: TCP 三次握手
+subtitle: 为什么是三次
+---
+> 片头旁白（可选）。
+
+## 两端都在等待
+```sequence
+Client -> Server: SYN
+Server -> Client: SYN-ACK
+Client -> Server: ACK
+```
+> 客户端先发 SYN，请求建立连接。
+> [Server] 收到后回 SYN-ACK。
+> 客户端再回 ACK，连接建立。
+AM_EOF
+````
+
+- 一个 `## ` 是一个场景。场景里放一个组件（或一张表、一个列表）作为画面，下面写 2～5 行旁白。
+- 第 N 句旁白播出时，画面出现第 N 步。flow / sequence / tree 每行源码是一步；timeline、limits、表格行、列表项按条目分步。所以组件的行顺序就是讲解顺序。旁白比步数多时，多出的前几句当开场白，不出新内容。
+- 旁白里写 `[名字]`：镜头推近同名的节点或参与者并高亮。名字要和组件里的写法一致。
+- 相邻场景里同名的节点会平滑移动到新位置。想让观众跟住一个对象，就在下一场景沿用同一个名字。
+- 一个视频 3～6 个场景，每行旁白一两句话。
+- 旁白是要念出来的，写成口语，像当面讲给人听：可以用"你看""那问题来了""我们换个角度看"这类过渡，引号里放人物的"台词"。不要写成说明书腔（"客户端发送 SYN 报文以请求建立连接"）。句长仍受 STE 检查约束。
+- 外观默认跟随配置里的 theme（通常是 blueprint 图纸风）。用户要"3b1b 那种深色风格"时在 frontmatter 写 `theme: 3b1b`。
+- 配音：默认 `--voice auto`，有 `ELEVENLABS_API_KEY` 用 ElevenLabs，否则用系统 TTS（macOS say），都没有就只出字幕。用户说"不要声音"时加 `--voice off`。
+- 产物是 `~/.answer-me-with-html/videos/` 下的单文件播放页（音频内嵌）。用户要视频文件时加 `--mp4`，需要本机有 Chrome、ffmpeg 和 Node.js 22+，导出时间约为视频时长的 1.3 倍。
+- 完整语法：`am help video`。终端里回一句话加播放页路径（和 MP4 路径）。

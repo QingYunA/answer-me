@@ -167,19 +167,21 @@ function layout({ nodes, edges, groups }, rankdir, id) {
     return `<rect class="am-cluster" x="${f(x)}" y="${f(y)}" width="${f(c.width)}" height="${f(c.height)}" rx="4"/><text class="am-cluster-label" x="${f(x + 8)}" y="${f(y + 14)}">${esc(grp.name)}</text>`;
   });
 
+  // 视频模式按源码行逐步出现：同一行写出的边和首次出现的节点属于同一步。
+  const stepOf = new Map([...new Set([...[...nodes.values()].map((n) => n.line), ...edges.map((e) => e.line)])].sort((a, b) => a - b).map((l, k) => [l, k]));
   const edgeSvg = edges.map((e, i) => {
     const data = g.edge({ v: e.from, w: e.to, name: `e${i}` });
     const pts = clipEnds(data.points, g.node(e.from), nodes.get(e.from).shape, g.node(e.to), nodes.get(e.to).shape);
     const path = `<path class="am-edge${e.dashed ? ' am-edge--dashed' : ''}" d="${smoothPath(pts)}" marker-end="url(#${id}-arrow)"/>`;
-    if (!e.label) return path;
+    if (!e.label) return `<g data-step="${stepOf.get(e.line)}">${path}</g>`;
     const w = measure(e.label, EDGE_FS) + 10;
-    return `${path}<g class="am-edge-label"><rect x="${f(data.x - w / 2)}" y="${f(data.y - 9)}" width="${f(w)}" height="18" rx="3"/>${textLines([e.label], data.x, data.y, LH)}</g>`;
+    return `<g data-step="${stepOf.get(e.line)}">${path}<g class="am-edge-label"><rect x="${f(data.x - w / 2)}" y="${f(data.y - 9)}" width="${f(w)}" height="18" rx="3"/>${textLines([e.label], data.x, data.y, LH)}</g></g>`;
   });
 
   const nodeSvg = [...nodes.values()].map((n) => {
     const { x, y } = g.node(n.id);
     const { width: w, height: h, lines } = sizes.get(n.id);
-    return `<g class="am-node am-node--${n.shape}${n.hi ? ' am-node--hi' : ''}">${shapeSvg(n.shape, x, y, w, h)}${textLines(lines, x, y + (n.shape === 'db' ? 4 : 0), LH)}</g>`;
+    return `<g class="am-node am-node--${n.shape}${n.hi ? ' am-node--hi' : ''}" data-key="${esc(n.label)}" data-step="${stepOf.get(n.line)}">${shapeSvg(n.shape, x, y, w, h)}${textLines(lines, x, y + (n.shape === 'db' ? 4 : 0), LH)}</g>`;
   });
 
   const { width, height } = g.graph();

@@ -3,10 +3,10 @@
 
 // src/cli.js
 import { parseArgs } from "node:util";
-import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, mkdirSync as mkdirSync2 } from "node:fs";
+import { readFileSync as readFileSync3, writeFileSync as writeFileSync4, mkdirSync as mkdirSync3 } from "node:fs";
 
 // src/assets.js
-var VERSION = "0.2.2";
+var VERSION = "0.3.0";
 var BASE_CSS = '/* Answer me with HTML base \u2014 \u53EA\u5F15\u7528\u4E3B\u9898\u53D8\u91CF\uFF0C\u7981\u6B62\u5199\u6B7B\u989C\u8272\uFF08\u4E3B\u9898 token \u89C1 themes/index.js\uFF09 */\n*, *::before, *::after { box-sizing: border-box; }\nhtml, body { margin: 0; padding: 0; }\nbody {\n  background: var(--bg); color: var(--ink);\n  font-family: var(--font-sans); font-size: 14px; line-height: 1.55;\n  -webkit-font-smoothing: antialiased;\n}\ncode, pre, kbd { font-family: var(--font-mono); }\n\n/* \u2500\u2500 \u5DE5\u5177\u680F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-toolbar {\n  position: fixed; top: 12px; right: 12px; z-index: 10; display: flex; gap: 6px;\n}\n.am-btn {\n  font: 12px/1 var(--font-sans); color: var(--ink); background: var(--paper);\n  border: 1px solid var(--line-2); border-radius: var(--radius); padding: 7px 10px; cursor: pointer;\n}\n.am-btn:hover { border-color: var(--ink-3); }\n.am-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }\n\n/* \u2500\u2500 \u9875\u5934 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-head { margin: 0 0 20px; padding-right: 260px; }\n.am-head h1 { margin: 0; font-size: 24px; line-height: 1.25; letter-spacing: -0.01em; }\n.am-sub { margin: 4px 0 0; color: var(--ink-2); }\n.am-head-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12px; color: var(--ink-2); }\n.am-head-meta b { font-family: var(--font-mono); font-weight: 400; color: var(--ink-3); margin-right: 6px; }\n.am-intro { margin-top: 12px; max-width: 80ch; }\n\n/* \u2500\u2500 sheet \u56FE\u7EB8\u677F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-sheet { max-width: 1680px; margin: 0 auto; padding: 32px 28px 40px; }\n.am-frame { position: relative; }\n.am-grid {\n  display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));\n  gap: 20px; align-items: start;\n}\n.am-ruler { display: none; }\nhtml[data-theme="blueprint"] .am-frame { border: 1px solid var(--line); padding: 30px; }\nhtml[data-theme="blueprint"] .am-frame::before {\n  content: ""; position: absolute; inset: 18px; border: 1px solid var(--line); pointer-events: none;\n}\nhtml[data-theme="blueprint"] .am-ruler {\n  display: flex; position: absolute; font: 10px/1 var(--font-mono); color: var(--ink-3);\n}\n.am-ruler span { flex: 1; display: flex; align-items: center; justify-content: center; }\n.am-ruler--top, .am-ruler--bottom { left: 18px; right: 18px; height: 18px; }\n.am-ruler--top { top: 0; }\n.am-ruler--bottom { bottom: 0; }\n.am-ruler--left, .am-ruler--right { top: 18px; bottom: 18px; width: 18px; flex-direction: column; }\n.am-ruler--left { left: 0; }\n.am-ruler--right { right: 0; }\n.am-ruler--top span + span, .am-ruler--bottom span + span { border-left: 1px solid var(--line); }\n.am-ruler--left span + span, .am-ruler--right span + span { border-top: 1px solid var(--line); }\n\n/* \u2500\u2500 \u9762\u677F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-panel {\n  background: var(--paper); border: var(--bw) solid var(--line); border-radius: var(--radius);\n  box-shadow: var(--shadow); min-width: 0; overflow: hidden;\n}\n.am-panel-head {\n  display: flex; align-items: stretch; gap: 0; border-bottom: var(--bw) solid var(--line); min-height: 34px;\n}\n.am-panel-id {\n  display: flex; align-items: center; justify-content: center; min-width: 34px; padding: 0 8px;\n  background: var(--head-bg); color: var(--head-fg); font-weight: 600; font-size: 14px;\n}\nhtml[data-theme="shadcn"] .am-panel-id { border-radius: 6px; min-width: 24px; height: 24px; margin: 9px 0 9px 14px; font-size: 12px; }\nhtml[data-theme="shadcn"] .am-panel-head { border-bottom-width: 1px; }\n.am-panel-head h2 { margin: 0; padding: 7px 12px; font-size: 15px; font-weight: 600; flex: 1; display: flex; align-items: center; }\n.am-panel-meta { align-self: center; padding: 0 12px; font: 11px/1.3 var(--font-mono); color: var(--ink-2); text-align: right; }\n.am-panel-body { padding: 14px 16px 16px; }\n.am-panel-body > * + * { margin-top: 12px; }\n\n/* \u2500\u2500 Markdown \u6B63\u6587 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-md > :first-child { margin-top: 0; }\n.am-md > :last-child { margin-bottom: 0; }\n.am-md p { margin: 0 0 8px; }\n.am-md ul, .am-md ol { margin: 0 0 8px; padding-left: 20px; }\n.am-md li + li { margin-top: 3px; }\n.am-md h3, .am-md h4 { margin: 14px 0 6px; font-size: 13px; }\n.am-md a { color: var(--accent); }\n.am-md blockquote { margin: 0 0 8px; padding: 2px 12px; border-left: 3px solid var(--line-2); color: var(--ink-2); }\n.am-md :not(pre) > code { font-size: 0.9em; background: var(--fill); padding: 1px 5px; border-radius: 4px; }\n.am-md hr { border: 0; border-top: 1px solid var(--line-2); margin: 12px 0; }\n.am-md table { width: 100%; border-collapse: collapse; font-size: 13px; }\n.am-md th {\n  text-align: left; font: 11px/1.3 var(--font-mono); color: var(--ink-2); font-weight: 400;\n  padding: 6px 10px; border-bottom: 1px solid var(--line-2);\n}\n.am-md td { padding: 7px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }\n.am-md tbody tr:nth-child(even) td { background: var(--fill); }\n.am-table-wrap { overflow-x: auto; }\n.am-code {\n  margin: 0; padding: 12px 14px; background: var(--fill); border: 1px solid var(--line-2);\n  border-radius: var(--radius); overflow-x: auto; font-size: 12.5px; line-height: 1.5;\n}\n\n/* \u2500\u2500 \u72B6\u6001\u5FBD\u7AE0 ok / no / warn \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-status { white-space: nowrap; font-weight: 500; }\n.am-status--ok { color: var(--ok); }\n.am-status--no { color: var(--err); }\n.am-status--warn { color: var(--warn); }\n.am-status-icon { display: inline-block; width: 1.1em; font-weight: 700; }\n\n/* \u2500\u2500 callout \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-callout {\n  border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--accent-bg);\n  padding: 10px 14px; border-radius: var(--radius);\n}\n.am-callout--ok { border-left-color: var(--ok); background: var(--ok-bg); }\n.am-callout--warn { border-left-color: var(--warn); background: var(--warn-bg); }\n.am-callout--err { border-left-color: var(--err); background: var(--err-bg); }\n.am-callout-title { font-weight: 600; margin-bottom: 4px; }\n\n/* \u2500\u2500 kv \u6807\u9898\u680F\u683C \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-kv {\n  display: grid; grid-template-columns: repeat(var(--kv-cols, 2), minmax(0, 1fr)); margin: 0;\n  border-top: var(--bw) solid var(--line); border-left: var(--bw) solid var(--line);\n}\n.am-kv-cell { border-right: var(--bw) solid var(--line); border-bottom: var(--bw) solid var(--line); padding: 6px 10px 8px; min-width: 0; }\n.am-kv-cell--wide { grid-column: 1 / -1; }\n.am-kv dt { font: 11px/1.4 var(--font-mono); color: var(--ink-2); }\n.am-kv dd { margin: 2px 0 0; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }\n.am-kv-cell--wide dd { font-size: 17px; font-weight: 600; }\nhtml[data-theme="shadcn"] .am-kv { border-color: var(--line); border-radius: var(--radius); overflow: hidden; }\n\n/* \u2500\u2500 timeline \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-timeline { list-style: none; margin: 0; padding: 0; }\n.am-timeline--h { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); padding-top: 4px; }\n.am-timeline--h li { position: relative; text-align: center; padding: 0 6px; }\n.am-timeline--h li::before {\n  content: ""; position: absolute; top: 31px; left: 0; right: 0; border-top: var(--bw) solid var(--line);\n}\n.am-timeline--h li:first-child::before { left: 50%; }\n.am-timeline--h li:last-child::before { right: 50%; }\n.am-tl-when { display: block; font-size: 15px; font-weight: 500; height: 24px; }\n.am-tl-dot {\n  position: relative; display: block; width: 11px; height: 11px; margin: 2px auto 8px;\n  border: var(--bw) solid var(--line); border-radius: 50%; background: var(--paper);\n}\n.am-tl-item--hi .am-tl-dot { background: var(--accent); border-color: var(--accent); }\n.am-tl-title { display: block; font-size: 12.5px; font-weight: 500; }\n.am-tl-text { display: block; font-size: 12px; color: var(--ink-2); line-height: 1.45; }\n.am-timeline--v li { position: relative; padding: 0 0 14px 22px; }\n.am-timeline--v li::before { content: ""; position: absolute; left: 5px; top: 6px; bottom: -6px; border-left: var(--bw) solid var(--line-2); }\n.am-timeline--v li:last-child::before { display: none; }\n.am-timeline--v .am-tl-dot { position: absolute; left: 0; top: 4px; margin: 0; }\n.am-timeline--v .am-tl-when { display: inline; height: auto; font: 12px var(--font-mono); color: var(--ink-2); margin-right: 8px; }\n.am-timeline--v .am-tl-title { display: inline; font-size: 14px; }\n.am-timeline--v .am-tl-text { margin-top: 2px; }\n\n/* \u2500\u2500 annot \u53E5\u5B50\u6807\u6CE8 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-annot + .am-annot { border-top: 1px solid var(--line-2); padding-top: 12px; }\n.am-annot-head { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; margin-bottom: 8px; }\n.am-annot-meta { font: 11px var(--font-mono); font-weight: 400; color: var(--ink-2); }\n.am-annot-scroll { overflow-x: auto; }\n.am-annot-line {\n  position: relative; display: inline-block; white-space: pre; font: 14px/1.6 var(--font-mono);\n  padding-bottom: calc(var(--rows, 0) * 17px + 14px);\n}\n.am-annot-line--wrap { display: block; white-space: normal; padding-bottom: 10px; }\n.am-annot-line--wrap .am-seg { white-space: nowrap; }\n.am-seg { position: relative; }\n.am-seg::after {\n  content: ""; position: absolute; left: 1px; right: 1px; top: calc(100% + 1px); height: 5px;\n  border: 1px solid var(--accent); border-top: 0;\n}\n.am-seg-n {\n  position: absolute; left: 0; top: calc(100% + 8px + var(--row, 0) * 17px);\n  font: 11px/16px var(--font-sans); color: var(--accent); white-space: nowrap;\n}\n.am-seg--err { color: var(--err); }\n.am-seg--err::after { border-color: var(--err); }\n.am-seg--err .am-seg-n { color: var(--err); }\n.am-annot-caption { font-size: 12px; color: var(--ink-2); }\n\n/* \u2500\u2500 limits \u9650\u503C\u6761 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-lim + .am-lim { margin-top: 14px; }\n.am-lim-head { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; margin-bottom: 4px; }\n.am-lim-val { font: 12px var(--font-mono); color: var(--accent); white-space: nowrap; }\n.am-lim-track { position: relative; height: 12px; border: 1px solid var(--line-2); background: var(--fill); border-radius: calc(var(--radius) / 2); }\n.am-lim-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent-bg); border-right: 1px solid var(--accent); }\n.am-lim-mark { position: absolute; top: -4px; bottom: -4px; border-left: 2px solid var(--accent); }\n.am-lim.is-over .am-lim-fill { background: var(--err-bg); border-right-color: var(--err); }\n.am-lim.is-over .am-lim-val { color: var(--err); }\n.am-lim-ticks { position: relative; height: 16px; font: 10px/16px var(--font-mono); color: var(--ink-3); }\n.am-lim-ticks span { position: absolute; transform: translateX(-50%); }\n.am-lim-ticks span:first-child { transform: none; }\n.am-lim-note { font-size: 11px; color: var(--ink-2); margin-left: 6px; }\n\n/* \u2500\u2500 tree \u7ED3\u6784\u6811 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-tree { font-size: 13px; }\n.am-tree-root { display: flex; justify-content: center; position: relative; padding-bottom: 18px; }\n.am-tree-root::after { content: ""; position: absolute; bottom: 0; left: 50%; height: 18px; border-left: var(--bw) solid var(--line); }\n.am-tree-root--solo { padding-bottom: 12px; }\n.am-tree-root--solo::after { display: none; }\n.am-tree-box {\n  border: var(--bw) solid var(--line); background: var(--paper); padding: 6px 14px; text-align: center;\n  border-radius: var(--radius); font-weight: 600;\n}\n.am-tree-box small { display: block; font-weight: 400; color: var(--ink-2); font-size: 12px; }\n.am-tree-box--root { background: var(--accent-bg); font-size: 15px; padding: 8px 28px; }\n.am-tree-cols { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); }\n.am-tree-col { position: relative; padding: 18px 8px 0; min-width: 0; }\n.am-tree-col::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: var(--bw) solid var(--line); }\n.am-tree-col:first-child::before { left: 50%; }\n.am-tree-col:last-child::before { right: 50%; }\n.am-tree-col::after { content: ""; position: absolute; top: 0; left: 50%; height: 18px; border-left: var(--bw) solid var(--line); }\n.am-tree-list, .am-tree-list ul { list-style: none; margin: 0; padding: 0; }\n.am-tree-col > .am-tree-list { margin: 8px 0 0 14px; }\n.am-tree-list ul { margin-left: 16px; }\n.am-tree-list li { position: relative; padding: 3px 0 3px 18px; }\n.am-tree-list li::before { content: ""; position: absolute; left: 0; top: 0.95em; width: 12px; border-top: 1px solid var(--ink-3); }\n.am-tree-list li::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 1px solid var(--ink-3); }\n.am-tree-list li:last-child::after { bottom: auto; height: 0.95em; }\n.am-tree-tag { font: 11px var(--font-mono); color: var(--ink-3); margin-right: 4px; }\n.am-tree code { font: 12px var(--font-mono); }\n.am-tree-sub { display: block; font-size: 11.5px; color: var(--ink-2); }\n.am-tree-hi > .am-tree-label { color: var(--accent); font-weight: 600; }\n\n/* \u2500\u2500 \u56FE\uFF08flow / sequence\uFF09\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-diagram { margin: 0; overflow-x: auto; text-align: center; }\n.am-diagram svg { max-width: 100%; height: auto; font-family: var(--font-sans); }\n.am-diagram text { fill: var(--ink); font-size: 13px; }\n.am-node-shape { fill: var(--paper); stroke: var(--line); stroke-width: var(--bw); }\n.am-node--hi .am-node-shape { fill: var(--accent-bg); stroke: var(--accent); }\n.am-node--hi text { fill: var(--accent); font-weight: 600; }\n.am-edge { fill: none; stroke: var(--ink-2); stroke-width: 1.3; }\n.am-edge--dashed { stroke-dasharray: 5 4; }\n.am-arrow { fill: var(--ink-2); }\n.am-edge-label rect { fill: var(--paper); }\n.am-diagram .am-edge-label text { fill: var(--accent); font-size: 11.5px; }\n.am-cluster { fill: var(--fill); stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 4 3; }\n.am-diagram .am-cluster-label { fill: var(--ink-2); font: 11px var(--font-mono); }\n.am-lifeline { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 4; }\n.am-actor { fill: var(--paper); stroke: var(--line); stroke-width: var(--bw); }\n.am-note { fill: var(--warn-bg); stroke: var(--warn); stroke-width: 1; }\n.am-diagram .am-step { fill: var(--ink-3); font: 10px var(--font-mono); }\n\n/* \u2500\u2500 doc \u7EBF\u6027\u8BB2\u89E3 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-doc { max-width: 1120px; margin: 0 auto; padding: 40px 28px 64px; }\n.am-doc-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: start; }\n.am-doc-layout--notoc { grid-template-columns: minmax(0, 1fr); max-width: 860px; }\n.am-toc { position: sticky; top: 24px; font-size: 13px; }\n.am-toc a { display: block; color: var(--ink-2); text-decoration: none; padding: 4px 0 4px 10px; border-left: 2px solid var(--line-2); }\n.am-toc a:hover { color: var(--ink); border-left-color: var(--accent); }\n.am-doc-body > .am-panel + .am-panel { margin-top: 20px; }\n\n/* \u2500\u2500 \u54CD\u5E94\u5F0F\u4E0E\u6253\u5370 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n@media (max-width: 1100px) {\n  .am-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .am-grid > .am-panel { grid-column: auto !important; }\n  .am-grid > .am-panel.am-span-wide { grid-column: 1 / -1 !important; }\n}\n@media (max-width: 760px) {\n  .am-sheet, .am-doc { padding: 56px 12px 24px; }\n  .am-head { padding-right: 0; }\n  .am-grid { grid-template-columns: minmax(0, 1fr); }\n  .am-grid > .am-panel.am-span-wide { grid-column: auto !important; }\n  html[data-theme="blueprint"] .am-frame { padding: 0; border: 0; }\n  html[data-theme="blueprint"] .am-frame::before, html[data-theme="blueprint"] .am-ruler { display: none; }\n  .am-doc-layout { grid-template-columns: minmax(0, 1fr); }\n  .am-toc { position: static; }\n  .am-timeline--h { grid-template-columns: minmax(0, 1fr); }\n  .am-tree-cols { grid-template-columns: minmax(0, 1fr); }\n}\n.am-colophon { text-align: center; padding: 0 0 28px; font: 11px var(--font-mono); color: var(--ink-3); }\n\n@media print {\n  .am-toolbar { display: none; }\n  body { background: var(--paper); }\n  .am-panel { break-inside: avoid; box-shadow: none; }\n}\n.am-panel--bare { border: 0; background: transparent; box-shadow: none; }\n.am-panel--bare > .am-panel-body { padding: 0; }\n.am-panel--bare .am-kv { background: var(--paper); }\n';
 var RUNTIME_JS = `(() => {
   const root = document.documentElement;
@@ -46,10 +46,12 @@ var RUNTIME_JS = `(() => {
   });
 })();
 `;
+var VIDEO_CSS = '/* \u89C6\u9891\u64AD\u653E\u9875\uFF1A1920\xD71080 \u821E\u53F0\u6309\u7A97\u53E3\u7B49\u6BD4\u7F29\u653E\u3002\u989C\u8272\u5168\u90E8\u6765\u81EA\u4E3B\u9898\u53D8\u91CF\uFF1A\n   blueprint / shadcn \u6CBF\u7528\u9875\u9762\u4E3B\u9898\uFF1B3b1b \u662F\u89C6\u9891\u4E13\u7528\u7684\u6DF1\u8272\u4E3B\u9898\uFF08\u6DF1\u5E95\u3001\u84DD\u7EBF\u3001\u9EC4\u8272\u5F3A\u8C03\uFF09\u3002 */\nhtml[data-video] {\n  --v-stage: var(--bg);\n  --v-cap-fg: var(--ink); --v-cap-bg: var(--paper); --v-cap-border: var(--line);\n  --v-title-font: var(--head-font);\n  --v-glow: none;\n}\nhtml[data-video][data-theme="3b1b"] {\n  --bg: #0e1015; --paper: #141922; --ink: #eceff4; --ink-2: #a9b4c4; --ink-3: #6c7789;\n  --line: #58c4dd; --line-2: #2a3444; --fill: #171d27;\n  --accent: #f7d96f; --accent-bg: rgba(247, 217, 111, 0.12);\n  --ok: #83c167; --ok-bg: rgba(131, 193, 103, 0.14); --err: #fc6255; --err-bg: rgba(252, 98, 85, 0.14);\n  --warn: #f7d96f; --warn-bg: rgba(247, 217, 111, 0.12); --head-bg: #eceff4; --head-fg: #0e1015;\n  --radius: 6px; --bw: 1.6px; --shadow: none;\n  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;\n  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n  --head-font: var(--font-sans);\n  --v-stage: radial-gradient(ellipse at 50% 40%, #151a23 0%, #0e1015 70%);\n  --v-cap-fg: #fff; --v-cap-bg: rgba(8, 10, 14, 0.55); --v-cap-border: transparent;\n  --v-title-font: "CMU Serif", "Latin Modern Roman", "Iowan Old Style", "Palatino", "Songti SC", "STSong", "Noto Serif CJK SC", serif;\n  --v-glow: drop-shadow(0 0 6px rgba(247, 217, 111, 0.55));\n}\n/* blueprint\uFF1A\u56FE\u7EB8\u5E95\u52A0\u7EC6\u7F51\u683C */\nhtml[data-video][data-theme="blueprint"] {\n  --v-stage: linear-gradient(var(--line-2) 1px, transparent 1px) 0 0 / 40px 40px,\n             linear-gradient(90deg, var(--line-2) 1px, transparent 1px) 0 0 / 40px 40px, var(--paper);\n}\nhtml[data-video][data-theme="blueprint"][data-mode="dark"] {\n  --v-stage: linear-gradient(rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px,\n             linear-gradient(90deg, rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px, var(--bg);\n}\n\nhtml[data-video], html[data-video] body { background: #000; height: 100%; overflow: hidden; }\nhtml[data-video] body { font-size: 22px; }\n\n.amv-viewport { position: fixed; inset: 0 0 56px 0; overflow: hidden; }\n.amv-stage {\n  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;\n  background: var(--v-stage); color: var(--ink); transform-origin: 50% 50%;\n}\n.amv-camera { position: absolute; inset: 0; transform-origin: 0 0; }\n.amv-overlay { position: absolute; inset: 0; pointer-events: none; }\n.amv-ghost { position: absolute; left: 0; top: 0; transform-origin: 0 0; margin: 0; }\n.amv-ghost svg { display: block; max-width: none; overflow: visible; }\n\n/* \u2500\u2500 \u56FE\u7EB8\u5916\u6846\uFF08blueprint\uFF09\u2500\u2500 */\n.amv-sheet { display: none; }\nhtml[data-theme="blueprint"] .amv-sheet {\n  display: block; position: absolute; inset: 24px; border: 1.5px solid var(--line); pointer-events: none;\n}\nhtml[data-theme="blueprint"] .amv-sheet::before {\n  content: ""; position: absolute; inset: 24px; border: 1.5px solid var(--line);\n}\n.amv-ruler { position: absolute; display: flex; font: 13px/1 var(--font-mono); color: var(--ink-3); }\n.amv-ruler span { flex: 1; display: flex; align-items: center; justify-content: center; }\n.amv-ruler--top, .amv-ruler--bottom { left: 24px; right: 24px; height: 24px; }\n.amv-ruler--top { top: 0; }\n.amv-ruler--bottom { bottom: 0; }\n.amv-ruler--left, .amv-ruler--right { top: 24px; bottom: 24px; width: 24px; flex-direction: column; }\n.amv-ruler--left { left: 0; }\n.amv-ruler--right { right: 0; }\n.amv-ruler--top span + span, .amv-ruler--bottom span + span { border-left: 1px solid var(--line); }\n.amv-ruler--left span + span, .amv-ruler--right span + span { border-top: 1px solid var(--line); }\n\n/* \u2500\u2500 \u573A\u666F \u2500\u2500 */\n.amv-scene { position: absolute; inset: 0; visibility: hidden; }\n.amv-scene-head {\n  position: absolute; left: 72px; right: 72px; top: 72px; height: 64px; visibility: hidden;\n  display: flex; align-items: stretch; border: var(--bw) solid var(--line); background: var(--paper);\n  border-radius: var(--radius); overflow: hidden; color: var(--ink);\n}\n.amv-scene-n {\n  display: flex; align-items: center; justify-content: center; min-width: 64px; padding: 0 14px;\n  background: var(--head-bg); color: var(--head-fg); font: 700 30px var(--font-sans);\n}\n.amv-scene-title { flex: 1; display: flex; align-items: center; padding: 0 22px; font: 600 32px var(--v-title-font); }\n.amv-scene-meta { display: flex; align-items: center; padding: 0 22px; font: 16px var(--font-mono); color: var(--ink-2); letter-spacing: 0.06em; }\nhtml[data-theme="shadcn"] .amv-scene-n { margin: 12px 0 12px 14px; min-width: 40px; border-radius: 8px; font-size: 22px; }\nhtml[data-theme="shadcn"] .amv-scene-head { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }\n/* 3b1b\uFF1A\u6807\u9898\u6D6E\u5728\u5DE6\u4E0A\u89D2\uFF0C\u4E0D\u8981\u8FB9\u6846 */\nhtml[data-theme="3b1b"] .amv-scene-head { left: 96px; top: 56px; border: 0; background: none; align-items: baseline; gap: 22px; }\nhtml[data-theme="3b1b"] .amv-scene-n { background: none; color: var(--line); padding: 0; min-width: 0; font: 500 30px var(--font-mono); }\nhtml[data-theme="3b1b"] .amv-scene-title { padding: 0; font-weight: 400; font-size: 46px; }\nhtml[data-theme="3b1b"] .amv-scene-meta { display: none; }\n\n.amv-body { position: absolute; left: 96px; right: 96px; top: 160px; height: 760px; display: grid; place-items: center; }\n.amv-fit { width: max-content; max-width: 1100px; transform-origin: 50% 50%; display: flex; flex-direction: column; gap: 28px; }\n.amv-fit .am-diagram { overflow: visible; }\n.amv-fit .am-diagram svg { max-width: none; overflow: visible; }\n.amv-fit .am-md { font-size: 26px; line-height: 1.6; }\n.amv-fit table { font-size: 24px; }\n.amv-fit th { font-size: 17px; }\n\n/* \u2500\u2500 \u7247\u5934 \u2500\u2500 */\n.amv-scene--title { display: grid; place-items: center; text-align: center; }\n.amv-title-wrap { max-width: 1500px; display: flex; flex-direction: column; align-items: center; }\n.amv-title { margin: 0; font: 700 96px/1.15 var(--v-title-font); color: var(--ink); letter-spacing: -0.01em; }\n.amv-subtitle { margin: 26px 0 0; font: 36px var(--v-title-font); color: var(--accent); }\n.amv-intro { margin-top: 36px; font-size: 28px; color: var(--ink-2); }\n.amv-titleblock {\n  display: flex; margin-top: 56px; border: var(--bw) solid var(--line); border-radius: var(--radius);\n  background: var(--paper); text-align: left; overflow: hidden;\n}\n.amv-titleblock div { padding: 16px 30px; display: flex; flex-direction: column; gap: 6px; }\n.amv-titleblock div + div { border-left: 1px solid var(--line); }\n.amv-titleblock b { font: 600 16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.08em; }\n.amv-titleblock span { font: 28px var(--font-sans); color: var(--ink); }\nhtml[data-theme="3b1b"] .amv-title { font-weight: 400; font-size: 104px; letter-spacing: 0.005em; }\nhtml[data-theme="3b1b"] .amv-subtitle { color: var(--line); }\nhtml[data-theme="3b1b"] .amv-titleblock { display: none; }\n\n/* \u2500\u2500 \u5B57\u5E55 \u2500\u2500 */\n.amv-caption {\n  position: absolute; left: 0; right: 0; bottom: 76px; display: flex; justify-content: center; pointer-events: none;\n}\n.amv-caption span {\n  max-width: 1500px; padding: 12px 28px; border-radius: var(--radius); text-align: center;\n  font: 500 38px/1.45 var(--font-sans); color: var(--v-cap-fg); background: var(--v-cap-bg);\n  border: var(--bw) solid var(--v-cap-border);\n}\nhtml[data-theme="3b1b"] .amv-caption { bottom: 56px; }\nhtml[data-theme="3b1b"] .amv-caption span { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); font-size: 40px; }\n.amv-caption span:empty { display: none; }\n.amv-caption b { color: var(--accent); font-weight: 700; }\n\n/* \u2500\u2500 \u65C1\u767D\u70B9\u540D\u65F6\u7684\u9AD8\u4EAE\uFF1B\u8FDE\u7EBF\u6807\u7B7E\u5E73\u65F6\u7528\u7070\u8272\uFF0C\u88AB\u70B9\u540D\u624D\u53D8\u8272 \u2500\u2500 */\nhtml[data-video] .am-diagram .am-edge-label text { fill: var(--ink-2); }\n.amv-hl .am-node-shape, .amv-hl .am-actor {\n  stroke: var(--accent); stroke-width: 3; fill: var(--accent-bg); filter: var(--v-glow);\n}\nhtml[data-video] .am-diagram .amv-hl text, html[data-video] .am-diagram text.amv-hl { fill: var(--accent); font-weight: 600; }\n.amv-hl .am-edge { stroke: var(--accent); stroke-width: 2.4; }\n.amv-hl.am-tree-box, .amv-hl.am-tl-item, .amv-hl.am-lim, .amv-hl.am-kv-cell, li.amv-hl > .am-tree-label, tr.amv-hl td, .amv-hl.am-seg {\n  color: var(--accent); outline: 2.5px solid var(--accent); outline-offset: 4px; border-radius: 4px;\n}\n\n/* \u2500\u2500 \u64AD\u653E\u63A7\u4EF6\uFF08\u4E0D\u8FDB\u5165\u753B\u9762\uFF09\u2500\u2500 */\n.amv-bigplay {\n  position: absolute; left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%;\n  border: 2px solid rgba(255, 255, 255, 0.85); background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 54px; cursor: pointer;\n  padding-left: 10px;\n}\n.amv-bigplay[hidden] { display: none; }\n.amv-controls {\n  position: fixed; left: 0; right: 0; bottom: 0; height: 56px; display: flex; align-items: center; gap: 14px;\n  padding: 0 18px; background: #0b0d11; border-top: 1px solid #1d2330; color: #c9d1dc; font: 13px -apple-system, "Segoe UI", sans-serif;\n}\n.amv-btn { width: 36px; height: 32px; border: 1px solid #2a3240; border-radius: 6px; background: #141922; color: #fff; cursor: pointer; }\n.amv-time { font-family: ui-monospace, Menlo, monospace; min-width: 96px; }\n.amv-track { position: relative; flex: 1; }\n.amv-seek { width: 100%; accent-color: #58c4dd; }\n.amv-marks { position: absolute; left: 0; right: 0; top: -6px; height: 6px; pointer-events: none; }\n.amv-marks i { position: absolute; top: 0; width: 2px; height: 6px; background: #58c4dd; }\n.amv-brand { color: #5b6576; font-size: 12px; white-space: nowrap; }\n\n/* \u5BFC\u51FA\u6A21\u5F0F\uFF1A\u53EA\u7559\u821E\u53F0\uFF0C1:1 \u65E0\u7F29\u653E */\nhtml[data-export] .amv-controls, html[data-export] .amv-bigplay { display: none; }\nhtml[data-export] .amv-viewport { inset: 0; }\nhtml[data-export] .amv-stage { left: 0; top: 0; transform: none !important; }\n';
+var VIDEO_JS = "(() => {\n  const D = JSON.parse(document.getElementById('amv-data').textContent);\n  const W = 1920;\n  const H = 1080;\n  const T = 0.9;     // \u573A\u666F\u5207\u6362\u65F6\u957F\uFF0C\u4E0E TIMING.transition \u4E00\u81F4\n  const R = 0.6;     // \u5355\u6B65\u51FA\u73B0\u65F6\u957F\n  const CAM = 0.8;   // \u955C\u5934\u79FB\u52A8\u65F6\u957F\n  const root = document.documentElement;\n  const stage = document.querySelector('.amv-stage');\n  const camera = document.querySelector('.amv-camera');\n  const overlay = document.querySelector('.amv-overlay');\n  const caption = document.querySelector('.amv-caption span');\n  const scenes = [...document.querySelectorAll('.amv-scene')];\n  const segs = D.segments;\n  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));\n  const ease = (x) => { const v = clamp(x); return v < 0.5 ? 4 * v * v * v : 1 - (-2 * v + 2) ** 3 / 2; };\n  const lerp = (a, b, p) => a + (b - a) * p;\n  const STEP_SEL = '.am-tl-item, .am-lim, .am-seg, tbody tr, .am-kv-cell, .am-md > ul > li, .am-md > ol > li, .am-md > p, .am-md > blockquote, .am-callout';\n\n  // \u2500\u2500 1. \u8BA9\u6BCF\u4E2A\u573A\u666F\u7684\u5185\u5BB9\u9002\u914D\u753B\u9762 \u2500\u2500\n  for (const sc of scenes) {\n    const fit = sc.querySelector('.amv-fit');\n    if (!fit || !fit.children.length) continue;\n    const s = Math.min(1600 / fit.offsetWidth, 740 / fit.offsetHeight, 3.4);\n    fit.style.transform = `scale(${s})`;\n  }\n\n  // \u573A\u666F\u6807\u9898\u653E\u5728\u955C\u5934\u4E4B\u5916\uFF1A\u955C\u5934\u63A8\u8FD1\u65F6\u6807\u9898\u4FDD\u6301\u4E0D\u52A8\u3002\n  const heads = scenes.map((sc) => {\n    const h = sc.querySelector('.amv-scene-head');\n    if (h) stage.insertBefore(h, camera.nextSibling);\n    return h;\n  });\n\n  // \u4EE5\u821E\u53F0\u4E3A\u5750\u6807\u7CFB\u6D4B\u91CF\u5143\u7D20\uFF08\u6B64\u65F6\u955C\u5934\u4E3A\u5355\u4F4D\u53D8\u6362\uFF09\u3002\n  const sr = stage.getBoundingClientRect();\n  const k = sr.width / W;\n  const rectOf = (el) => {\n    const r = el.getBoundingClientRect();\n    return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k };\n  };\n\n  // \u2500\u2500 2. \u5206\u6B65\uFF1A\u7EC4\u4EF6\u81EA\u5E26 data-step \u65F6\u6309\u5B83\u5206\u7EC4\uFF0C\u5426\u5219\u6309\u884C/\u6761\u76EE\u81EA\u52A8\u5206\u6B65 \u2500\u2500\n  const items = [];   // { el, at, paths: [{ el, len }] }\n  scenes.forEach((sc, i) => {\n    if (i === 0) return;\n    const groups = [];\n    for (const block of sc.querySelectorAll('.amv-fit > *')) {\n      const marked = [...block.querySelectorAll('[data-step]')];\n      if (marked.length) {\n        const by = new Map();\n        for (const el of marked) {\n          const n = Number(el.dataset.step);\n          if (!by.has(n)) by.set(n, []);\n          by.get(n).push(el);\n        }\n        [...by.keys()].sort((a, b) => a - b).forEach((n) => groups.push(by.get(n)));\n      } else {\n        const found = [...block.querySelectorAll(STEP_SEL)].filter((el) => !el.parentElement.closest(STEP_SEL));\n        if (found.length) found.forEach((el) => groups.push([el]));\n        else groups.push([block]);\n      }\n    }\n    const beats = segs[i].beats;\n    const S = groups.length;\n    const B = beats.length;\n    const perBeat = new Map();\n    groups.forEach((g, gi) => {\n      // \u65C1\u767D\u6BD4\u6B65\u6570\u591A\u65F6\uFF0C\u591A\u51FA\u7684\u53E5\u5B50\u5F53\u5F00\u573A\u767D\uFF1A\u6B65\u9AA4\u5BF9\u9F50\u5230\u6700\u540E\u51E0\u53E5\u3002\n      const b = S <= B ? gi + (B - S) : Math.floor((gi * B) / S);\n      const rank = perBeat.get(b) ?? 0;\n      perBeat.set(b, rank + 1);\n      const beat = beats[b];\n      const count = S <= B ? 1 : Math.ceil(S / B) || 1;\n      const slot = Math.min(0.45, (beat.end - beat.start) / count);\n      for (const el of g) {\n        const paths = (el.matches('path.am-edge') ? [el] : [...el.querySelectorAll('path.am-edge')])\n          .filter((p) => !p.classList.contains('am-edge--dashed'))\n          .map((p) => ({ el: p, len: p.getTotalLength() }));\n        items.push({ el, scene: i, at: beat.start + rank * slot, paths });\n      }\n    });\n  });\n\n  // \u2500\u2500 3. \u8DE8\u573A\u666F\u53D8\u5F62\uFF1A\u524D\u540E\u4E24\u4E2A\u573A\u666F\u91CC\u540C\u540D\uFF08data-key\uFF09\u7684\u5143\u7D20 \u2500\u2500\n  const morphs = [];  // { scene, from, to, ghost, a, b }\n  const keyed = (sc) => {\n    const m = new Map();\n    for (const el of sc.querySelectorAll('[data-key]')) if (!m.has(el.dataset.key)) m.set(el.dataset.key, el);\n    return m;\n  };\n  for (let i = 2; i < scenes.length; i++) {\n    const prev = keyed(scenes[i - 1]);\n    for (const [key, to] of keyed(scenes[i])) {\n      const from = prev.get(key);\n      // \u53EA\u5728\u540C\u7C7B\u5143\u7D20\u4E4B\u95F4\u53D8\u5F62\uFF08SVG \u5BF9 SVG\u3001HTML \u5BF9 HTML\uFF09\uFF0C\u5426\u5219\u5F62\u72B6\u5BF9\u4E0D\u4E0A\u3002\n      if (!from || (from instanceof SVGElement) !== (to instanceof SVGElement)) continue;\n      try {\n        const ghost = makeGhost(from);\n        overlay.append(ghost.node);\n        morphs.push({ scene: i, from, to, ghost: ghost.node, a: ghost.place(rectOf(from)), b: ghost.place(rectOf(to)) });\n      } catch {\n        // \u53D8\u5F62\u53EA\u662F\u9526\u4E0A\u6DFB\u82B1\uFF1A\u4E2A\u522B\u5143\u7D20\u6D4B\u91CF\u5931\u8D25\u65F6\u76F4\u63A5\u8DF3\u8FC7\uFF0C\u4E0D\u5F71\u54CD\u64AD\u653E\u3002\n      }\n    }\n  }\n  const carried = new Set(morphs.map((m) => m.to));\n\n  function makeGhost(el) {\n    const wrap = document.createElement('div');\n    const host = el.closest('.am-diagram, .am-tree, .am-timeline, .am-kv, .am-limits');\n    wrap.className = `amv-ghost ${host ? host.className : ''}`;\n    if (el instanceof SVGGraphicsElement) {\n      const bb = el.getBBox();\n      const pad = 4;\n      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n      svg.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);\n      svg.setAttribute('width', bb.width + pad * 2);\n      svg.setAttribute('height', bb.height + pad * 2);\n      const clone = el.cloneNode(true);\n      clone.removeAttribute('style');\n      svg.append(clone);\n      wrap.append(svg);\n      return {\n        node: wrap,\n        place: (r) => {\n          const s = r.w / (bb.width || 1);\n          return { x: r.x - pad * s, y: r.y - pad * s, s };\n        },\n      };\n    }\n    const clone = el.cloneNode(true);\n    clone.removeAttribute('style');\n    clone.querySelectorAll('[data-key], ul').forEach((n) => n.remove());\n    const box = document.createElement(el.tagName === 'LI' ? 'ul' : 'div');\n    box.className = el.tagName === 'LI' ? 'am-tree-list' : '';\n    box.style.margin = '0';\n    box.append(clone);\n    wrap.append(box);\n    wrap.style.width = `${el.offsetWidth}px`;\n    const w0 = el.offsetWidth || 1;\n    return { node: wrap, place: (r) => ({ x: r.x, y: r.y, s: r.w / w0 }) };\n  }\n\n  // \u2500\u2500 4. \u955C\u5934\uFF1A\u65C1\u767D\u91CC [\u540D\u5B57] \u5BF9\u5E94\u7684\u5143\u7D20 \u2500\u2500\n  const findKey = (sc, key) => {\n    const all = [...sc.querySelectorAll('[data-key]')];\n    const norm = (s) => s.replace(/[`*]/g, '').trim().toLowerCase();\n    return all.find((el) => norm(el.dataset.key) === norm(key))\n      ?? all.find((el) => norm(el.dataset.key).includes(norm(key)))\n      ?? [...sc.querySelectorAll(`${STEP_SEL}, text`)].find((el) => norm(el.textContent).includes(norm(key)));\n  };\n  const IDENT = { s: 1, x: 0, y: 0 };\n  // \u63A8\u8FD1\u4F46\u4E0D\u88C1\u5207\uFF1A\u653E\u5927\u540E\u6574\u5F20\u56FE\u4ECD\u8981\u7559\u5728\u6807\u9898\u4E0E\u5B57\u5E55\u4E4B\u95F4\u7684\u5B89\u5168\u533A\u91CC\u3002\n  const SAFE = { left: 60, right: W - 60, top: 140, bottom: H - 150 };\n  function focusCam(r, sc) {\n    const fit = sc.querySelector('.amv-fit');\n    const c = fit ? rectOf(fit) : { x: 0, y: 0, w: W, h: H };\n    const room = Math.min((SAFE.right - SAFE.left) / c.w, (SAFE.bottom - SAFE.top) / c.h);\n    const s = clamp(Math.min(0.5 * W / r.w, 0.42 * H / r.h, room, 1.4), 1, 1.4);\n    const fitAxis = (want, lo, hi, a, b) => (s * (b - a) <= hi - lo ? clamp(want, lo - s * a, hi - s * b) : want);\n    return {\n      s,\n      x: fitAxis(W / 2 - s * (r.x + r.w / 2), SAFE.left, SAFE.right, c.x, c.x + c.w),\n      y: fitAxis(H * 0.5 - s * (r.y + r.h / 2), SAFE.top, SAFE.bottom, c.y, c.y + c.h),\n    };\n  }\n  const camEvents = [];   // { t, cam, hl }\n  segs.forEach((seg, i) => {\n    camEvents.push({ t: seg.start, cam: IDENT, hl: null });\n    seg.beats.forEach((b) => {\n      const el = b.focus ? findKey(scenes[i], b.focus) : null;\n      let cam = IDENT;\n      if (el) cam = focusCam(rectOf(el), scenes[i]);\n      camEvents.push({ t: b.start, cam, hl: el });\n    });\n  });\n  const hlTargets = new Set(camEvents.map((e) => e.hl).filter(Boolean));\n\n  // \u2500\u2500 5. \u786E\u5B9A\u6027\u6E32\u67D3\uFF1A\u540C\u4E00\u65F6\u523B\u6C38\u8FDC\u753B\u51FA\u540C\u4E00\u5E27 \u2500\u2500\n  function render(t) {\n    t = clamp(t, 0, D.duration);\n    const cur = segs.findLastIndex((s) => t >= s.start);\n\n    scenes.forEach((sc, i) => {\n      const seg = segs[i];\n      const next = segs[i + 1];\n      const fadeIn = i === 0 ? ease(t / 0.8) : ease((t - seg.start) / T);\n      const fadeOut = next ? 1 - ease((t - next.start) / T) : 1;\n      const op = t < seg.start ? 0 : Math.min(fadeIn, fadeOut);\n      sc.style.opacity = op;\n      sc.style.visibility = op > 0 ? 'visible' : 'hidden';\n      if (heads[i]) {\n        // \u6807\u9898\u4E0D\u4EA4\u53E0\uFF1A\u65E7\u6807\u9898\u5728\u5207\u6362\u524D\u534A\u6BB5\u6DE1\u51FA\uFF0C\u65B0\u6807\u9898\u5728\u540E\u534A\u6BB5\u6DE1\u5165\u3002\n        const hin = ease((t - seg.start - T / 2) / (T / 2));\n        const hout = next ? 1 - ease((t - next.start) / (T / 2)) : 1;\n        const hop = t < seg.start ? 0 : Math.min(hin, hout);\n        heads[i].style.opacity = hop;\n        heads[i].style.visibility = hop > 0 ? 'visible' : 'hidden';\n      }\n    });\n\n    for (const it of items) {\n      const p = ease((t - it.at) / R);\n      const fade = clamp((t - it.at) / 0.25);\n      if (carried.has(it.el)) continue;\n      it.el.style.opacity = fade;\n      if (it.paths.length) {\n        for (const { el, len } of it.paths) {\n          el.style.strokeDasharray = `${len}`;\n          el.style.strokeDashoffset = `${len * (1 - p)}`;\n          el.style.markerEnd = p < 0.97 ? 'none' : '';\n        }\n      } else {\n        it.el.style.transform = p < 1 ? `translateY(${(1 - p) * 14}px)` : '';\n      }\n    }\n\n    for (const m of morphs) {\n      const s0 = segs[m.scene].start;\n      const during = t >= s0 && t < s0 + T;\n      const p = ease((t - s0) / T);\n      m.ghost.style.display = during ? '' : 'none';\n      if (during) {\n        m.ghost.style.transform = `translate(${lerp(m.a.x, m.b.x, p)}px, ${lerp(m.a.y, m.b.y, p)}px) scale(${lerp(m.a.s, m.b.s, p)})`;\n      }\n      m.from.style.visibility = during ? 'hidden' : '';\n      m.to.style.visibility = t < s0 + T ? 'hidden' : '';\n      m.to.style.opacity = 1;\n    }\n\n    // \u955C\u5934\u4E0E\u9AD8\u4EAE\n    const ev = camEvents.findLastIndex((e) => t >= e.t);\n    let cam = IDENT;\n    let hl = null;\n    if (ev >= 0) {\n      const e = camEvents[ev];\n      const prev = ev > 0 ? camEvents[ev - 1].cam : IDENT;\n      const p = ease((t - e.t) / CAM);\n      cam = { s: lerp(prev.s, e.cam.s, p), x: lerp(prev.x, e.cam.x, p), y: lerp(prev.y, e.cam.y, p) };\n      hl = e.hl;\n    }\n    camera.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})`;\n    for (const el of hlTargets) el.classList.toggle('amv-hl', el === hl);\n\n    // \u5B57\u5E55\n    const beats = cur >= 0 ? segs[cur].beats : [];\n    const b = beats.find((x) => t >= x.start && t < x.end + 0.3);\n    const html = b ? b.html : '';\n    if (caption.dataset.html !== html) {\n      caption.innerHTML = html;\n      caption.dataset.html = html;\n    }\n    caption.style.opacity = b ? clamp((t - b.start) / 0.2) : 0;\n    updateUi(t);\n  }\n\n  // \u2500\u2500 6. \u64AD\u653E\u5668 \u2500\u2500\n  const audio = document.getElementById('amv-audio');\n  const seek = document.querySelector('.amv-seek');\n  const timeEl = document.querySelector('.amv-time');\n  const toggleBtn = document.querySelector('[data-amv=\"toggle\"]');\n  const bigPlay = document.querySelector('.amv-bigplay');\n  const marks = document.querySelector('.amv-marks');\n  const fmt = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;\n  seek.max = D.duration;\n  segs.slice(1).forEach((s) => {\n    const m = document.createElement('i');\n    m.style.left = `${(s.start / D.duration) * 100}%`;\n    m.title = s.title;\n    marks.append(m);\n  });\n\n  let playing = false;\n  let base = 0;\n  let t0 = 0;\n  const now = () => (!playing ? base : audio ? audio.currentTime : base + (performance.now() - t0) / 1000);\n\n  function updateUi(t) {\n    if (document.activeElement !== seek) seek.value = t;\n    timeEl.textContent = `${fmt(t)} / ${fmt(D.duration)}`;\n  }\n\n  function play() {\n    if (base >= D.duration - 0.05) base = 0;\n    playing = true;\n    bigPlay.hidden = true;\n    toggleBtn.textContent = '\u275A\u275A';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.pause);\n    if (audio) {\n      audio.currentTime = base;\n      audio.play().catch(() => {});\n    } else {\n      t0 = performance.now();\n    }\n    requestAnimationFrame(tick);\n  }\n\n  function pause() {\n    base = now();\n    playing = false;\n    audio?.pause();\n    toggleBtn.textContent = '\u25B6';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.play);\n  }\n\n  function seekTo(x) {\n    base = clamp(x, 0, D.duration);\n    if (audio) audio.currentTime = base;\n    t0 = performance.now();\n    render(base);\n  }\n\n  function tick() {\n    if (!playing) return;\n    const t = now();\n    if (t >= D.duration) {\n      pause();\n      base = D.duration;\n      render(D.duration);\n      return;\n    }\n    render(t);\n    requestAnimationFrame(tick);\n  }\n\n  const toggle = () => (playing ? pause() : play());\n  toggleBtn.addEventListener('click', toggle);\n  bigPlay.addEventListener('click', play);\n  stage.addEventListener('click', (e) => { if (e.target !== bigPlay) toggle(); });\n  seek.addEventListener('input', () => seekTo(Number(seek.value)));\n  document.addEventListener('keydown', (e) => {\n    if (e.key === ' ') { e.preventDefault(); toggle(); }\n    if (e.key === 'ArrowRight') seekTo(now() + 5);\n    if (e.key === 'ArrowLeft') seekTo(now() - 5);\n  });\n  audio?.addEventListener('ended', () => { pause(); base = D.duration; });\n\n  function fitStage() {\n    if (root.hasAttribute('data-export')) return;\n    const vp = stage.parentElement;\n    const s = Math.min(vp.clientWidth / W, vp.clientHeight / H);\n    stage.style.transform = `translate(-50%, -50%) scale(${s})`;\n  }\n  window.addEventListener('resize', fitStage);\n\n  // \u5BFC\u51FA\uFF1A\u628A\u821E\u53F0 1:1 \u6446\u5728\u5DE6\u4E0A\u89D2\uFF0C\u9010\u5E27\u8C03\u7528 render(t)\u3002\n  window.render = render;\n  window.__amv = {\n    duration: D.duration,\n    fps: D.fps,\n    exportMode() { root.setAttribute('data-export', ''); stage.style.transform = ''; },\n  };\n  fitStage();\n  // \u5C01\u9762\uFF1A\u663E\u793A\u5B8C\u5168\u6DE1\u5165\u540E\u7684\u7247\u5934\uFF0C\u4F46\u64AD\u653E\u4ECD\u4ECE 0 \u5F00\u59CB\u3002\n  render(Math.min(1, segs[0].end));\n  updateUi(0);\n})();\n";
 
 // src/cli.js
-import { join as join2, resolve, dirname as dirname2 } from "node:path";
-import { spawn } from "node:child_process";
+import { join as join4, resolve, dirname as dirname2 } from "node:path";
+import { spawn as spawn3 } from "node:child_process";
 
 // src/parse.js
 var ParseError = class extends Error {
@@ -60,7 +62,7 @@ var ParseError = class extends Error {
   }
 };
 var CHOICES = Object.freeze({
-  template: ["sheet", "doc"],
+  template: ["sheet", "doc", "video"],
   theme: ["blueprint", "shadcn"],
   style: ["off", "80", "strict"],
   mode: ["auto", "light", "dark"]
@@ -79,15 +81,15 @@ var PANEL_HEADING = /^##\s+(.+?)\s*$/;
 var ATTR_BLOCK = /\s*\{([^{}]*)\}\s*$/;
 var PANEL_ID = /^([A-Z][0-9]?)\s+(.+)$/;
 var ATTR_TOKEN = /([\w-]+)(?:=("[^"]*"|'[^']*'|\S+))?/g;
-function parseDoc(source, { defaults: defaults2 = {} } = {}) {
+function parseDoc(source, { defaults: defaults2 = {}, choices = {} } = {}) {
   const lines = String(source).replace(/\r\n?/g, "\n").split("\n");
-  const { meta, bodyStart } = parseFrontmatter(lines, { ...DEFAULT_META, ...defaults2 });
+  const { meta, bodyStart } = parseFrontmatter(lines, { ...DEFAULT_META, ...defaults2 }, { ...CHOICES, ...choices });
   const sections = splitSections(lines, bodyStart);
   const intro = extractTitle(sections.intro, meta);
   const panels = assignIds(sections.panels);
   return { meta, intro, panels };
 }
-function parseFrontmatter(lines, base) {
+function parseFrontmatter(lines, base, allowed) {
   if (lines[0]?.trim() !== "---") return { meta: { ...base }, bodyStart: 0 };
   const end = lines.findIndex((l3, i) => i > 0 && l3.trim() === "---");
   if (end === -1) throw new ParseError("frontmatter \u672A\u95ED\u5408\uFF1A\u7F3A\u5C11\u7ED3\u675F\u884C ---", 1);
@@ -101,10 +103,10 @@ function parseFrontmatter(lines, base) {
   }
   const meta = { ...base };
   for (const [key, { value, line }] of Object.entries(entries)) {
-    if (CHOICES[key] && !CHOICES[key].includes(String(value))) {
-      throw new ParseError(`${key} \u7684\u503C "${value}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${CHOICES[key].join(" | ")}`, line);
+    if (allowed[key] && !allowed[key].includes(String(value))) {
+      throw new ParseError(`${key} \u7684\u503C "${value}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${allowed[key].join(" | ")}`, line);
     }
-    meta[key] = CHOICES[key] ? String(value) : value;
+    meta[key] = allowed[key] ? String(value) : value;
   }
   return { meta, bodyStart: end + 1 };
 }
@@ -1798,10 +1800,11 @@ var tree_default = {
 function buildTree(text) {
   const roots = [];
   const stack = [];
+  let step = 0;
   for (const raw of String(text).split("\n")) {
     if (!raw.trim()) continue;
     const indent = raw.replace(/\t/g, "  ").match(/^ */)[0].length;
-    const node = { ...parseLabel(raw.trim()), indent, children: [] };
+    const node = { ...parseLabel(raw.trim()), indent, step: step++, children: [] };
     while (stack.length && stack.at(-1).indent >= indent) stack.pop();
     (stack.length ? stack.at(-1).children : roots).push(node);
     stack.push(node);
@@ -1814,13 +1817,14 @@ function parseLabel(t) {
   return { label, sub, hi };
 }
 var labelHtml = (label) => mdInline(label).replace(/^<code>([^<]*)<\/code>(?=\s*\S)/, '<span class="am-tree-tag">$1</span>');
+var vattrs = (n) => ` data-key="${esc(n.label)}" data-step="${n.step}"`;
 var boxInner = (n) => `${labelHtml(n.label)}${n.sub ? `<small>${mdInline(n.sub)}</small>` : ""}`;
 function rootBox(root, solo = false) {
-  return `<div class="am-tree-root${solo ? " am-tree-root--solo" : ""}"><div class="am-tree-box am-tree-box--root">${boxInner(root)}</div></div>`;
+  return `<div class="am-tree-root${solo ? " am-tree-root--solo" : ""}"><div class="am-tree-box am-tree-box--root"${vattrs(root)}>${boxInner(root)}</div></div>`;
 }
 function colHtml(node) {
   const children = node.children.length ? listHtml(node.children) : "";
-  return `<div class="am-tree-col"><div class="am-tree-box${node.hi ? " am-tree-box--hi" : ""}">${boxInner(node)}</div>${children}</div>`;
+  return `<div class="am-tree-col"><div class="am-tree-box${node.hi ? " am-tree-box--hi" : ""}"${vattrs(node)}>${boxInner(node)}</div>${children}</div>`;
 }
 function orgHtml(root) {
   return `<div class="am-tree">${rootBox(root)}<div class="am-tree-cols" style="--n: ${root.children.length}">${root.children.map(colHtml).join("")}</div></div>`;
@@ -1831,7 +1835,7 @@ function listHtml(nodes) {
 function liHtml(n) {
   const sub = n.sub ? `<span class="am-tree-sub">${mdInline(n.sub)}</span>` : "";
   const kids = n.children.length ? `<ul>${n.children.map(liHtml).join("")}</ul>` : "";
-  return `<li${n.hi ? ' class="am-tree-hi"' : ""}><span class="am-tree-label">${labelHtml(n.label)}</span>${sub}${kids}</li>`;
+  return `<li${n.hi ? ' class="am-tree-hi"' : ""}${vattrs(n)}><span class="am-tree-label">${labelHtml(n.label)}</span>${sub}${kids}</li>`;
 }
 
 // src/components/limits.js
@@ -2015,7 +2019,8 @@ function layout({ participants: ps, steps }, { num, id }) {
   const body = [];
   let y2 = TOP + ACTOR_H + 22;
   let n = 0;
-  for (const s of prepared) {
+  for (const [k2, s] of prepared.entries()) {
+    const start = body.length;
     if (s.kind === "msg") {
       n++;
       const cls = `am-edge${s.dashed ? " am-edge--dashed" : ""}`;
@@ -2024,14 +2029,14 @@ function layout({ participants: ps, steps }, { num, id }) {
       if (s.a === s.b) {
         const x2 = xs[s.a];
         const labelX = x2 + 40;
-        body.push(s.lines.map((l3, k2) => `<text x="${f(labelX)}" y="${f(y2 + k2 * LH + 4)}" dominant-baseline="central">${esc(l3)}</text>`).join(""));
+        body.push(s.lines.map((l3, k3) => `<text x="${f(labelX)}" y="${f(y2 + k3 * LH + 4)}" dominant-baseline="central">${esc(l3)}</text>`).join(""));
         body.push(`<path class="${cls}" d="M${f(x2)},${f(y2)} H${f(x2 + 30)} V${f(y2 + 20)} H${f(x2 + 2)}"${marker}/>`, step);
         y2 += Math.max(s.lines.length * LH, 20) + 28;
       } else {
         y2 += s.lines.length * LH;
         const [x1, x2] = [xs[s.a], xs[s.b]];
         const mx = (x1 + x2) / 2;
-        body.push(s.lines.map((l3, k2) => `<text x="${f(mx)}" y="${f(y2 - 10 - (s.lines.length - 1 - k2) * LH)}" text-anchor="middle">${esc(l3)}</text>`).join(""));
+        body.push(s.lines.map((l3, k3) => `<text x="${f(mx)}" y="${f(y2 - 10 - (s.lines.length - 1 - k3) * LH)}" text-anchor="middle">${esc(l3)}</text>`).join(""));
         body.push(`<path class="${cls}" d="M${f(x1)},${f(y2)} L${f(x2 + (x2 > x1 ? -2 : 2))},${f(y2)}"${marker}/>`, step);
         y2 += 24;
       }
@@ -2052,11 +2057,12 @@ function layout({ participants: ps, steps }, { num, id }) {
       body.push(textLines(s.lines.slice(0, 1), width / 2, y2 + 10, LH, ' font-size="12"'));
       y2 += 34;
     }
+    body.splice(start, body.length - start, `<g data-step="${k2}">${body.slice(start).join("")}</g>`);
   }
   const height = y2 + 6;
   const actors = ps.map((p, i) => {
     const x2 = xs[i];
-    return `<line class="am-lifeline" x1="${f(x2)}" y1="${TOP + ACTOR_H}" x2="${f(x2)}" y2="${f(height - 4)}"/><rect class="am-actor" x="${f(x2 - actorW[i] / 2)}" y="${TOP}" width="${f(actorW[i])}" height="${ACTOR_H}" rx="2"/>` + textLines([p], x2, TOP + ACTOR_H / 2, LH, ' font-weight="600"');
+    return `<line class="am-lifeline" x1="${f(x2)}" y1="${TOP + ACTOR_H}" x2="${f(x2)}" y2="${f(height - 4)}"/><g data-key="${esc(p)}"><rect class="am-actor" x="${f(x2 - actorW[i] / 2)}" y="${TOP}" width="${f(actorW[i])}" height="${ACTOR_H}" rx="2"/>${textLines([p], x2, TOP + ACTOR_H / 2, LH, ' font-weight="600"')}</g>`;
   });
   return `${svgOpen(width, height, `\u65F6\u5E8F\u56FE\uFF1A${ps.join("\u3001")}`)}${arrowDefs(id)}${actors.join("")}${body.join("")}</svg>`;
 }
@@ -4110,18 +4116,19 @@ function layout2({ nodes, edges, groups }, rankdir, id) {
     const y2 = c.y - c.height / 2;
     return `<rect class="am-cluster" x="${f(x2)}" y="${f(y2)}" width="${f(c.width)}" height="${f(c.height)}" rx="4"/><text class="am-cluster-label" x="${f(x2 + 8)}" y="${f(y2 + 14)}">${esc(grp.name)}</text>`;
   });
+  const stepOf = new Map([.../* @__PURE__ */ new Set([...[...nodes.values()].map((n) => n.line), ...edges.map((e) => e.line)])].sort((a, b) => a - b).map((l3, k2) => [l3, k2]));
   const edgeSvg = edges.map((e, i) => {
     const data = g.edge({ v: e.from, w: e.to, name: `e${i}` });
     const pts = clipEnds(data.points, g.node(e.from), nodes.get(e.from).shape, g.node(e.to), nodes.get(e.to).shape);
     const path = `<path class="am-edge${e.dashed ? " am-edge--dashed" : ""}" d="${smoothPath(pts)}" marker-end="url(#${id}-arrow)"/>`;
-    if (!e.label) return path;
+    if (!e.label) return `<g data-step="${stepOf.get(e.line)}">${path}</g>`;
     const w = measure(e.label, EDGE_FS) + 10;
-    return `${path}<g class="am-edge-label"><rect x="${f(data.x - w / 2)}" y="${f(data.y - 9)}" width="${f(w)}" height="18" rx="3"/>${textLines([e.label], data.x, data.y, LH2)}</g>`;
+    return `<g data-step="${stepOf.get(e.line)}">${path}<g class="am-edge-label"><rect x="${f(data.x - w / 2)}" y="${f(data.y - 9)}" width="${f(w)}" height="18" rx="3"/>${textLines([e.label], data.x, data.y, LH2)}</g></g>`;
   });
   const nodeSvg = [...nodes.values()].map((n) => {
     const { x: x2, y: y2 } = g.node(n.id);
     const { width: w, height: h2, lines } = sizes.get(n.id);
-    return `<g class="am-node am-node--${n.shape}${n.hi ? " am-node--hi" : ""}">${shapeSvg(n.shape, x2, y2, w, h2)}${textLines(lines, x2, y2 + (n.shape === "db" ? 4 : 0), LH2)}</g>`;
+    return `<g class="am-node am-node--${n.shape}${n.hi ? " am-node--hi" : ""}" data-key="${esc(n.label)}" data-step="${stepOf.get(n.line)}">${shapeSvg(n.shape, x2, y2, w, h2)}${textLines(lines, x2, y2 + (n.shape === "db" ? 4 : 0), LH2)}</g>`;
   });
   const { width, height } = g.graph();
   const label = `\u6D41\u7A0B\u56FE\uFF1A${[...nodes.keys()].slice(0, 8).join("\u3001")}`;
@@ -4561,6 +4568,7 @@ function renderDoc(source, overrides = {}, defaults2 = {}) {
     }
     doc2.meta[key] = value;
   }
+  if (doc2.meta.template === "video") throw new ParseError("template: video \u662F\u89C6\u9891\u7A3F\uFF0C\u8BF7\u7528 am video \u6E32\u67D3", 0);
   const warnings = doc2.meta.style === "off" ? [] : lintDoc(doc2);
   if (doc2.meta.style === "strict" && warnings.length) throw new LintError(warnings);
   const stats = { panels: doc2.panels.length, components: {} };
@@ -4627,10 +4635,598 @@ ${RUNTIME_JS}</script>
 `;
 }
 
+// src/video/script.js
+var NARRATION = /^\s*>\s?(.*)$/;
+var FOCUS = /\[([^\]\n]+)\]/g;
+var VIDEO_THEMES = Object.freeze([...CHOICES.theme, "3b1b"]);
+function parseVideo(source, { defaults: defaults2 = {} } = {}) {
+  const doc2 = parseDoc(source, { defaults: { ...defaults2, template: "video" }, choices: { theme: VIDEO_THEMES } });
+  const intro = splitNarration(doc2.intro);
+  const scenes = doc2.panels.map((p) => {
+    const { blocks, beats } = splitNarration(p.blocks);
+    if (!beats.length) throw new ParseError(`\u573A\u666F "${p.title}" \u6CA1\u6709\u65C1\u767D\uFF1A\u6BCF\u4E2A\u573A\u666F\u81F3\u5C11\u5199\u4E00\u884C > \u65C1\u767D`, p.line);
+    return { id: p.id, title: p.title, line: p.line, attrs: p.attrs, blocks, beats };
+  });
+  if (!scenes.length) throw new ParseError("\u89C6\u9891\u7A3F\u81F3\u5C11\u9700\u8981\u4E00\u4E2A\u573A\u666F\uFF08## \u573A\u666F\u6807\u9898\uFF09", 1);
+  return { meta: doc2.meta, doc: doc2, intro: intro.blocks, introBeats: intro.beats, scenes };
+}
+function splitNarration(blocks) {
+  const beats = [];
+  const out = [];
+  for (const b of blocks) {
+    if (b.type !== "md") {
+      out.push(b);
+      continue;
+    }
+    const rest = [];
+    b.text.split("\n").forEach((raw, i) => {
+      const m = raw.match(NARRATION);
+      if (m && m[1].trim()) beats.push(beat(m[1].trim(), b.line + i));
+      else if (!m) rest.push(raw);
+    });
+    if (rest.some((l3) => l3.trim())) out.push({ ...b, text: rest.join("\n") });
+  }
+  return { blocks: out, beats };
+}
+function beat(raw, line) {
+  const focus = [...raw.matchAll(FOCUS)].map((m) => m[1].trim());
+  return { raw, text: raw.replace(FOCUS, "$1"), focus: focus[0] ?? null, line };
+}
+function estimateSeconds(text) {
+  let cjk = 0;
+  let latin = "";
+  for (const ch of text) {
+    if (isCJK(ch)) cjk++;
+    latin += isCJK(ch) ? " " : ch;
+  }
+  const words = latin.match(/[A-Za-z0-9][\w'’-]*/g)?.length ?? 0;
+  return Math.max(1.6, cjk / 4.2 + words / 2.6 + 0.3);
+}
+var TIMING = Object.freeze({
+  title: 2.4,
+  // 无旁白时片头停留
+  transition: 0.9,
+  // 场景切换（含跨场景变形）
+  gap: 0.35,
+  // 两句旁白之间的停顿
+  tail: 0.8,
+  // 场景最后一句之后的停留
+  outro: 1.5
+  // 片尾停留
+});
+function buildTimeline(video, durations) {
+  let t = 0;
+  let k2 = 0;
+  const lay = (beats) => beats.map((b) => {
+    const dur = durations[k2++];
+    const start = t;
+    t += dur + TIMING.gap;
+    return { text: b.text, focus: b.focus, start: round2(start), end: round2(start + dur) };
+  });
+  const titleBeats = lay(video.introBeats);
+  if (!titleBeats.length) t = TIMING.title;
+  const title = { start: 0, end: round2(t), beats: titleBeats };
+  const scenes = video.scenes.map((s) => {
+    const start = t;
+    t += TIMING.transition;
+    const beats = lay(s.beats);
+    t += TIMING.tail - TIMING.gap;
+    return { title: s.title, start: round2(start), end: round2(t), beats };
+  });
+  t += TIMING.outro;
+  return { duration: round2(t), title, scenes };
+}
+var allBeats = (video) => [...video.introBeats, ...video.scenes.flatMap((s) => s.beats)];
+var round2 = (x2) => Math.round(x2 * 1e3) / 1e3;
+
+// src/video/tts.js
+import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+var SAMPLE_RATE = 22050;
+var VOICES = ["auto", "elevenlabs", "system", "off"];
+var ELEVEN_DEFAULT_VOICE = "JBFqnCBsd6RMkjVDRZzb";
+var ELEVEN_MODEL = "eleven_multilingual_v2";
+var TtsError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "TtsError";
+  }
+};
+function pickProvider(choice, env, { platform = process.platform, which = hasCommand } = {}) {
+  const eleven = () => elevenLabs(env);
+  const system = () => systemVoice(platform, which);
+  if (choice === "off") return null;
+  if (choice === "elevenlabs") {
+    if (!env.ELEVENLABS_API_KEY) throw new TtsError("voice=elevenlabs \u9700\u8981\u73AF\u5883\u53D8\u91CF ELEVENLABS_API_KEY");
+    return eleven();
+  }
+  if (choice === "system") {
+    const p = system();
+    if (!p) throw new TtsError("\u6CA1\u6709\u627E\u5230\u7CFB\u7EDF TTS\uFF1AmacOS \u81EA\u5E26 say\uFF1BLinux \u8BF7\u5B89\u88C5 espeak-ng");
+    return p;
+  }
+  if (env.ELEVENLABS_API_KEY) return eleven();
+  return system();
+}
+function elevenLabs(env) {
+  const voice = env.ELEVENLABS_VOICE_ID || ELEVEN_DEFAULT_VOICE;
+  return {
+    name: "elevenlabs",
+    id: `elevenlabs:${voice}:${ELEVEN_MODEL}`,
+    concurrency: 2,
+    async synth(text) {
+      const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=pcm_${SAMPLE_RATE}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" },
+        body: JSON.stringify({ text, model_id: ELEVEN_MODEL })
+      });
+      if (!res.ok) throw new TtsError(`ElevenLabs \u8FD4\u56DE ${res.status}\uFF1A${(await res.text()).slice(0, 200)}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      return new Int16Array(buf.buffer, buf.byteOffset, Math.floor(buf.length / 2)).slice();
+    }
+  };
+}
+function systemVoice(platform, which) {
+  if (platform === "darwin" && which("say")) {
+    const voices = macVoices();
+    return {
+      name: "say",
+      id: `say:${voices.zh}:${voices.en}`,
+      concurrency: 4,
+      synth: (text) => withTemp(async (file) => {
+        const v = voices[detectLang(text)];
+        await run("say", [...v ? ["-v", v] : [], "-o", file, "--file-format=WAVE", `--data-format=LEI16@${SAMPLE_RATE}`, text]);
+        return readWav(readFileSync(file));
+      })
+    };
+  }
+  if (which("espeak-ng")) {
+    return {
+      name: "espeak-ng",
+      id: "espeak-ng",
+      concurrency: 4,
+      synth: (text) => withTemp(async (file) => {
+        await run("espeak-ng", ["-v", detectLang(text) === "zh" ? "cmn" : "en-us", "-w", file, text]);
+        return readWav(readFileSync(file));
+      })
+    };
+  }
+  return null;
+}
+function macVoices() {
+  return pickMacVoices(spawnSync("say", ["-v", "?"], { encoding: "utf8" }).stdout || "");
+}
+function pickMacVoices(out) {
+  const list = out.split("\n").map((l3) => l3.match(/^(.+?)\s+([a-z]{2}_[A-Z]{2})\s+#/)).filter(Boolean).map((m) => ({ name: m[1].trim(), locale: m[2] }));
+  const base = (name) => name.replace(/\s*[(（].*$/, "");
+  const pick = (prefer, locale) => prefer.map((p) => list.find((v) => v.locale === locale && base(v.name) === p)).find(Boolean)?.name;
+  return {
+    zh: pick(["Tingting", "Ting-Ting", "Lilian", "Reed", "Flo", "Eddy"], "zh_CN"),
+    en: pick(["Samantha", "Alex", "Ava", "Allison", "Reed", "Flo", "Eddy"], "en_US")
+  };
+}
+function hasCommand(cmd) {
+  return spawnSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" }).status === 0;
+}
+function run(cmd, args) {
+  return new Promise((resolve2, reject) => {
+    const p = spawn(cmd, args, { stdio: ["ignore", "ignore", "pipe"] });
+    let err = "";
+    p.stderr.on("data", (d) => {
+      err += d;
+    });
+    p.on("error", reject);
+    p.on("close", (code) => code === 0 ? resolve2() : reject(new TtsError(`${cmd} \u5931\u8D25\uFF08${code}\uFF09\uFF1A${err.slice(0, 200)}`)));
+  });
+}
+async function withTemp(fn3) {
+  const dir = mkdtempSync(join(tmpdir(), "am-tts-"));
+  try {
+    return await fn3(join(dir, "out.wav"));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+function readWav(buf) {
+  if (buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WAVE") throw new TtsError("\u4E0D\u662F WAV \u6587\u4EF6");
+  let pos = 12;
+  let fmt = null;
+  while (pos + 8 <= buf.length) {
+    const id = buf.toString("ascii", pos, pos + 4);
+    const size = buf.readUInt32LE(pos + 4);
+    if (id === "fmt ") fmt = { channels: buf.readUInt16LE(pos + 10), rate: buf.readUInt32LE(pos + 12), bits: buf.readUInt16LE(pos + 22) };
+    if (id === "data") {
+      if (!fmt || fmt.bits !== 16) throw new TtsError("\u53EA\u652F\u6301 16 \u4F4D PCM WAV");
+      const n = Math.floor(Math.min(size, buf.length - pos - 8) / 2 / fmt.channels);
+      const samples = new Int16Array(n);
+      for (let i = 0; i < n; i++) samples[i] = buf.readInt16LE(pos + 8 + i * 2 * fmt.channels);
+      return fmt.rate === SAMPLE_RATE ? samples : resample({ rate: fmt.rate, samples });
+    }
+    pos += 8 + size + size % 2;
+  }
+  throw new TtsError("WAV \u7F3A\u5C11 data \u5757");
+}
+function resample(input) {
+  if (input instanceof Int16Array) return input;
+  const { rate, samples } = input;
+  const n = Math.floor(samples.length * SAMPLE_RATE / rate);
+  const out = new Int16Array(n);
+  for (let i = 0; i < n; i++) {
+    const x2 = i * rate / SAMPLE_RATE;
+    const a = Math.floor(x2);
+    const b = Math.min(a + 1, samples.length - 1);
+    out[i] = Math.round(samples[a] + (samples[b] - samples[a]) * (x2 - a));
+  }
+  return out;
+}
+async function synthAll(texts, provider, { cacheDir } = {}) {
+  if (cacheDir) mkdirSync(cacheDir, { recursive: true });
+  const results = new Array(texts.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < texts.length) {
+      const i = next++;
+      const file = cacheDir && join(cacheDir, `${createHash("sha1").update(`${provider.id}
+${texts[i]}`).digest("hex")}.pcm`);
+      if (file && existsSync(file)) {
+        const buf = readFileSync(file);
+        results[i] = new Int16Array(buf.buffer, buf.byteOffset, buf.length / 2).slice();
+        continue;
+      }
+      results[i] = trimSilence(await provider.synth(texts[i]));
+      if (file) writeFileSync(file, Buffer.from(results[i].buffer, results[i].byteOffset, results[i].byteLength));
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(provider.concurrency ?? 2, texts.length) }, worker));
+  return results;
+}
+function trimSilence(samples, threshold = 300) {
+  let a = 0;
+  let b = samples.length;
+  while (a < b && Math.abs(samples[a]) < threshold) a++;
+  while (b > a && Math.abs(samples[b - 1]) < threshold) b--;
+  const pad = Math.floor(SAMPLE_RATE * 0.04);
+  return samples.slice(Math.max(0, a - pad), Math.min(samples.length, b + pad));
+}
+function mixTrack(clips, starts, duration) {
+  const total = Math.ceil(duration * SAMPLE_RATE);
+  const track = new Int16Array(total);
+  clips.forEach((clip, i) => {
+    const s0 = Math.round(starts[i] * SAMPLE_RATE);
+    for (let j2 = 0; j2 < clip.length && s0 + j2 < total; j2++) track[s0 + j2] = clip[j2];
+  });
+  return wav(track);
+}
+function wav(samples) {
+  const buf = Buffer.alloc(44 + samples.length * 2);
+  buf.write("RIFF", 0);
+  buf.writeUInt32LE(36 + samples.length * 2, 4);
+  buf.write("WAVE", 8);
+  buf.write("fmt ", 12);
+  buf.writeUInt32LE(16, 16);
+  buf.writeUInt16LE(1, 20);
+  buf.writeUInt16LE(1, 22);
+  buf.writeUInt32LE(SAMPLE_RATE, 24);
+  buf.writeUInt32LE(SAMPLE_RATE * 2, 28);
+  buf.writeUInt16LE(2, 32);
+  buf.writeUInt16LE(16, 34);
+  buf.write("data", 36);
+  buf.writeUInt32LE(samples.length * 2, 40);
+  Buffer.from(samples.buffer, samples.byteOffset, samples.byteLength).copy(buf, 44);
+  return buf;
+}
+
+// src/video/render.js
+var UI2 = {
+  zh: { play: "\u64AD\u653E", pause: "\u6682\u505C", chapters: "\u7AE0\u8282" },
+  en: { play: "Play", pause: "Pause", chapters: "Chapters" }
+};
+async function renderVideo(source, { provider = null, cacheDir, defaults: defaults2 = {}, overrides = {}, onProgress } = {}) {
+  const video = parseVideo(source, { defaults: defaults2 });
+  const { meta } = video;
+  const allowed = { ...CHOICES, theme: VIDEO_THEMES };
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === void 0) continue;
+    if (allowed[key] && !allowed[key].includes(String(value))) {
+      throw new ParseError(`${key} \u7684\u503C "${value}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${allowed[key].join(" | ")}`, 0);
+    }
+    meta[key] = value;
+  }
+  const warnings = meta.style === "off" ? [] : lintDoc(video.doc).filter((w) => w.rule !== "paragraph-length");
+  if (meta.style === "strict" && warnings.length) throw new LintError(warnings);
+  const beats = allBeats(video);
+  let clips = null;
+  let durations;
+  if (provider) {
+    onProgress?.(`\u914D\u97F3\uFF1A${provider.name}\uFF0C${beats.length} \u53E5`);
+    clips = await synthAll(beats.map((b) => b.text), provider, { cacheDir });
+    durations = clips.map((c) => c.length / SAMPLE_RATE);
+  } else {
+    durations = beats.map((b) => estimateSeconds(b.text));
+  }
+  const timeline = buildTimeline(video, durations);
+  const flat = [...timeline.title.beats, ...timeline.scenes.flatMap((s) => s.beats)];
+  const wav2 = clips ? mixTrack(clips, flat.map((b) => b.start), timeline.duration) : null;
+  const stats = { panels: video.scenes.length, components: {} };
+  const ctx = { seq: 0, stats };
+  const lang = meta.lang || detectLang(source);
+  const data = {
+    duration: timeline.duration,
+    fps: 30,
+    segments: [timeline.title, ...timeline.scenes].map((s, i) => ({
+      start: s.start,
+      end: s.end,
+      title: i === 0 ? meta.title : s.title,
+      beats: s.beats.map((b, k2) => ({ ...b, html: captionHtml(beatsOf(video, i)[k2].raw) }))
+    }))
+  };
+  const total = video.scenes.length;
+  const scenesHtml = [
+    titleScene(meta, renderBlocks(video.intro, ctx), { scenes: total, duration: timeline.duration }),
+    ...video.scenes.map((s, i) => scene(s, i, total, renderBlocks(s.blocks, ctx)))
+  ].join("\n");
+  const html = shell2({ meta, lang, scenesHtml, data, wav: wav2, source });
+  return { html, wav: wav2, warnings, stats, meta, duration: timeline.duration, beats: beats.length };
+}
+var beatsOf = (video, i) => i === 0 ? video.introBeats : video.scenes[i - 1].beats;
+function captionHtml(raw) {
+  return raw.split(/(\[[^\]\n]+\])/).map((part) => {
+    const m = part.match(/^\[([^\]]+)\]$/);
+    return m ? `<b>${esc(m[1])}</b>` : esc(part);
+  }).join("");
+}
+function titleScene(meta, introHtml, { scenes, duration }) {
+  const mmss = `${Math.floor(duration / 60)}:${String(Math.round(duration % 60)).padStart(2, "0")}`;
+  const cells = [["DRAWN", "Answer me with HTML"], ["DATE", timestamp().slice(0, 10)], ["SCENES", String(scenes)], ["DURATION", mmss]];
+  const block2 = `<div class="amv-titleblock">${cells.map(([k2, v]) => `<div><b>${k2}</b><span>${esc(v)}</span></div>`).join("")}</div>`;
+  return `<section class="amv-scene amv-scene--title" data-i="0">
+<div class="amv-title-wrap"><h1 class="amv-title">${esc(meta.title || "Answer me with HTML")}</h1>${meta.subtitle ? `<p class="amv-subtitle">${esc(meta.subtitle)}</p>` : ""}${introHtml ? `<div class="amv-intro">${introHtml}</div>` : ""}${block2}</div>
+</section>`;
+}
+function scene(s, i, total, body) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `<section class="amv-scene" data-i="${i + 1}">
+<header class="amv-scene-head"><span class="amv-scene-n">${esc(s.id)}</span><span class="amv-scene-title">${esc(s.title)}</span><span class="amv-scene-meta">SHEET ${pad(i + 1)} / ${pad(total)}</span></header>
+<div class="amv-body"><div class="amv-fit">${body}</div></div>
+</section>`;
+}
+function sheetFrame() {
+  const ruler2 = (side, labels) => `<div class="amv-ruler amv-ruler--${side}">${labels.map((l3) => `<span>${l3}</span>`).join("")}</div>`;
+  const nums = [1, 2, 3, 4, 5, 6, 7, 8];
+  const letters = ["A", "B", "C", "D"];
+  return `<div class="amv-sheet" aria-hidden="true">${ruler2("top", nums)}${ruler2("bottom", nums)}${ruler2("left", letters)}${ruler2("right", letters)}</div>`;
+}
+function shell2({ meta, lang, scenesHtml, data, wav: wav2, source }) {
+  const ui = UI2[lang] ?? UI2.zh;
+  const json = JSON.stringify(data).replace(/</g, "\\u003c");
+  return `<!doctype html>
+<html lang="${lang === "zh" ? "zh-CN" : "en"}" data-theme="${esc(meta.theme)}" data-mode="${meta.theme === "3b1b" || meta.mode === "dark" ? "dark" : "light"}" data-video>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Answer me with HTML ${VERSION}">
+<title>${esc(meta.title || "Answer me with HTML")}</title>
+<style>
+${pageCss()}
+${VIDEO_CSS}
+</style>
+</head>
+<body>
+<div class="amv-viewport">
+<div class="amv-stage">
+${sheetFrame()}
+<div class="amv-camera">
+${scenesHtml}
+<div class="amv-overlay"></div>
+</div>
+<div class="amv-caption"><span></span></div>
+<button class="amv-bigplay" type="button" aria-label="${esc(ui.play)}">\u25B6</button>
+</div>
+</div>
+<div class="amv-controls">
+<button class="amv-btn" type="button" data-amv="toggle" data-play="${esc(ui.play)}" data-pause="${esc(ui.pause)}" aria-label="${esc(ui.play)}">\u25B6</button>
+<span class="amv-time">0:00 / 0:00</span>
+<div class="amv-track"><input class="amv-seek" type="range" min="0" step="0.01" value="0" aria-label="seek"><div class="amv-marks"></div></div>
+<span class="amv-brand">Answer me with HTML ${VERSION} \xB7 ${esc(timestamp())}</span>
+</div>
+<script type="application/json" id="amv-data">${json}</script>
+${wav2 ? `<audio id="amv-audio" preload="auto" src="data:audio/wav;base64,${wav2.toString("base64")}"></audio>` : ""}
+<textarea id="am-source" hidden readonly aria-hidden="true">${esc(source)}</textarea>
+<script>
+${VIDEO_JS}</script>
+</body>
+</html>
+`;
+}
+
+// src/video/export.js
+import { spawn as spawn2 } from "node:child_process";
+import { existsSync as existsSync2, mkdtempSync as mkdtempSync2, rmSync as rmSync2, writeFileSync as writeFileSync2 } from "node:fs";
+import { tmpdir as tmpdir2 } from "node:os";
+import { join as join2 } from "node:path";
+import { pathToFileURL } from "node:url";
+var ExportError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ExportError";
+  }
+};
+var CHROME_PATHS = {
+  darwin: [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+  ],
+  win32: [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+  ],
+  linux: ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge"]
+};
+function findChrome(env = process.env, platform = process.platform) {
+  const custom = env.AM_CHROME || env.CHROME_PATH;
+  if (custom) return custom;
+  const list = CHROME_PATHS[platform] ?? CHROME_PATHS.linux;
+  return list.find((p) => p.includes("/") || p.includes("\\") ? existsSync2(p) : hasCommand(p)) ?? null;
+}
+async function exportMp4(htmlFile, mp4File, { wav: wav2, env = process.env, onProgress = () => {
+} } = {}) {
+  if (typeof WebSocket === "undefined") throw new ExportError("\u5BFC\u51FA MP4 \u9700\u8981 Node.js 22 \u6216\u66F4\u9AD8\u7248\u672C\uFF08\u5185\u7F6E WebSocket\uFF09");
+  if (!hasCommand("ffmpeg")) throw new ExportError("\u5BFC\u51FA MP4 \u9700\u8981 ffmpeg\uFF1AmacOS \u7528 brew install ffmpeg\uFF0CLinux \u7528\u5305\u7BA1\u7406\u5668\u5B89\u88C5");
+  const chromePath = findChrome(env);
+  if (!chromePath) throw new ExportError("\u6CA1\u6709\u627E\u5230 Chrome / Chromium / Edge\u3002\u53EF\u7528\u73AF\u5883\u53D8\u91CF AM_CHROME \u6307\u5B9A\u6D4F\u89C8\u5668\u8DEF\u5F84");
+  const tmp = mkdtempSync2(join2(tmpdir2(), "am-export-"));
+  const chrome = spawn2(chromePath, [
+    "--headless=new",
+    "--remote-debugging-port=0",
+    `--user-data-dir=${join2(tmp, "profile")}`,
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--hide-scrollbars",
+    "--mute-audio",
+    "--force-device-scale-factor=1",
+    "--window-size=1920,1080",
+    "about:blank"
+  ], { stdio: ["ignore", "ignore", "pipe"] });
+  try {
+    const cdp = await connect(await devtoolsUrl(chrome));
+    const { targetId } = await cdp.send("Target.createTarget", { url: "about:blank" });
+    const { sessionId } = await cdp.send("Target.attachToTarget", { targetId, flatten: true });
+    const page = (method, params) => cdp.send(method, params, sessionId);
+    await page("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+    await page("Page.enable");
+    const loaded = cdp.once("Page.loadEventFired");
+    await page("Page.navigate", { url: pathToFileURL(htmlFile).href });
+    await loaded;
+    const evaluate = async (expression) => {
+      const r = await page("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
+      if (r.exceptionDetails) throw new ExportError(`\u64AD\u653E\u9875\u811A\u672C\u51FA\u9519\uFF1A${r.exceptionDetails.exception?.description ?? r.exceptionDetails.text}`);
+      return r.result.value;
+    };
+    const info = await evaluate("document.fonts.ready.then(() => { window.__amv.exportMode(); return { duration: window.__amv.duration, fps: window.__amv.fps }; })");
+    const wavFile = wav2 ? join2(tmp, "voice.wav") : null;
+    if (wav2) writeFileSync2(wavFile, wav2);
+    const ffmpeg = spawn2("ffmpeg", [
+      "-y",
+      "-loglevel",
+      "error",
+      "-f",
+      "image2pipe",
+      "-framerate",
+      String(info.fps),
+      "-c:v",
+      "mjpeg",
+      "-i",
+      "-",
+      ...wavFile ? ["-i", wavFile] : [],
+      "-c:v",
+      "libx264",
+      "-pix_fmt",
+      "yuv420p",
+      "-crf",
+      "20",
+      "-preset",
+      "medium",
+      ...wavFile ? ["-c:a", "aac", "-b:a", "160k", "-shortest"] : [],
+      "-movflags",
+      "+faststart",
+      mp4File
+    ], { stdio: ["pipe", "ignore", "pipe"] });
+    let ffErr = "";
+    ffmpeg.stderr.on("data", (d) => {
+      ffErr += d;
+    });
+    const done = new Promise((resolve2, reject) => {
+      ffmpeg.on("error", reject);
+      ffmpeg.on("close", (code) => code === 0 ? resolve2() : reject(new ExportError(`ffmpeg \u5931\u8D25\uFF08${code}\uFF09\uFF1A${ffErr.slice(0, 300)}`)));
+    });
+    const frames = Math.ceil(info.duration * info.fps);
+    for (let i = 0; i < frames; i++) {
+      await evaluate(`render(${i / info.fps})`);
+      const { data } = await page("Page.captureScreenshot", { format: "jpeg", quality: 92, clip: { x: 0, y: 0, width: 1920, height: 1080, scale: 1 } });
+      if (!ffmpeg.stdin.write(Buffer.from(data, "base64"))) await new Promise((r) => ffmpeg.stdin.once("drain", r));
+      if (i % 30 === 0 || i === frames - 1) onProgress(i + 1, frames);
+    }
+    ffmpeg.stdin.end();
+    await done;
+    cdp.close();
+    return { frames, duration: info.duration };
+  } finally {
+    await new Promise((r) => {
+      if (chrome.exitCode !== null) return r();
+      const timer = setTimeout(r, 3e3);
+      chrome.once("exit", () => {
+        clearTimeout(timer);
+        r();
+      });
+      chrome.kill();
+    });
+    try {
+      rmSync2(tmp, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    } catch {
+    }
+  }
+}
+function devtoolsUrl(chrome) {
+  return new Promise((resolve2, reject) => {
+    let buf = "";
+    const timer = setTimeout(() => reject(new ExportError("Chrome \u542F\u52A8\u8D85\u65F6")), 2e4);
+    chrome.on("error", (e) => {
+      clearTimeout(timer);
+      reject(new ExportError(`\u65E0\u6CD5\u542F\u52A8 Chrome\uFF1A${e.message}`));
+    });
+    chrome.stderr.on("data", (d) => {
+      buf += d;
+      const m = buf.match(/DevTools listening on (ws:\/\/\S+)/);
+      if (m) {
+        clearTimeout(timer);
+        resolve2(m[1]);
+      }
+    });
+  });
+}
+function connect(url) {
+  return new Promise((resolve2, reject) => {
+    const ws = new WebSocket(url);
+    const pending = /* @__PURE__ */ new Map();
+    const waiters = /* @__PURE__ */ new Map();
+    let id = 0;
+    ws.addEventListener("error", () => reject(new ExportError("\u65E0\u6CD5\u8FDE\u63A5 Chrome DevTools")));
+    ws.addEventListener("message", (ev) => {
+      const msg = JSON.parse(ev.data);
+      if (msg.id && pending.has(msg.id)) {
+        const { ok, fail } = pending.get(msg.id);
+        pending.delete(msg.id);
+        if (msg.error) fail(new ExportError(`CDP ${msg.error.message}`));
+        else ok(msg.result);
+      } else if (msg.method && waiters.has(msg.method)) {
+        waiters.get(msg.method)(msg.params);
+        waiters.delete(msg.method);
+      }
+    });
+    ws.addEventListener("open", () => resolve2({
+      send(method, params = {}, sessionId) {
+        return new Promise((ok, fail) => {
+          pending.set(++id, { ok, fail });
+          ws.send(JSON.stringify({ id, method, params, ...sessionId ? { sessionId } : {} }));
+        });
+      },
+      once: (method) => new Promise((r) => waiters.set(method, r)),
+      close: () => ws.close()
+    }));
+  });
+}
+
 // src/config.js
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync3, mkdirSync as mkdirSync2, rmSync as rmSync3, existsSync as existsSync3 } from "node:fs";
 import { homedir } from "node:os";
-import { join, dirname } from "node:path";
+import { join as join3, dirname } from "node:path";
 var ConfigError = class extends Error {
   constructor(message) {
     super(message);
@@ -4642,15 +5238,16 @@ var CONFIG_KEYS = Object.freeze({
   always: { type: "bool", default: true, label: "\u9AD8\u9891\u6A21\u5F0F\uFF1A\u7ED9\u7ED3\u8BBA\u65F6\u90FD\u9644\u4E00\u9875\uFF08\u9700\u5B89\u88C5 answer-me-with-html-always \u63D2\u4EF6\uFF09" },
   theme: { type: "enum", choices: CHOICES.theme, default: "blueprint", label: "\u9ED8\u8BA4\u4E3B\u9898" },
   mode: { type: "enum", choices: CHOICES.mode, default: "auto", label: "\u9ED8\u8BA4\u660E\u6697\u6A21\u5F0F" },
-  style: { type: "enum", choices: CHOICES.style, default: "80", label: "STE \u5199\u4F5C\u68C0\u67E5\u4E25\u683C\u5EA6" }
+  style: { type: "enum", choices: CHOICES.style, default: "80", label: "STE \u5199\u4F5C\u68C0\u67E5\u4E25\u683C\u5EA6" },
+  voice: { type: "enum", choices: ["auto", "elevenlabs", "system", "off"], default: "auto", label: "\u89C6\u9891\u65C1\u767D\u914D\u97F3\uFF08auto\uFF1A\u6709 ELEVENLABS_API_KEY \u7528 ElevenLabs\uFF0C\u5426\u5219\u7528\u7CFB\u7EDF TTS\uFF09" }
 });
 var TRUE = /* @__PURE__ */ new Set(["on", "true", "yes", "1", "\u5F00", "\u5F00\u542F", "\u6253\u5F00"]);
 var FALSE = /* @__PURE__ */ new Set(["off", "false", "no", "0", "\u5173", "\u5173\u95ED"]);
 function amHome(env = process.env) {
-  return env.AM_HOME || join(homedir(), ".answer-me-with-html");
+  return env.AM_HOME || join3(homedir(), ".answer-me-with-html");
 }
 function configPath(env = process.env) {
-  return join(amHome(env), "config.json");
+  return join3(amHome(env), "config.json");
 }
 var defaults = () => Object.fromEntries(Object.entries(CONFIG_KEYS).map(([k2, s]) => [k2, s.default]));
 function coerce2(key, raw) {
@@ -4669,9 +5266,9 @@ function coerce2(key, raw) {
 }
 function readStored(env) {
   const file = configPath(env);
-  if (!existsSync(file)) return { stored: {} };
+  if (!existsSync3(file)) return { stored: {} };
   try {
-    const data = JSON.parse(readFileSync(file, "utf8"));
+    const data = JSON.parse(readFileSync2(file, "utf8"));
     return { stored: data && typeof data === "object" && !Array.isArray(data) ? data : {} };
   } catch (e) {
     return { stored: {}, warning: `${file} \u65E0\u6CD5\u89E3\u6790\uFF0C\u5DF2\u4F7F\u7528\u9ED8\u8BA4\u914D\u7F6E\uFF08${e.message}\uFF09` };
@@ -4692,11 +5289,11 @@ function readConfig(env = process.env) {
 function writeStored(stored, env) {
   const file = configPath(env);
   if (!Object.keys(stored).length) {
-    rmSync(file, { force: true });
+    rmSync3(file, { force: true });
     return;
   }
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, `${JSON.stringify(stored, null, 2)}
+  mkdirSync2(dirname(file), { recursive: true });
+  writeFileSync3(file, `${JSON.stringify(stored, null, 2)}
 `);
 }
 function setConfig(key, raw, env = process.env) {
@@ -4719,6 +5316,9 @@ var USAGE = `Answer me with HTML ${VERSION} \u2014 \u628A Markdown \u5185\u5BB9\
 \u7528\u6CD5:
   am render <file|->  [-o \u8F93\u51FA\u8DEF\u5F84] [--no-open] [--theme blueprint|shadcn]
                       [--template sheet|doc] [--style off|80|strict] [--mode auto|light|dark]
+  am video  <file|->  [-o \u8F93\u51FA\u8DEF\u5F84] [--voice auto|elevenlabs|system|off] [--mp4] [--no-open]
+                      [--theme blueprint|shadcn|3b1b] [--mode light|dark]
+                                                  \u628A\u89C6\u9891\u7A3F\u6E32\u67D3\u6210 3b1b \u98CE\u683C\u7684\u89E3\u91CA\u89C6\u9891\u64AD\u653E\u9875\uFF08--mp4 \u53E6\u5B58\u89C6\u9891\u6587\u4EF6\uFF09
   am lint   <file|->  [--style off|80|strict]     \u53EA\u505A STE \u53D7\u63A7\u5199\u4F5C\u68C0\u67E5
   am config [set <\u952E> <\u503C> | get <\u952E> | reset [\u952E]] \u67E5\u770B\u6216\u4FEE\u6539\u914D\u7F6E
   am list                                         \u5217\u51FA\u6A21\u677F\u3001\u4E3B\u9898\u3001\u7EC4\u4EF6
@@ -4755,6 +5355,35 @@ A -> B
 
 - "## " \u5F00\u542F\u4E00\u4E2A\u9762\u677F\uFF1B\u5B57\u6BCD ID \u53EF\u7701\u7565\uFF08\u81EA\u52A8\u5206\u914D A\u3001B\u3001C\u2026\uFF09\u3002span \u8BA9\u9762\u677F\u8DE8\u5217\u3002
 - \u7EC4\u4EF6\u5217\u8868\u89C1 am list\uFF1B\u5355\u4E2A\u7EC4\u4EF6\u8BED\u6CD5\u89C1 am help <\u7EC4\u4EF6\u540D>\u3002`;
+var VIDEO_FORMAT = `\u89C6\u9891\u7A3F\u683C\u5F0F\uFF08am video\uFF09
+
+---
+title: TCP \u4E09\u6B21\u63E1\u624B
+subtitle: \u4E3A\u4EC0\u4E48\u662F\u4E09\u6B21          # \u53EF\u9009\uFF0C\u7247\u5934\u526F\u6807\u9898
+theme: blueprint               # blueprint \u56FE\u7EB8\u98CE\uFF08\u9ED8\u8BA4\uFF0C\u8DDF\u968F am config \u7684 theme\uFF09| shadcn \u5361\u7247 | 3b1b \u6DF1\u8272
+mode: light                    # light | dark\uFF08blueprint + dark \u662F\u6DF1\u84DD\u56FE\u7EB8\uFF09
+---
+> \u7247\u5934\u65C1\u767D\uFF08\u53EF\u9009\uFF1B\u4E0D\u5199\u5219\u7247\u5934\u505C\u7559 2.4 \u79D2\uFF09
+
+## \u4E24\u7AEF\u90FD\u5728\u7B49\u5F85
+\`\`\`sequence
+Client -> Server: SYN
+Server -> Client: SYN-ACK
+Client -> Server: ACK
+\`\`\`
+> \u5BA2\u6237\u7AEF\u5148\u53D1 SYN\uFF0C\u8BF7\u6C42\u5EFA\u7ACB\u8FDE\u63A5\u3002
+> [Server] \u6536\u5230\u540E\u56DE SYN-ACK\u3002
+> \u5BA2\u6237\u7AEF\u518D\u56DE ACK\uFF0C\u8FDE\u63A5\u5EFA\u7ACB\u3002
+
+- "## " \u5F00\u542F\u4E00\u4E2A\u573A\u666F\uFF1B\u573A\u666F\u91CC\u653E\u7EC4\u4EF6\u6216 Markdown\uFF08\u753B\u9762\uFF09\uFF0C\u4EE5 > \u5F00\u5934\u7684\u884C\u662F\u65C1\u767D\uFF08\u6BCF\u884C\u4E00\u62CD\uFF09\u3002
+- \u7B2C N \u53E5\u65C1\u767D\u64AD\u51FA\u65F6\uFF0C\u753B\u9762\u51FA\u73B0\u7B2C N \u6B65\uFF1Aflow / sequence / tree \u6BCF\u884C\u6E90\u7801\u662F\u4E00\u6B65\uFF1B
+  timeline\u3001limits\u3001\u8868\u683C\u884C\u3001\u5217\u8868\u9879\u3001\u6BB5\u843D\u6309\u6761\u76EE\u81EA\u52A8\u5206\u6B65\u3002\u6B65\u6570\u591A\u4E8E\u65C1\u767D\u65F6\u5747\u5206\u5230\u5404\u53E5\uFF1B
+  \u65C1\u767D\u591A\u4E8E\u6B65\u6570\u65F6\uFF0C\u591A\u51FA\u7684\u524D\u51E0\u53E5\u5F53\u5F00\u573A\u767D\uFF0C\u4E0D\u51FA\u65B0\u5185\u5BB9\u3002
+- \u65C1\u767D\u91CC\u5199 [\u540D\u5B57]\uFF1A\u955C\u5934\u63A8\u8FD1\u540C\u540D\u5143\u7D20\u5E76\u9AD8\u4EAE\uFF0C\u5B57\u5E55\u91CC\u8BE5\u8BCD\u53D8\u9EC4\u3002
+- \u76F8\u90BB\u573A\u666F\u91CC\u540C\u540D\u7684\u8282\u70B9 / \u53C2\u4E0E\u8005\u4F1A\u4ECE\u65E7\u4F4D\u7F6E\u5E73\u6ED1\u79FB\u5230\u65B0\u4F4D\u7F6E\uFF08\u8DE8\u573A\u666F\u53D8\u5F62\uFF09\u3002
+- \u914D\u97F3\uFF1A--voice auto\uFF08\u9ED8\u8BA4\uFF0C\u6709 ELEVENLABS_API_KEY \u7528 ElevenLabs\uFF0C\u5426\u5219\u7528\u7CFB\u7EDF TTS\uFF09| elevenlabs | system | off\u3002
+  ElevenLabs \u58F0\u97F3\u53EF\u7528\u73AF\u5883\u53D8\u91CF ELEVENLABS_VOICE_ID \u6307\u5B9A\u3002
+- \u8F93\u51FA\u5230 ~/.answer-me-with-html/videos/\uFF1B--mp4 \u53E6\u5B58\u540C\u540D .mp4\uFF08\u9700\u8981 Chrome \u4E0E ffmpeg\uFF0CNode 22+\uFF09\u3002`;
 async function main(argv, io = {}) {
   const out = io.stdout ?? process.stdout;
   const err = io.stderr ?? process.stderr;
@@ -4776,6 +5405,8 @@ async function main(argv, io = {}) {
         template: { type: "string" },
         style: { type: "string" },
         mode: { type: "string" },
+        voice: { type: "string" },
+        mp4: { type: "boolean" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" }
       }
@@ -4792,6 +5423,8 @@ ${USAGE}`);
   switch (cmd) {
     case "render":
       return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd }));
+    case "video":
+      return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider }));
     case "lint":
       return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case "config":
@@ -4814,7 +5447,7 @@ async function withSource(arg, io, fail, fn3) {
   }
   let src;
   try {
-    src = arg === "-" ? await readStream(io.stdin ?? process.stdin) : readFileSync2(resolve(io.cwd ?? process.cwd(), arg), "utf8");
+    src = arg === "-" ? await readStream(io.stdin ?? process.stdin) : readFileSync3(resolve(io.cwd ?? process.cwd(), arg), "utf8");
   } catch (e) {
     fail(`\u2717 \u65E0\u6CD5\u8BFB\u53D6\u7A3F\u4EF6\uFF1A${e.message}`);
     return 2;
@@ -4847,13 +5480,60 @@ function cmdRender(src, opts, { print, fail, env, cwd }) {
   } catch (e) {
     return reportError(e, fail);
   }
-  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join2(amHome(env), "pages", `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync2(dirname2(file), { recursive: true });
-  writeFileSync2(file, result.html);
+  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join4(amHome(env), "pages", `${slug(result.meta.title)}-${stamp()}.html`);
+  mkdirSync3(dirname2(file), { recursive: true });
+  writeFileSync4(file, result.html);
   const comps = Object.entries(result.stats.components).map(([k2, v]) => `${k2}\xD7${v}`).join(" ");
   print(`\u2713 ${file}`);
   print(`  ${result.meta.template} \xB7 ${result.meta.theme} \xB7 ${result.stats.panels} \u9762\u677F${comps ? ` \xB7 ${comps}` : ""}`);
   printWarnings(result.warnings, print, result.meta.style);
+  if (shouldOpen(opts, env, config.values)) openFile(file);
+  return 0;
+}
+async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }) {
+  const config = readConfig(env);
+  if (config.warning) fail(`! ${config.warning}`);
+  const voice = opts.voice ?? config.values.voice;
+  if (!VOICES.includes(voice)) {
+    fail(`\u2717 voice \u7684\u503C "${voice}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${VOICES.join(" | ")}`);
+    return 2;
+  }
+  let result;
+  try {
+    const provider = injected !== void 0 ? injected : pickProvider(voice, env);
+    result = await renderVideo(src, {
+      provider,
+      cacheDir: join4(amHome(env), "cache", "tts"),
+      defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
+      overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
+      onProgress: (msg) => fail(`  ${msg}`)
+    });
+    result.voiceName = provider ? provider.name : "\u65E0\uFF08\u53EA\u51FA\u5B57\u5E55\uFF09";
+  } catch (e) {
+    if (e instanceof TtsError) {
+      fail(`\u2717 \u914D\u97F3\u5931\u8D25\uFF1A${e.message}\u3002\u53EF\u52A0 --voice off \u53EA\u51FA\u5B57\u5E55`);
+      return 1;
+    }
+    return reportError(e, fail);
+  }
+  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join4(amHome(env), "videos", `${slug(result.meta.title)}-${stamp()}.html`);
+  mkdirSync3(dirname2(file), { recursive: true });
+  writeFileSync4(file, result.html);
+  print(`\u2713 ${file}`);
+  print(`  video \xB7 ${result.stats.panels} \u573A\u666F \xB7 ${result.beats} \u53E5\u65C1\u767D \xB7 ${result.duration.toFixed(1)}s \xB7 \u914D\u97F3\uFF1A${result.voiceName}`);
+  printWarnings(result.warnings, print, result.meta.style);
+  if (opts.mp4) {
+    const mp4 = file.replace(/\.html?$/i, "") + ".mp4";
+    try {
+      const started = Date.now();
+      await exportMp4(file, mp4, { wav: result.wav, env, onProgress: (i, n) => fail(`  \u5BFC\u51FA MP4\uFF1A${i}/${n} \u5E27`) });
+      print(`\u2713 ${mp4}\uFF08${((Date.now() - started) / 1e3).toFixed(0)}s \u5BFC\u51FA\uFF09`);
+    } catch (e) {
+      if (!(e instanceof ExportError)) throw e;
+      fail(`\u2717 MP4 \u5BFC\u51FA\u5931\u8D25\uFF1A${e.message}\u3002\u64AD\u653E\u9875\u5DF2\u751F\u6210\uFF0C\u53EF\u76F4\u63A5\u5728\u6D4F\u89C8\u5668\u64AD\u653E`);
+      return 1;
+    }
+  }
   if (shouldOpen(opts, env, config.values)) openFile(file);
   return 0;
 }
@@ -4940,6 +5620,7 @@ function cmdList(print) {
   print("\u6A21\u677F (template):");
   print("  sheet   \u56FE\u7EB8\u677F\uFF1A\u5B57\u6BCD\u7F16\u53F7\u9762\u677F\u7F51\u683C\uFF0C\u9002\u5408\u4E00\u5C4F\u603B\u89C8\uFF08\u9ED8\u8BA4\uFF09");
   print("  doc     \u7EBF\u6027\u8BB2\u89E3\uFF1A\u5355\u680F\u9605\u8BFB\uFF0C\u22653 \u4E2A\u9762\u677F\u65F6\u5E26\u76EE\u5F55");
+  print("  video   \u89E3\u91CA\u89C6\u9891\uFF1A\u7528 am video \u6E32\u67D3\uFF0C\u89C1 am help video");
   print("\n\u4E3B\u9898 (theme):");
   for (const [name, t] of Object.entries(THEMES)) print(`  ${name.padEnd(10)}${t.label}`);
   print("\n\u7EC4\u4EF6\uFF08\u56F4\u680F\u5757\u8BED\u8A00\u540D\uFF09:");
@@ -4950,6 +5631,7 @@ function cmdList(print) {
 function cmdHelp(name, { print, fail }) {
   if (!name) return print(USAGE), 0;
   if (name === "format") return print(FORMAT), 0;
+  if (name === "video") return print(VIDEO_FORMAT), 0;
   const comp = COMPONENTS.get(name);
   if (!comp) {
     fail(`\u2717 \u6CA1\u6709\u7EC4\u4EF6 "${name}"\u3002\u53EF\u7528\uFF1A${[...COMPONENTS.keys()].join(", ")}, format`);
@@ -4974,7 +5656,7 @@ function stamp(d = /* @__PURE__ */ new Date()) {
 function openFile(file) {
   const [cmd, args] = process.platform === "darwin" ? ["open", [file]] : process.platform === "win32" ? ["cmd", ["/c", "start", "", file]] : ["xdg-open", [file]];
   try {
-    spawn(cmd, args, { detached: true, stdio: "ignore" }).on("error", () => {
+    spawn3(cmd, args, { detached: true, stdio: "ignore" }).on("error", () => {
     }).unref();
   } catch {
   }

@@ -112,6 +112,36 @@ cp -R /tmp/answer-me-with-html/skills/answer-me-with-html ~/.claude/skills/answe
 
 页面保存在 `~/.answer-me-with-html/pages/`。页面右上角可以切换主题、切换亮暗，也可以复制生成这一页的 Markdown 原稿。
 
+## 解释视频（3Blue1Brown 风格）
+
+Karpathy 说的"理解 LLM 输出"阶梯，最后一级是解释视频。直接说"给 TCP 握手做个 3b1b 风格的视频"就行。
+
+<p align="center"><img src="docs/images/video-zh.png" alt="blueprint 风格解释视频中的四帧：片头、高亮 Server 的时序图、流程图、对比表" width="820"></p>
+
+Agent 写的稿件和页面稿一样，只是多了旁白，每行一拍：
+
+````markdown
+## 两端都在等待
+```sequence
+Client -> Server: SYN
+Server -> Client: SYN-ACK
+```
+> 先是客户端开口，发一个 SYN，意思是"我想跟你建个连接"。
+> [Server] 听到了，回一个 SYN-ACK："收到，我这边也没问题。"
+````
+
+`am video` 把它做成一个播放页：
+
+- **逐步构建**：第 N 句旁白播出时，图上出现第 N 步，箭头会一笔画出来。旁白比步数多时，多出的前几句当开场白。
+- **口语旁白**：旁白是要念出来的，Agent 会写成当面讲解的口吻，而不是说明书腔。
+- **镜头聚焦**：旁白里写 `[Server]`，镜头推向这个节点并高亮。整张图始终留在画面里，不会被裁掉。
+- **跨场景变形**：下一个场景里同名的节点，会从旧位置平滑移到新位置，而不是硬切。
+- **配音**：设置了 `ELEVENLABS_API_KEY` 就用 ElevenLabs，否则用系统语音（macOS `say`：中文用婷婷，英文用 Samantha），都没有就只出字幕。每一拍的时长等于这句音频的长度，所以音画同步。
+- **和页面同一套外观**：默认是 blueprint 图纸风，带刻度外框和字母编号的图纸标题栏。稿件里写 `theme: 3b1b` 换成深色的 3Blue1Brown 风格；也支持 `theme: shadcn` 和 `mode: dark`。
+- **单个文件**：音频内嵌在页面里，离线也能播。加 `--mp4` 另存 1080p 视频文件，需要本机有 Chrome、ffmpeg 和 Node.js 22+，导出时间约为视频时长的 1.3 倍。
+
+示例视频（[examples/video-tcp.md](examples/video-tcp.md)）时长约 80 秒，稿件只有 835 个字符，也就是几百个输出 token。不配音时渲染不到 1 秒，用系统语音配音约 3 秒。只有你要视频时 Agent 才会做视频；高频模式仍然只出页面。完整语法：`am help video`。
+
 ## 配置
 
 用斜杠命令改配置，不用手动编辑配置文件。
@@ -129,6 +159,7 @@ cp -R /tmp/answer-me-with-html/skills/answer-me-with-html ~/.claude/skills/answe
 | `theme` | `blueprint` | 默认主题：`blueprint` 或 `shadcn` |
 | `mode` | `auto` | 默认明暗：`auto`、`light` 或 `dark` |
 | `style` | `80` | 写作检查：`off`、`80`（只提醒）或 `strict`（不达标不生成） |
+| `voice` | `auto` | 视频配音：`auto`（有 `ELEVENLABS_API_KEY` 用 ElevenLabs，否则用系统语音）、`elevenlabs`、`system` 或 `off` |
 
 配置保存在 `~/.answer-me-with-html/config.json`。稿件里写明的主题优先于默认值。`--open` 和 `--no-open` 只影响这一次。
 
@@ -304,6 +335,7 @@ Answer me with HTML 把其中容易用机器检查的部分做成了中英双语
 git clone https://github.com/QingYunA/answer-me-with-html.git && cd answer-me-with-html
 npm install
 npm test          # 跑测试
+AM_E2E=1 npm test # 连同视频端到端测试一起跑（需要系统 TTS、Chrome、ffmpeg）
 npm run build     # 改了 src/ 之后，重新打包 skills/answer-me-with-html/scripts/am.mjs
 ```
 
@@ -311,9 +343,6 @@ npm run build     # 改了 src/ 之后，重新打包 skills/answer-me-with-html
 
 更新演示视频：把 [docs/demo/demo.html](docs/demo/demo.html) 和渲染好的 [examples/tcp.en.md](examples/tcp.en.md)（`tcp.html`）放在一起通过 HTTP 提供，用 1920×1080 打开，等待 `window.ready` 后，依次调用 `window.render(i / 30)` 并截图为 `frame-0000.jpg` … `frame-0719.jpg`，再执行 `node docs/demo/make-demo.mjs <帧目录>` 配乐并编码。动画由时间唯一决定，背景音乐由 [docs/demo/music.mjs](docs/demo/music.mjs) 按 120 BPM 合成，每个镜头切换都落在节拍上。
 
-## License
-
-[MIT](LICENSE)
 ## Star 历史
 
 <a href="https://star-history.com/#QingYunA/answer-me-with-html&Date">
@@ -324,3 +353,6 @@ npm run build     # 改了 src/ 之后，重新打包 skills/answer-me-with-html
   </picture>
 </a>
 
+## License
+
+[MIT](LICENSE)

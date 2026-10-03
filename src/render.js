@@ -28,7 +28,7 @@ export class LintError extends Error {
   }
 }
 
-const UI = {
+export const UI = {
   zh: {
     theme: { blueprint: '主题：图纸', shadcn: '主题：卡片' },
     mode: { auto: '明暗：跟随系统', light: '明暗：亮', dark: '明暗：暗' },
@@ -60,6 +60,7 @@ export function renderDoc(source, overrides = {}, defaults = {}) {
     }
     doc.meta[key] = value;
   }
+  if (doc.meta.template === 'video') throw new ParseError('template: video 是视频稿，请用 am video 渲染', 0);
 
   const warnings = doc.meta.style === 'off' ? [] : lintDoc(doc);
   if (doc.meta.style === 'strict' && warnings.length) throw new LintError(warnings);
@@ -74,7 +75,7 @@ export function renderDoc(source, overrides = {}, defaults = {}) {
   return { html, warnings, stats, meta: doc.meta };
 }
 
-function renderBlocks(blocks, ctx) {
+export function renderBlocks(blocks, ctx) {
   return blocks.map((b) => (b.type === 'md' ? `<div class="am-md">${md(b.text)}</div>` : renderFence(b, ctx))).join('\n');
 }
 
@@ -98,7 +99,7 @@ function renderFence(block, ctx) {
   }
 }
 
-function timestamp(d = new Date()) {
+export function timestamp(d = new Date()) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }

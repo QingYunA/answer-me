@@ -19,7 +19,7 @@ test('configPath: 位于 AM_HOME/config.json', () => {
 });
 
 test('readConfig: 文件不存在时返回默认值', () => {
-  assert.deepEqual(readConfig(env).values, { open: true, always: true, theme: 'blueprint', mode: 'auto', style: '80' });
+  assert.deepEqual(readConfig(env).values, { open: true, always: true, theme: 'blueprint', mode: 'auto', style: '80', voice: 'auto' });
 });
 
 test('setConfig: 布尔值接受 on/off/true/false/开/关，写入文件', () => {
@@ -42,7 +42,7 @@ test('resetConfig: 单个键或全部恢复默认', () => {
   setConfig('open', 'off', env);
   setConfig('theme', 'shadcn', env);
   resetConfig('open', env);
-  assert.deepEqual(readConfig(env).values, { open: true, always: true, theme: 'shadcn', mode: 'auto', style: '80' });
+  assert.deepEqual(readConfig(env).values, { open: true, always: true, theme: 'shadcn', mode: 'auto', style: '80', voice: 'auto' });
   resetConfig(undefined, env);
   assert.equal(existsSync(configPath(env)), false);
 });
@@ -56,7 +56,7 @@ test('readConfig: 文件损坏时回退默认值并给出警告', () => {
 
 test('readConfig: 忽略未知键和非法值', () => {
   writeFileSync(configPath(env), JSON.stringify({ open: 'yes-ish', theme: 'shadcn', extra: 1 }));
-  assert.deepEqual(readConfig(env).values, { open: true, always: true, theme: 'shadcn', mode: 'auto', style: '80' });
+  assert.deepEqual(readConfig(env).values, { open: true, always: true, theme: 'shadcn', mode: 'auto', style: '80', voice: 'auto' });
 });
 
 test('CONFIG_KEYS 每项都有中文说明', () => {

@@ -110,6 +110,36 @@ The agent decides when a page is worth it: related concepts, multi-step flows, m
 
 Pages are saved in `~/.answer-me-with-html/pages/`. The buttons in the top-right corner switch the theme and light/dark mode, and copy the Markdown that produced the page.
 
+## Explainer videos (3Blue1Brown style)
+
+Karpathy's ladder for understanding LLM output ends with explainer videos. Ask for one: "make a 3b1b-style video on the TCP handshake".
+
+<p align="center"><img src="docs/images/video-en.png" alt="Four frames from a generated explainer video in the blueprint style: title card, a sequence diagram with the Server highlighted, a flow diagram, and a comparison table" width="820"></p>
+
+The agent writes the same kind of draft as for a page, plus one line of narration per beat. Nothing else:
+
+````markdown
+## Both sides wait
+```sequence
+Client -> Server: SYN
+Server -> Client: SYN-ACK
+```
+> The client sends a SYN to ask for a connection.
+> The [Server] answers with a SYN-ACK.
+````
+
+`am video` turns it into a player page:
+
+- **Built step by step.** When the Nth line of narration plays, the Nth step of the diagram appears. Arrows draw themselves. If there are more lines than steps, the extra lines at the start act as an intro.
+- **Spoken narration.** The agent writes narration the way a person explains things out loud, not like a manual.
+- **Camera focus.** `[Server]` in the narration pushes the camera toward that node and highlights it. The diagram never leaves the frame.
+- **Objects carry over.** A node with the same name in the next scene glides to its new place instead of cutting.
+- **Narration.** It uses ElevenLabs if `ELEVENLABS_API_KEY` is set, the system voice otherwise (macOS `say`: Tingting for Chinese, Samantha for English), and captions only if neither exists. Each beat lasts as long as its audio, so picture and voice stay in sync.
+- **Same look as the pages.** Videos use the blueprint drawing style by default: a ruled frame and lettered sheet heads. Write `theme: 3b1b` for the dark 3Blue1Brown look. `theme: shadcn` and `mode: dark` also work.
+- **One file.** The page has the audio inside and plays offline. Add `--mp4` for a 1080p video file. This needs Chrome, ffmpeg and Node.js 22+ on your machine. Export takes about 1.3 times the video length.
+
+The draft for the example video ([examples/video-tcp.en.md](examples/video-tcp.en.md), about 45 seconds) is 1.3 KB, a few hundred output tokens. Rendering takes under a second without voice and about 4 seconds with the system voice. The agent only makes videos when you ask; always-on mode still makes pages. Full syntax: `am help video`.
+
 ## Settings
 
 Change settings with a slash command. There are no config files to edit by hand.
@@ -127,6 +157,7 @@ Change settings with a slash command. There are no config files to edit by hand.
 | `theme` | `blueprint` | Default theme: `blueprint` or `shadcn` |
 | `mode` | `auto` | Default color mode: `auto`, `light` or `dark` |
 | `style` | `80` | Writing check: `off`, `80` (warn only) or `strict` (refuse to render) |
+| `voice` | `auto` | Video narration: `auto` (ElevenLabs if `ELEVENLABS_API_KEY` is set, else system voice), `elevenlabs`, `system` or `off` |
 
 Settings live in `~/.answer-me-with-html/config.json`. A theme written in a draft beats the default. `--open` and `--no-open` affect one run only.
 
@@ -302,6 +333,7 @@ Set the strictness with `/answer-me-with-html:config style strict`, or per page 
 git clone https://github.com/QingYunA/answer-me-with-html.git && cd answer-me-with-html
 npm install
 npm test          # run the tests
+AM_E2E=1 npm test # also run end-to-end video tests (system TTS, Chrome, ffmpeg)
 npm run build     # after changing src/, rebuild skills/answer-me-with-html/scripts/am.mjs
 ```
 
@@ -309,9 +341,6 @@ There are two runtime dependencies: [marked](https://github.com/markedjs/marked)
 
 To refresh the demo video: serve [docs/demo/demo.html](docs/demo/demo.html) next to the rendered [examples/tcp.en.md](examples/tcp.en.md) (`tcp.html`), open it at 1920×1080, wait for `window.ready`, then call `window.render(i / 30)` and screenshot `frame-0000.jpg` … `frame-0719.jpg`. Run `node docs/demo/make-demo.mjs <frames-dir>` to add the music and encode. The animation is deterministic, and the music from [docs/demo/music.mjs](docs/demo/music.mjs) is synthesized at 120 BPM, so every scene change lands on a beat.
 
-## License
-
-[MIT](LICENSE)
 ## Star History
 
 <a href="https://star-history.com/#QingYunA/answer-me-with-html&Date">
@@ -322,3 +351,6 @@ To refresh the demo video: serve [docs/demo/demo.html](docs/demo/demo.html) next
   </picture>
 </a>
 
+## License
+
+[MIT](LICENSE)

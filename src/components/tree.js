@@ -1,6 +1,7 @@
 // 结构树（配图 A）：缩进表达层级。单根且 2~4 个子节点时画成组织图，其余情况画成带连线的缩进列表。
 import { mdInline } from '../markdown.js';
 import { ComponentError, fields } from './error.js';
+import { esc } from '../svg/text.js';
 
 export default {
   name: 'tree',
@@ -35,10 +36,11 @@ export default {
 function buildTree(text) {
   const roots = [];
   const stack = [];
+  let step = 0;
   for (const raw of String(text).split('\n')) {
     if (!raw.trim()) continue;
     const indent = raw.replace(/\t/g, '  ').match(/^ */)[0].length;
-    const node = { ...parseLabel(raw.trim()), indent, children: [] };
+    const node = { ...parseLabel(raw.trim()), indent, step: step++, children: [] };
     while (stack.length && stack.at(-1).indent >= indent) stack.pop();
     (stack.length ? stack.at(-1).children : roots).push(node);
     stack.push(node);
@@ -55,15 +57,18 @@ function parseLabel(t) {
 // 标签以行内代码开头且后面还有文字时（如 `Section 1` Words），代码部分作为灰色编号标签。
 const labelHtml = (label) => mdInline(label).replace(/^<code>([^<]*)<\/code>(?=\s*\S)/, '<span class="am-tree-tag">$1</span>');
 
+// data-key / data-step 供视频模式使用：同名节点跨场景变形，按源码行逐步出现。
+const vattrs = (n) => ` data-key="${esc(n.label)}" data-step="${n.step}"`;
+
 const boxInner = (n) => `${labelHtml(n.label)}${n.sub ? `<small>${mdInline(n.sub)}</small>` : ''}`;
 
 function rootBox(root, solo = false) {
-  return `<div class="am-tree-root${solo ? ' am-tree-root--solo' : ''}"><div class="am-tree-box am-tree-box--root">${boxInner(root)}</div></div>`;
+  return `<div class="am-tree-root${solo ? ' am-tree-root--solo' : ''}"><div class="am-tree-box am-tree-box--root"${vattrs(root)}>${boxInner(root)}</div></div>`;
 }
 
 function colHtml(node) {
   const children = node.children.length ? listHtml(node.children) : '';
-  return `<div class="am-tree-col"><div class="am-tree-box${node.hi ? ' am-tree-box--hi' : ''}">${boxInner(node)}</div>${children}</div>`;
+  return `<div class="am-tree-col"><div class="am-tree-box${node.hi ? ' am-tree-box--hi' : ''}"${vattrs(node)}>${boxInner(node)}</div>${children}</div>`;
 }
 
 function orgHtml(root) {
@@ -77,5 +82,5 @@ function listHtml(nodes) {
 function liHtml(n) {
   const sub = n.sub ? `<span class="am-tree-sub">${mdInline(n.sub)}</span>` : '';
   const kids = n.children.length ? `<ul>${n.children.map(liHtml).join('')}</ul>` : '';
-  return `<li${n.hi ? ' class="am-tree-hi"' : ''}><span class="am-tree-label">${labelHtml(n.label)}</span>${sub}${kids}</li>`;
+  return `<li${n.hi ? ' class="am-tree-hi"' : ''}${vattrs(n)}><span class="am-tree-label">${labelHtml(n.label)}</span>${sub}${kids}</li>`;
 }

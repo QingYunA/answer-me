@@ -10,6 +10,9 @@ import { parseDoc, ParseError, CHOICES } from './parse.js';
 import { lintDoc, formatWarning } from './lint/ste.js';
 import { COMPONENTS } from './components/index.js';
 import { THEMES } from './themes/index.js';
+import { renderVideo } from './video/render.js';
+import { pickProvider, TtsError, VOICES } from './video/tts.js';
+import { exportMp4, ExportError } from './video/export.js';
 import { amHome, readConfig, setConfig, resetConfig, CONFIG_KEYS, ConfigError } from './config.js';
 
 const MAX_LISTED_WARNINGS = 20;
@@ -19,6 +22,9 @@ const USAGE = `Answer me with HTML ${VERSION} — 把 Markdown 内容稿渲染�
 用法:
   am render <file|->  [-o 输出路径] [--no-open] [--theme blueprint|shadcn]
                       [--template sheet|doc] [--style off|80|strict] [--mode auto|light|dark]
+  am video  <file|->  [-o 输出路径] [--voice auto|elevenlabs|system|off] [--mp4] [--no-open]
+                      [--theme blueprint|shadcn|3b1b] [--mode light|dark]
+                                                  把视频稿渲染成 3b1b 风格的解释视频播放页（--mp4 另存视频文件）
   am lint   <file|->  [--style off|80|strict]     只做 STE 受控写作检查
   am config [set <键> <值> | get <键> | reset [键]] 查看或修改配置
   am list                                         列出模板、主题、组件
@@ -57,6 +63,36 @@ A -> B
 - "## " 开启一个面板；字母 ID 可省略（自动分配 A、B、C…）。span 让面板跨列。
 - 组件列表见 am list；单个组件语法见 am help <组件名>。`;
 
+const VIDEO_FORMAT = `视频稿格式（am video）
+
+---
+title: TCP 三次握手
+subtitle: 为什么是三次          # 可选，片头副标题
+theme: blueprint               # blueprint 图纸风（默认，跟随 am config 的 theme）| shadcn 卡片 | 3b1b 深色
+mode: light                    # light | dark（blueprint + dark 是深蓝图纸）
+---
+> 片头旁白（可选；不写则片头停留 2.4 秒）
+
+## 两端都在等待
+\`\`\`sequence
+Client -> Server: SYN
+Server -> Client: SYN-ACK
+Client -> Server: ACK
+\`\`\`
+> 客户端先发 SYN，请求建立连接。
+> [Server] 收到后回 SYN-ACK。
+> 客户端再回 ACK，连接建立。
+
+- "## " 开启一个场景；场景里放组件或 Markdown（画面），以 > 开头的行是旁白（每行一拍）。
+- 第 N 句旁白播出时，画面出现第 N 步：flow / sequence / tree 每行源码是一步；
+  timeline、limits、表格行、列表项、段落按条目自动分步。步数多于旁白时均分到各句；
+  旁白多于步数时，多出的前几句当开场白，不出新内容。
+- 旁白里写 [名字]：镜头推近同名元素并高亮，字幕里该词变黄。
+- 相邻场景里同名的节点 / 参与者会从旧位置平滑移到新位置（跨场景变形）。
+- 配音：--voice auto（默认，有 ELEVENLABS_API_KEY 用 ElevenLabs，否则用系统 TTS）| elevenlabs | system | off。
+  ElevenLabs 声音可用环境变量 ELEVENLABS_VOICE_ID 指定。
+- 输出到 ~/.answer-me-with-html/videos/；--mp4 另存同名 .mp4（需要 Chrome 与 ffmpeg，Node 22+）。`;
+
 export async function main(argv, io = {}) {
   const out = io.stdout ?? process.stdout;
   const err = io.stderr ?? process.stderr;
@@ -77,6 +113,8 @@ export async function main(argv, io = {}) {
         template: { type: 'string' },
         style: { type: 'string' },
         mode: { type: 'string' },
+        voice: { type: 'string' },
+        mp4: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
         version: { type: 'boolean', short: 'v' },
       },
@@ -92,6 +130,7 @@ export async function main(argv, io = {}) {
 
   switch (cmd) {
     case 'render': return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd }));
+    case 'video': return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider }));
     case 'lint': return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case 'config': return cmdConfig([arg, ...rest].filter((x) => x !== undefined), { print, fail, env });
     case 'list': return cmdList(print), 0;
@@ -156,6 +195,57 @@ function cmdRender(src, opts, { print, fail, env, cwd }) {
   print(`✓ ${file}`);
   print(`  ${result.meta.template} · ${result.meta.theme} · ${result.stats.panels} 面板${comps ? ` · ${comps}` : ''}`);
   printWarnings(result.warnings, print, result.meta.style);
+  if (shouldOpen(opts, env, config.values)) openFile(file);
+  return 0;
+}
+
+async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }) {
+  const config = readConfig(env);
+  if (config.warning) fail(`! ${config.warning}`);
+  const voice = opts.voice ?? config.values.voice;
+  if (!VOICES.includes(voice)) {
+    fail(`✗ voice 的值 "${voice}" 无效，可选：${VOICES.join(' | ')}`);
+    return 2;
+  }
+  let result;
+  try {
+    const provider = injected !== undefined ? injected : pickProvider(voice, env);
+    result = await renderVideo(src, {
+      provider,
+      cacheDir: join(amHome(env), 'cache', 'tts'),
+      defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
+      overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
+      onProgress: (msg) => fail(`  ${msg}`),
+    });
+    result.voiceName = provider ? provider.name : '无（只出字幕）';
+  } catch (e) {
+    if (e instanceof TtsError) {
+      fail(`✗ 配音失败：${e.message}。可加 --voice off 只出字幕`);
+      return 1;
+    }
+    return reportError(e, fail);
+  }
+  const file = opts.out
+    ? resolve(cwd ?? process.cwd(), opts.out)
+    : join(amHome(env), 'videos', `${slug(result.meta.title)}-${stamp()}.html`);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, result.html);
+  print(`✓ ${file}`);
+  print(`  video · ${result.stats.panels} 场景 · ${result.beats} 句旁白 · ${result.duration.toFixed(1)}s · 配音：${result.voiceName}`);
+  printWarnings(result.warnings, print, result.meta.style);
+
+  if (opts.mp4) {
+    const mp4 = file.replace(/\.html?$/i, '') + '.mp4';
+    try {
+      const started = Date.now();
+      await exportMp4(file, mp4, { wav: result.wav, env, onProgress: (i, n) => fail(`  导出 MP4：${i}/${n} 帧`) });
+      print(`✓ ${mp4}（${((Date.now() - started) / 1000).toFixed(0)}s 导出）`);
+    } catch (e) {
+      if (!(e instanceof ExportError)) throw e;
+      fail(`✗ MP4 导出失败：${e.message}。播放页已生成，可直接在浏览器播放`);
+      return 1;
+    }
+  }
   if (shouldOpen(opts, env, config.values)) openFile(file);
   return 0;
 }
@@ -247,6 +337,7 @@ function cmdList(print) {
   print('模板 (template):');
   print('  sheet   图纸板：字母编号面板网格，适合一屏总览（默认）');
   print('  doc     线性讲解：单栏阅读，≥3 个面板时带目录');
+  print('  video   解释视频：用 am video 渲染，见 am help video');
   print('\n主题 (theme):');
   for (const [name, t] of Object.entries(THEMES)) print(`  ${name.padEnd(10)}${t.label}`);
   print('\n组件（围栏块语言名）:');
@@ -258,6 +349,7 @@ function cmdList(print) {
 function cmdHelp(name, { print, fail }) {
   if (!name) return print(USAGE), 0;
   if (name === 'format') return print(FORMAT), 0;
+  if (name === 'video') return print(VIDEO_FORMAT), 0;
   const comp = COMPONENTS.get(name);
   if (!comp) {
     fail(`✗ 没有组件 "${name}"。可用：${[...COMPONENTS.keys()].join(', ')}, format`);
