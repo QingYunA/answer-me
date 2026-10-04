@@ -109,3 +109,9 @@ test('flow: 引用了不存在节点的 group 报错；空图报错', () => {
 test('flow: 未闭合的形状括号报错', () => {
   throwsAt(() => render('flow', 'A -> B\n(未闭合 -> C'), 2);
 });
+
+test('flow: 节点名与 dagre 保留 id 或内部分组 id 相同也能布局', () => {
+  assert.match(render('flow', '\u0000 -> B'), /<svg/);
+  assert.match(render('flow', '__group0 -> B\ngroup G: B'), /am-cluster/);
+  assert.match(render('flow', 'g0 -> n0\ngroup g0: n0'), /am-cluster/);
+});

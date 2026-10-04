@@ -144,24 +144,27 @@ function layout({ nodes, edges, groups }, rankdir, id) {
   const g = new dagre.graphlib.Graph({ compound: groups.length > 0, multigraph: true });
   g.setGraph({ rankdir, nodesep: 36, ranksep: 46, marginx: 14, marginy: groups.length ? 26 : 14 });
   g.setDefaultEdgeLabel(() => ({}));
+  // dagre 内部用 "\x00" 等作保留 id；节点与分组一律换成内部编号，用户写什么名字都不会冲突。
+  const key = new Map([...nodes.keys()].map((name, i) => [name, `n${i}`]));
+  const gkey = (i) => `g${i}`;
   const sizes = new Map();
   for (const n of nodes.values()) {
     const s = nodeSize(n);
     sizes.set(n.id, s);
-    g.setNode(n.id, { width: s.width, height: s.height });
+    g.setNode(key.get(n.id), { width: s.width, height: s.height });
   }
   groups.forEach((grp, i) => {
-    g.setNode(`__group${i}`, { label: grp.name });
-    grp.members.forEach((m) => g.setParent(m, `__group${i}`));
+    g.setNode(gkey(i), { label: grp.name });
+    grp.members.forEach((m) => g.setParent(key.get(m), gkey(i)));
   });
   edges.forEach((e, i) => {
     const label = e.label ? { label: e.label, width: measure(e.label, EDGE_FS) + 12, height: 18, labelpos: 'c' } : {};
-    g.setEdge(e.from, e.to, label, `e${i}`);
+    g.setEdge(key.get(e.from), key.get(e.to), label, `e${i}`);
   });
   dagre.layout(g);
 
   const clusters = groups.map((grp, i) => {
-    const c = g.node(`__group${i}`);
+    const c = g.node(gkey(i));
     const x = c.x - c.width / 2;
     const y = c.y - c.height / 2;
     return `<rect class="am-cluster" x="${f(x)}" y="${f(y)}" width="${f(c.width)}" height="${f(c.height)}" rx="4"/><text class="am-cluster-label" x="${f(x + 8)}" y="${f(y + 14)}">${esc(grp.name)}</text>`;
@@ -170,8 +173,8 @@ function layout({ nodes, edges, groups }, rankdir, id) {
   // 视频模式按源码行逐步出现：同一行写出的边和首次出现的节点属于同一步。
   const stepOf = new Map([...new Set([...[...nodes.values()].map((n) => n.line), ...edges.map((e) => e.line)])].sort((a, b) => a - b).map((l, k) => [l, k]));
   const edgeSvg = edges.map((e, i) => {
-    const data = g.edge({ v: e.from, w: e.to, name: `e${i}` });
-    const pts = clipEnds(data.points, g.node(e.from), nodes.get(e.from).shape, g.node(e.to), nodes.get(e.to).shape);
+    const data = g.edge({ v: key.get(e.from), w: key.get(e.to), name: `e${i}` });
+    const pts = clipEnds(data.points, g.node(key.get(e.from)), nodes.get(e.from).shape, g.node(key.get(e.to)), nodes.get(e.to).shape);
     const path = `<path class="am-edge${e.dashed ? ' am-edge--dashed' : ''}" d="${smoothPath(pts)}" marker-end="url(#${id}-arrow)"/>`;
     if (!e.label) return `<g data-step="${stepOf.get(e.line)}">${path}</g>`;
     const w = measure(e.label, EDGE_FS) + 10;
@@ -179,7 +182,7 @@ function layout({ nodes, edges, groups }, rankdir, id) {
   });
 
   const nodeSvg = [...nodes.values()].map((n) => {
-    const { x, y } = g.node(n.id);
+    const { x, y } = g.node(key.get(n.id));
     const { width: w, height: h, lines } = sizes.get(n.id);
     return `<g class="am-node am-node--${n.shape}${n.hi ? ' am-node--hi' : ''}" data-key="${esc(n.label)}" data-step="${stepOf.get(n.line)}">${shapeSvg(n.shape, x, y, w, h)}${textLines(lines, x, y + (n.shape === 'db' ? 4 : 0), LH)}</g>`;
   });

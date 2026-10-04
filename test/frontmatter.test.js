@@ -32,6 +32,14 @@ test('frontmatter: 所有 SKILL.md 与命令文件的 YAML 头都能被严格解
   }
 });
 
+test('frontmatter: SKILL.md 的 description 不超过 Claude Code 的 1536 字符上限', () => {
+  for (const dir of readdirSync(join(ROOT, 'skills'))) {
+    const fm = frontmatter(join('skills', dir, 'SKILL.md'));
+    const len = `${fm.description}${fm.when_to_use ?? ''}`.length;
+    assert.ok(len <= 1536, `${dir}: description 共 ${len} 字符，超出部分会在 skill 列表里被截掉`);
+  }
+});
+
 test('frontmatter: SKILL.md 的 name 与目录名一致', () => {
   for (const dir of readdirSync(join(ROOT, 'skills'))) {
     assert.equal(frontmatter(join('skills', dir, 'SKILL.md')).name, dir);

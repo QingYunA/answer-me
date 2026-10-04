@@ -19,7 +19,7 @@ const strip = (s) => s.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '');
 function find(dir, name) {
   for (const e of readdirSync(dir)) {
     const p = join(dir, e);
-    if (e === 'node_modules' || e === '.npm') continue;
+    if (['node_modules', '.npm', '.git', 'docs', 'test', 'bench'].includes(e)) continue;
     if (e === name) return p;
     if (statSync(p).isDirectory()) {
       const hit = find(p, name);
@@ -45,6 +45,25 @@ try {
   const out = sh(process.execPath, [installed, 'render', '-', '--no-open'], { input: '## A 标题\n```flow\nA -> B\n```\n' });
   if (!/^✓ /m.test(out)) throw new Error(`装好的 am.mjs 无法出页面：\n${out}`);
   process.stdout.write(`✓ ${installed} 可以出页面\n`);
+
+  step('claude plugin install（隔离的配置目录）');
+  const cfg = join(home, '.claude-config');
+  const claude = (...args) => sh('npx', ['-y', '@anthropic-ai/claude-code@latest', 'plugin', ...args], { env: { ...env, CLAUDE_CONFIG_DIR: cfg } });
+  claude('marketplace', 'add', ROOT);
+  claude('install', 'answer-me-with-html@answer-me-with-html');
+  claude('install', 'answer-me-with-html-always@answer-me-with-html');
+  const cache = join(cfg, 'plugins', 'cache', 'answer-me-with-html');
+  const pluginAm = find(join(cache, 'answer-me-with-html'), 'am.mjs');
+  if (!pluginAm) throw new Error('插件安装后没有找到 am.mjs');
+  const out2 = sh(process.execPath, [pluginAm, 'render', '-', '--no-open'], { input: '## A 标题\n文字\n' });
+  if (!/^✓ /m.test(out2)) throw new Error(`插件里的 am.mjs 无法出页面：\n${out2}`);
+  const hook = find(join(cache, 'answer-me-with-html-always'), 'remind.mjs');
+  if (!hook) throw new Error('高频插件安装后没有找到 hook 脚本');
+  const reminder = JSON.parse(sh(process.execPath, [hook], { input: '{}' }));
+  if (!/answer-me-with-html always-on/.test(reminder.hookSpecificOutput?.additionalContext ?? '')) {
+    throw new Error(`高频插件的 hook 输出不对：${JSON.stringify(reminder)}`);
+  }
+  process.stdout.write('✓ 两个插件都能安装；插件里的 am.mjs 能出页面，hook 输出提醒\n');
 
   step('claude plugin validate');
   for (const target of [ROOT, join(ROOT, 'plugins/answer-me-with-html-always')]) {
