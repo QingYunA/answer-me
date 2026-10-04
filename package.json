@@ -44,6 +44,7 @@
     "url": "https://github.com/QingYunA/answer-me-with-html/issues"
   },
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "yaml": "^2.9.1"
   }
 }
