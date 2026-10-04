@@ -48,7 +48,7 @@ With this skill, the model writes only the content. We asked the same questions 
   <img src="docs/images/plain-vs-skill.png" alt="The same TCP question answered both ways" width="100%">
 </p>
 
-<p align="center"><sub>Same prompt, same model. Both pages are usable. One took 9,351 output tokens, the other 899.</sub></p>
+<p align="center"><sub>One run from the benchmark: same prompt, same model, and both pages are usable. This run took 9,351 output tokens for the plain page and 899 with the skill. The table above shows the medians.</sub></p>
 
 Why the cost doesn't drop too: the skill adds two short turns (load the skill, run the CLI), and every turn re-reads the conversation context. You save the waiting, not the bill. Per-topic numbers and the script to reproduce them are in [bench/](bench/README.md).
 
@@ -188,7 +188,8 @@ Pause it with `/answer-me-with-html:config always off`. You don't need to uninst
 | Installed with | Update with |
 | :--- | :--- |
 | `npx skills add` | `npx skills update answer-me-with-html -y`, or tell your agent "update answer-me-with-html" |
-| Claude Code plugin | `/plugin marketplace update answer-me-with-html`, then `/reload-plugins`. To update automatically, turn on auto-update for this marketplace in `/plugin` → Marketplaces. Claude Code leaves it off for third-party marketplaces |
+| `git clone` + `npm link` | `git pull && npm install` in the repository |
+| Claude Code plugin | In a terminal run `claude plugin update answer-me-with-html@answer-me-with-html` (or open `/plugin` → Installed → Update now), then `/reload-plugins`. To update automatically, turn on auto-update for this marketplace in `/plugin` → Marketplaces. Claude Code leaves it off for third-party marketplaces |
 
 **Cleaning up.** Pages, videos and the narration cache build up in `~/.answer-me-with-html/`. If that folder grows past 200 MB, or passes 20 MB with no cleanup for 30 days, the agent asks once a week whether to clean it. Nothing is deleted without your OK.
 

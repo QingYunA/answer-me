@@ -17,39 +17,47 @@ const UI = {
 // provider 为 null 时只出字幕，时长按字数估算。
 export async function renderVideo(source, { provider = null, cacheDir, defaults = {}, overrides = {}, onProgress } = {}) {
   const video = parseVideo(source, { defaults });
-  const { meta } = video;
-  // 命令行参数优先于稿件与配置。
-  const allowed = { ...CHOICES, theme: VIDEO_THEMES };
-  for (const [key, value] of Object.entries(overrides)) {
-    if (value === undefined) continue;
-    if (allowed[key] && !allowed[key].includes(String(value))) {
-      throw new ParseError(`${key} 的值 "${value}" 无效，可选：${allowed[key].join(' | ')}`, 0);
-    }
-    meta[key] = value;
-  }
+  const meta = applyOverrides(video.meta, overrides);
 
   // 旁白每行是一拍，连续多行不算"超长段落"。
   const warnings = meta.style === 'off' ? [] : lintDoc(video.doc).filter((w) => w.rule !== 'paragraph-length');
   if (meta.style === 'strict' && warnings.length) throw new LintError(warnings);
 
   const beats = allBeats(video);
-  let clips = null;
-  let durations;
-  if (provider) {
-    onProgress?.(`配音：${provider.name}，${beats.length} 句`);
-    clips = await synthAll(beats.map((b) => b.text), provider, { cacheDir });
-    durations = clips.map((c) => c.length / SAMPLE_RATE);
-  } else {
-    durations = beats.map((b) => estimateSeconds(b.text));
-  }
+  const { clips, durations } = await voiceBeats(beats, provider, cacheDir, onProgress);
   const timeline = buildTimeline(video, durations);
   const flat = [...timeline.title.beats, ...timeline.scenes.flatMap((s) => s.beats)];
   const wav = clips ? mixTrack(clips, flat.map((b) => b.start), timeline.duration) : null;
 
   const stats = { panels: video.scenes.length, components: {} };
-  const ctx = { seq: 0, stats };
+  const scenesHtml = renderScenes(video, meta, timeline, { seq: 0, stats });
   const lang = meta.lang || detectLang(source);
-  const data = {
+  const html = shell({ meta, lang, scenesHtml, data: playerData(video, meta, timeline), wav, source });
+  return { html, wav, warnings, stats, meta, duration: timeline.duration, beats: beats.length };
+}
+
+// 命令行参数优先于稿件与配置；返回新的 meta，不改动原对象。
+function applyOverrides(meta, overrides) {
+  const allowed = { ...CHOICES, theme: VIDEO_THEMES };
+  const set = Object.entries(overrides).filter(([, v]) => v !== undefined);
+  for (const [key, value] of set) {
+    if (allowed[key] && !allowed[key].includes(String(value))) {
+      throw new ParseError(`${key} 的值 "${value}" 无效，可选：${allowed[key].join(' | ')}`, 0);
+    }
+  }
+  return { ...meta, ...Object.fromEntries(set) };
+}
+
+// 有配音时每拍时长取音频长度；否则按字数估算。
+async function voiceBeats(beats, provider, cacheDir, onProgress) {
+  if (!provider) return { clips: null, durations: beats.map((b) => estimateSeconds(b.text)) };
+  onProgress?.(`配音：${provider.name}，${beats.length} 句`);
+  const clips = await synthAll(beats.map((b) => b.text), provider, { cacheDir });
+  return { clips, durations: clips.map((c) => c.length / SAMPLE_RATE) };
+}
+
+function playerData(video, meta, timeline) {
+  return {
     duration: timeline.duration,
     fps: 30,
     segments: [timeline.title, ...timeline.scenes].map((s, i) => ({
@@ -59,14 +67,14 @@ export async function renderVideo(source, { provider = null, cacheDir, defaults 
       beats: s.beats.map((b, k) => ({ ...b, html: captionHtml(beatsOf(video, i)[k].raw) })),
     })),
   };
+}
+
+function renderScenes(video, meta, timeline, ctx) {
   const total = video.scenes.length;
-  const scenesHtml = [
+  return [
     titleScene(meta, renderBlocks(video.intro, ctx), { scenes: total, duration: timeline.duration }),
     ...video.scenes.map((s, i) => scene(s, i, total, renderBlocks(s.blocks, ctx))),
   ].join('\n');
-
-  const html = shell({ meta, lang, scenesHtml, data, wav, source });
-  return { html, wav, warnings, stats, meta, duration: timeline.duration, beats: beats.length };
 }
 
 const beatsOf = (video, i) => (i === 0 ? video.introBeats : video.scenes[i - 1].beats);

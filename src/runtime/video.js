@@ -177,45 +177,46 @@
   });
   const hlTargets = new Set(camEvents.map((e) => e.hl).filter(Boolean));
 
-  // ── 5. 确定性渲染：同一时刻永远画出同一帧 ──
-  function render(t) {
-    t = clamp(t, 0, D.duration);
-    const cur = segs.findLastIndex((s) => t >= s.start);
-
+  // 场景与标题的淡入淡出。标题不交叠：旧标题在切换前半段淡出，新标题在后半段淡入。
+  const show = (el, op) => {
+    el.style.opacity = op;
+    el.style.visibility = op > 0 ? 'visible' : 'hidden';
+  };
+  function drawScenes(t) {
     scenes.forEach((sc, i) => {
       const seg = segs[i];
       const next = segs[i + 1];
+      const before = t < seg.start;
       const fadeIn = i === 0 ? ease(t / 0.8) : ease((t - seg.start) / T);
       const fadeOut = next ? 1 - ease((t - next.start) / T) : 1;
-      const op = t < seg.start ? 0 : Math.min(fadeIn, fadeOut);
-      sc.style.opacity = op;
-      sc.style.visibility = op > 0 ? 'visible' : 'hidden';
-      if (heads[i]) {
-        // 标题不交叠：旧标题在切换前半段淡出，新标题在后半段淡入。
-        const hin = ease((t - seg.start - T / 2) / (T / 2));
-        const hout = next ? 1 - ease((t - next.start) / (T / 2)) : 1;
-        const hop = t < seg.start ? 0 : Math.min(hin, hout);
-        heads[i].style.opacity = hop;
-        heads[i].style.visibility = hop > 0 ? 'visible' : 'hidden';
-      }
+      show(sc, before ? 0 : Math.min(fadeIn, fadeOut));
+      if (!heads[i]) return;
+      const hin = ease((t - seg.start - T / 2) / (T / 2));
+      const hout = next ? 1 - ease((t - next.start) / (T / 2)) : 1;
+      show(heads[i], before ? 0 : Math.min(hin, hout));
     });
+  }
 
+  // 逐步出现：连线一笔画出，其余元素淡入并轻微上移。
+  function drawSteps(t) {
     for (const it of items) {
-      const p = ease((t - it.at) / R);
-      const fade = clamp((t - it.at) / 0.25);
       if (carried.has(it.el)) continue;
-      it.el.style.opacity = fade;
-      if (it.paths.length) {
-        for (const { el, len } of it.paths) {
-          el.style.strokeDasharray = `${len}`;
-          el.style.strokeDashoffset = `${len * (1 - p)}`;
-          el.style.markerEnd = p < 0.97 ? 'none' : '';
-        }
-      } else {
+      const p = ease((t - it.at) / R);
+      it.el.style.opacity = clamp((t - it.at) / 0.25);
+      if (!it.paths.length) {
         it.el.style.transform = p < 1 ? `translateY(${(1 - p) * 14}px)` : '';
+        continue;
+      }
+      for (const { el, len } of it.paths) {
+        el.style.strokeDasharray = `${len}`;
+        el.style.strokeDashoffset = `${len * (1 - p)}`;
+        el.style.markerEnd = p < 0.97 ? 'none' : '';
       }
     }
+  }
 
+  // 跨场景变形：切换期间用替身从旧位置移到新位置，真身暂时隐藏。
+  function drawMorphs(t) {
     for (const m of morphs) {
       const s0 = segs[m.scene].start;
       const during = t >= s0 && t < s0 + T;
@@ -228,22 +229,21 @@
       m.to.style.visibility = t < s0 + T ? 'hidden' : '';
       m.to.style.opacity = 1;
     }
+  }
 
-    // 镜头与高亮
+  // 镜头与高亮：在上一个镜头位置和当前目标之间插值。
+  function drawCamera(t) {
     const ev = camEvents.findLastIndex((e) => t >= e.t);
-    let cam = IDENT;
-    let hl = null;
-    if (ev >= 0) {
-      const e = camEvents[ev];
-      const prev = ev > 0 ? camEvents[ev - 1].cam : IDENT;
-      const p = ease((t - e.t) / CAM);
-      cam = { s: lerp(prev.s, e.cam.s, p), x: lerp(prev.x, e.cam.x, p), y: lerp(prev.y, e.cam.y, p) };
-      hl = e.hl;
-    }
-    camera.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})`;
-    for (const el of hlTargets) el.classList.toggle('amv-hl', el === hl);
+    const e = ev >= 0 ? camEvents[ev] : null;
+    const prev = ev > 0 ? camEvents[ev - 1].cam : IDENT;
+    const p = e ? ease((t - e.t) / CAM) : 0;
+    const to = e ? e.cam : IDENT;
+    camera.style.transform = `translate(${lerp(prev.x, to.x, p)}px, ${lerp(prev.y, to.y, p)}px) scale(${lerp(prev.s, to.s, p)})`;
+    for (const el of hlTargets) el.classList.toggle('amv-hl', el === e?.hl);
+  }
 
-    // 字幕
+  function drawCaption(t) {
+    const cur = segs.findLastIndex((s) => t >= s.start);
     const beats = cur >= 0 ? segs[cur].beats : [];
     const b = beats.find((x) => t >= x.start && t < x.end + 0.3);
     const html = b ? b.html : '';
@@ -252,6 +252,16 @@
       caption.dataset.html = html;
     }
     caption.style.opacity = b ? clamp((t - b.start) / 0.2) : 0;
+  }
+
+  // ── 5. 确定性渲染：同一时刻永远画出同一帧 ──
+  function render(time) {
+    const t = clamp(time, 0, D.duration);
+    drawScenes(t);
+    drawSteps(t);
+    drawMorphs(t);
+    drawCamera(t);
+    drawCaption(t);
     updateUi(t);
   }
 

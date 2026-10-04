@@ -5,7 +5,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { hasCommand } from './tts.js';
+import { hasCommand } from '../sys.js';
 
 export class ExportError extends Error {
   constructor(message) {

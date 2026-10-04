@@ -35,7 +35,7 @@ description: >-
 
 参数以 `clean` 开头，或用户说"清理一下页面 / 缓存"时：先运行 `am clean --dry-run`，把将删除的数量和大小告诉用户，用户同意后再运行 `am clean`（加 `--all` 删除全部页面和视频，`--days N` 改保留天数）。
 
-参数以 `update` 开头，或用户说"更新一下这个 skill"时：按安装方式更新——`npx skills` 安装的运行 `npx skills update answer-me-with-html -y`；Claude Code 插件安装的请用户运行 `/plugin marketplace update answer-me-with-html` 和 `/reload-plugins`。
+参数以 `update` 开头，或用户说"更新一下这个 skill"时：按安装方式更新——`npx skills` 安装的运行 `npx skills update answer-me-with-html -y`；Claude Code 插件安装的运行 `claude plugin update answer-me-with-html@answer-me-with-html`（或请用户在 `/plugin` → Installed 点 Update now），再请用户 `/reload-plugins`；git clone 安装的在仓库目录 `git pull && npm install`。
 
 ## 1. 判断：要不要出页面
 

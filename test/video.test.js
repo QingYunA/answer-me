@@ -210,7 +210,10 @@ function sink() {
   return { stream, get text() { return text; } };
 }
 
-async function run(args, { stdin = '', env = {}, ttsProvider = null } = {}) {
+// 不传 ttsProvider 时用 null（只出字幕）；显式传 undefined 时走真实的配音选择逻辑。
+async function run(args, opts = {}) {
+  const { stdin = '', env = {} } = opts;
+  const ttsProvider = 'ttsProvider' in opts ? opts.ttsProvider : null;
   const out = sink();
   const err = sink();
   const code = await main(args, {
@@ -266,4 +269,37 @@ test('e2e: --mp4 导出 1080p30 带音轨的视频', { skip: !E2E, timeout: 1200
   const probe = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,width,height', '-of', 'csv=p=0', join(dir, 'e2e.mp4')], { encoding: 'utf8' });
   assert.match(probe, /video,1920,1080/);
   assert.match(probe, /audio/);
+});
+
+// ── 审查后的修复 ──
+test('synthAll: 损坏的缓存（奇数字节）视为未命中并重新合成', async () => {
+  const { writeFileSync: write, readdirSync: list } = await import('node:fs');
+  const p = fakeProvider();
+  const cacheDir = join(dir, 'cache-broken');
+  await synthAll(['坏缓存'], p, { cacheDir });
+  const [f] = list(cacheDir);
+  write(join(cacheDir, f), Buffer.alloc(3));
+  await synthAll(['坏缓存'], p, { cacheDir });
+  assert.equal(p.calls.length, 2);
+  assert.ok(list(cacheDir).every((n) => !n.endsWith('.tmp')), '不留临时文件');
+});
+
+test('ElevenLabs: 网络错误包装成 TtsError，CLI 给出 --voice off 提示', async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new TypeError('fetch failed'); };
+  try {
+    const p = pickProvider('elevenlabs', { ELEVENLABS_API_KEY: 'k' });
+    await assert.rejects(p.synth('你好'), (e) => e instanceof TtsError && /无法连接 ElevenLabs/.test(e.message));
+    const r = await run(['video', '-', '--voice', 'elevenlabs'], { stdin: SRC, env: { ELEVENLABS_API_KEY: 'k' }, ttsProvider: undefined });
+    assert.equal(r.code, 1);
+    assert.match(r.err, /配音失败：无法连接 ElevenLabs.*--voice off/);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('e2e: 以 - 开头的旁白不会被系统 TTS 当成选项', { skip: !E2E }, async () => {
+  const p = pickProvider('system', process.env);
+  const [clip] = await synthAll(['-v 这句以连字符开头'], p, {});
+  assert.ok(clip.length / SAMPLE_RATE > 0.5);
 });

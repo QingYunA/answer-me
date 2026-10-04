@@ -13,7 +13,8 @@ import { THEMES } from './themes/index.js';
 import { renderVideo } from './video/render.js';
 import { pickProvider, TtsError, VOICES } from './video/tts.js';
 import { exportMp4, ExportError } from './video/export.js';
-import { afterRender, clean, usage, mb, runUpdateCheck, CLEAN } from './housekeeping.js';
+import { afterRender, clean, usage, mb, CLEAN } from './housekeeping.js';
+import { runUpdateCheck } from './update.js';
 import { amHome, readConfig, setConfig, resetConfig, CONFIG_KEYS, ConfigError } from './config.js';
 
 const MAX_LISTED_WARNINGS = 20;
@@ -30,7 +31,7 @@ const USAGE = `Answer me with HTML ${VERSION} — 把 Markdown 内容稿渲染�
   am config [set <键> <值> | get <键> | reset [键]] 查看或修改配置
   am clean  [--days 30] [--all] [--dry-run]       清理旧页面、旧视频和配音缓存
   am list                                         列出模板、主题、组件
-  am help [组件名|format]                          查看组件语法 / 稿件格式
+  am help [组件名|format|video]                    查看组件语法 / 页面稿格式 / 视频稿格式
 
 - 文件参数写 - 表示从 stdin 读取（适合 heredoc：am render - <<'EOF' ... EOF）。
 - 默认输出到 ~/.answer-me-with-html/pages/（可用环境变量 AM_HOME 修改）。
@@ -64,6 +65,16 @@ A -> B
 
 - "## " 开启一个面板；字母 ID 可省略（自动分配 A、B、C…）。span 让面板跨列。
 - 组件列表见 am list；单个组件语法见 am help <组件名>。`;
+
+const RAW_HELP = `LANG — 原样嵌入（逃生口）
+
+围栏块语言名写 LANG 时，内容不经处理直接放进页面。只在现有组件表达不了时使用；
+颜色请用主题变量（如 var(--ink)、var(--accent)），这样切换主题和明暗时也能看清。
+
+示例：
+\`\`\`LANG
+<div style="color: var(--accent)">任意内容</div>
+\`\`\``;
 
 const VIDEO_FORMAT = `视频稿格式（am video）
 
@@ -134,8 +145,8 @@ export async function main(argv, io = {}) {
   if (opts.help || !cmd) return print(USAGE), 0;
 
   switch (cmd) {
-    case 'render': return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd, io }));
-    case 'video': return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider, io }));
+    case 'render': return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, io }));
+    case 'video': return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, io }));
     case 'lint': return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case 'config': return cmdConfig([arg, ...rest].filter((x) => x !== undefined), { print, fail, env });
     case 'clean': return cmdClean(opts, { print, fail, env });
@@ -182,9 +193,9 @@ export function shouldOpen(opts, env, config) {
   return config.open !== false;
 }
 
-function cmdRender(src, opts, { print, fail, env, cwd, io }) {
-  const config = readConfig(env);
-  if (config.warning) fail(`! ${config.warning}`);
+function cmdRender(src, opts, ctx) {
+  const { print, fail, env } = ctx;
+  const config = loadConfig(ctx);
   const { theme, mode, style } = config.values;
   let result;
   try {
@@ -192,24 +203,17 @@ function cmdRender(src, opts, { print, fail, env, cwd, io }) {
   } catch (e) {
     return reportError(e, fail);
   }
-  const file = opts.out
-    ? resolve(cwd ?? process.cwd(), opts.out)
-    : join(amHome(env), 'pages', `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, result.html);
-
+  const file = writeOutput(result.html, 'pages', result.meta.title, opts, ctx);
   const comps = Object.entries(result.stats.components).map(([k, v]) => `${k}×${v}`).join(' ');
   print(`✓ ${file}`);
   print(`  ${result.meta.template} · ${result.meta.theme} · ${result.stats.panels} 面板${comps ? ` · ${comps}` : ''}`);
   printWarnings(result.warnings, print, result.meta.style);
-  printHints({ env, config, io, print });
-  if (shouldOpen(opts, env, config.values)) openFile(file);
-  return 0;
+  return finish(file, opts, config, ctx);
 }
 
-async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected, io }) {
-  const config = readConfig(env);
-  if (config.warning) fail(`! ${config.warning}`);
+async function cmdVideo(src, opts, ctx) {
+  const { print, fail } = ctx;
+  const config = loadConfig(ctx);
   const voice = opts.voice ?? config.values.voice;
   if (!VOICES.includes(voice)) {
     fail(`✗ voice 的值 "${voice}" 无效，可选：${VOICES.join(' | ')}`);
@@ -217,50 +221,71 @@ async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected, 
   }
   let result;
   try {
-    const provider = injected !== undefined ? injected : pickProvider(voice, env);
-    result = await renderVideo(src, {
-      provider,
-      cacheDir: join(amHome(env), 'cache', 'tts'),
-      defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
-      overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
-      onProgress: (msg) => fail(`  ${msg}`),
-    });
-    result.voiceName = provider ? provider.name : '无（只出字幕）';
+    result = await buildVideo(src, voice, opts, config, ctx);
   } catch (e) {
-    if (e instanceof TtsError) {
-      fail(`✗ 配音失败：${e.message}。可加 --voice off 只出字幕`);
-      return 1;
-    }
-    return reportError(e, fail);
+    if (!(e instanceof TtsError)) return reportError(e, fail);
+    fail(`✗ 配音失败：${e.message}。可加 --voice off 只出字幕`);
+    return 1;
   }
-  const file = opts.out
-    ? resolve(cwd ?? process.cwd(), opts.out)
-    : join(amHome(env), 'videos', `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, result.html);
+  const file = writeOutput(result.html, 'videos', result.meta.title, opts, ctx);
   print(`✓ ${file}`);
   print(`  video · ${result.stats.panels} 场景 · ${result.beats} 句旁白 · ${result.duration.toFixed(1)}s · 配音：${result.voiceName}`);
   printWarnings(result.warnings, print, result.meta.style);
+  if (opts.mp4 && !(await exportVideoMp4(file, result.wav, ctx))) return 1;
+  return finish(file, opts, config, ctx);
+}
 
-  if (opts.mp4) {
-    const mp4 = file.replace(/\.html?$/i, '') + '.mp4';
-    try {
-      const started = Date.now();
-      await exportMp4(file, mp4, { wav: result.wav, env, onProgress: (i, n) => fail(`  导出 MP4：${i}/${n} 帧`) });
-      print(`✓ ${mp4}（${((Date.now() - started) / 1000).toFixed(0)}s 导出）`);
-    } catch (e) {
-      if (!(e instanceof ExportError)) throw e;
-      fail(`✗ MP4 导出失败：${e.message}。播放页已生成，可直接在浏览器播放`);
-      return 1;
-    }
+async function buildVideo(src, voice, opts, config, { fail, env, io }) {
+  const provider = io.ttsProvider !== undefined ? io.ttsProvider : pickProvider(voice, env);
+  const result = await renderVideo(src, {
+    provider,
+    cacheDir: join(amHome(env), 'cache', 'tts'),
+    defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
+    overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
+    onProgress: (msg) => fail(`  ${msg}`),
+  });
+  return { ...result, voiceName: provider ? provider.name : '无（只出字幕）' };
+}
+
+async function exportVideoMp4(file, wav, { print, fail, env }) {
+  const mp4 = `${file.replace(/\.html?$/i, '')}.mp4`;
+  const started = Date.now();
+  try {
+    await exportMp4(file, mp4, { wav, env, onProgress: (i, n) => fail(`  导出 MP4：${i}/${n} 帧`) });
+  } catch (e) {
+    if (!(e instanceof ExportError)) throw e;
+    fail(`✗ MP4 导出失败：${e.message}。播放页已生成，可直接在浏览器播放`);
+    return false;
   }
-  printHints({ env, config, io, print });
-  if (shouldOpen(opts, env, config.values)) openFile(file);
+  print(`✓ ${mp4}（${((Date.now() - started) / 1000).toFixed(0)}s 导出）`);
+  return true;
+}
+
+function loadConfig({ fail, env }) {
+  const config = readConfig(env);
+  if (config.warning) fail(`! ${config.warning}`);
+  return config;
+}
+
+// 写出页面：-o 指定时写到该路径，否则写进数据目录的 pages/ 或 videos/。
+function writeOutput(html, dir, title, opts, { env, io }) {
+  const file = opts.out
+    ? resolve(io.cwd ?? process.cwd(), opts.out)
+    : join(amHome(env), dir, `${slug(title)}-${stamp()}.html`);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, html);
+  return file;
+}
+
+// 渲染成功后的收尾：打印维护提示，按配置打开浏览器。
+function finish(file, opts, config, ctx) {
+  printHints(config, ctx);
+  if (shouldOpen(opts, ctx.env, config.values)) openFile(file);
   return 0;
 }
 
 // 渲染成功后附带的提示（清理、更新），给 Agent 看，由 Agent 询问用户。
-function printHints({ env, config, io, print }) {
+function printHints(config, { env, io, print }) {
   try {
     const hints = afterRender({
       home: amHome(env), env, config: config.values, current: VERSION,
@@ -390,9 +415,10 @@ function cmdHelp(name, { print, fail }) {
   if (!name) return print(USAGE), 0;
   if (name === 'format') return print(FORMAT), 0;
   if (name === 'video') return print(VIDEO_FORMAT), 0;
+  if (name === 'html' || name === 'svg') return print(RAW_HELP.replace(/LANG/g, name)), 0;
   const comp = COMPONENTS.get(name);
   if (!comp) {
-    fail(`✗ 没有组件 "${name}"。可用：${[...COMPONENTS.keys()].join(', ')}, format`);
+    fail(`✗ 没有组件 "${name}"。可用：${[...COMPONENTS.keys()].join(', ')}, html, svg, format, video`);
     return 2;
   }
   print(`${comp.name} — ${comp.summary}\n\n${comp.syntax}\n\n示例：\n${comp.example}`);

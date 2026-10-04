@@ -2,15 +2,17 @@
 // 每句合成结果是 22050 Hz 单声道 16 位 PCM，按文本 + 声音缓存在 AM_HOME/cache/tts/，重复渲染不再合成。
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { detectLang } from '../render.js';
+import { hasCommand } from '../sys.js';
 
 export const SAMPLE_RATE = 22050;
 export const VOICES = ['auto', 'elevenlabs', 'system', 'off'];
 const ELEVEN_DEFAULT_VOICE = 'JBFqnCBsd6RMkjVDRZzb';
 const ELEVEN_MODEL = 'eleven_multilingual_v2';
+const ELEVEN_TIMEOUT_MS = 60000;
 
 export class TtsError extends Error {
   constructor(message) {
@@ -45,11 +47,17 @@ function elevenLabs(env) {
     concurrency: 2,
     async synth(text) {
       const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=pcm_${SAMPLE_RATE}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'xi-api-key': env.ELEVENLABS_API_KEY, 'content-type': 'application/json' },
-        body: JSON.stringify({ text, model_id: ELEVEN_MODEL }),
-      });
+      let res;
+      try {
+        res = await fetch(url, {
+          method: 'POST',
+          headers: { 'xi-api-key': env.ELEVENLABS_API_KEY, 'content-type': 'application/json' },
+          body: JSON.stringify({ text, model_id: ELEVEN_MODEL }),
+          signal: AbortSignal.timeout(ELEVEN_TIMEOUT_MS),
+        });
+      } catch (e) {
+        throw new TtsError(`无法连接 ElevenLabs：${e.name === 'TimeoutError' ? `${ELEVEN_TIMEOUT_MS / 1000} 秒内没有响应` : e.message}`);
+      }
       if (!res.ok) throw new TtsError(`ElevenLabs 返回 ${res.status}：${(await res.text()).slice(0, 200)}`);
       const buf = Buffer.from(await res.arrayBuffer());
       return new Int16Array(buf.buffer, buf.byteOffset, Math.floor(buf.length / 2)).slice();
@@ -66,7 +74,7 @@ function systemVoice(platform, which) {
       concurrency: 4,
       synth: (text) => withTemp(async (file) => {
         const v = voices[detectLang(text)];
-        await run('say', [...(v ? ['-v', v] : []), '-o', file, '--file-format=WAVE', `--data-format=LEI16@${SAMPLE_RATE}`, text]);
+        await run('say', [...(v ? ['-v', v] : []), '-o', file, '--file-format=WAVE', `--data-format=LEI16@${SAMPLE_RATE}`, '-f', textFile(file, text)]);
         return readWav(readFileSync(file));
       }),
     };
@@ -77,7 +85,7 @@ function systemVoice(platform, which) {
       id: 'espeak-ng',
       concurrency: 4,
       synth: (text) => withTemp(async (file) => {
-        await run('espeak-ng', ['-v', detectLang(text) === 'zh' ? 'cmn' : 'en-us', '-w', file, text]);
+        await run('espeak-ng', ['-v', detectLang(text) === 'zh' ? 'cmn' : 'en-us', '-w', file, '-f', textFile(file, text)]);
         return readWav(readFileSync(file));
       }),
     };
@@ -101,10 +109,6 @@ export function pickMacVoices(out) {
   };
 }
 
-export function hasCommand(cmd) {
-  return spawnSync(process.platform === 'win32' ? 'where' : 'which', [cmd], { stdio: 'ignore' }).status === 0;
-}
-
 function run(cmd, args) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args, { stdio: ['ignore', 'ignore', 'pipe'] });
@@ -113,6 +117,13 @@ function run(cmd, args) {
     p.on('error', reject);
     p.on('close', (code) => (code === 0 ? resolve() : reject(new TtsError(`${cmd} 失败（${code}）：${err.slice(0, 200)}`))));
   });
+}
+
+// 旁白经文件传给 TTS 程序，以 - 开头的句子不会被当成命令行选项。
+function textFile(wavFile, text) {
+  const p = `${wavFile}.txt`;
+  writeFileSync(p, text);
+  return p;
 }
 
 async function withTemp(fn) {
@@ -169,17 +180,32 @@ export async function synthAll(texts, provider, { cacheDir } = {}) {
     while (next < texts.length) {
       const i = next++;
       const file = cacheDir && join(cacheDir, `${createHash('sha1').update(`${provider.id}\n${texts[i]}`).digest('hex')}.pcm`);
-      if (file && existsSync(file)) {
-        const buf = readFileSync(file);
-        results[i] = new Int16Array(buf.buffer, buf.byteOffset, buf.length / 2).slice();
+      const cached = file && readCache(file);
+      if (cached) {
+        results[i] = cached;
         continue;
       }
       results[i] = trimSilence(await provider.synth(texts[i]));
-      if (file) writeFileSync(file, Buffer.from(results[i].buffer, results[i].byteOffset, results[i].byteLength));
+      if (file) writeCache(file, results[i]);
     }
   };
   await Promise.all(Array.from({ length: Math.min(provider.concurrency ?? 2, texts.length) }, worker));
   return results;
+}
+
+// 缓存文件损坏（空文件、奇数字节）时视为未命中，重新合成。
+function readCache(file) {
+  if (!existsSync(file)) return null;
+  const buf = readFileSync(file);
+  if (!buf.length || buf.length % 2) return null;
+  return new Int16Array(buf.buffer, buf.byteOffset, buf.length / 2).slice();
+}
+
+// 先写临时文件再改名，中断时不会留下半截缓存。
+function writeCache(file, samples) {
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, Buffer.from(samples.buffer, samples.byteOffset, samples.byteLength));
+  renameSync(tmp, file);
 }
 
 // 去掉首尾静音，让画面节奏只由真实语音决定。

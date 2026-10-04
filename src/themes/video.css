@@ -1,6 +1,10 @@
 /* 视频播放页：1920×1080 舞台按窗口等比缩放。颜色全部来自主题变量：
    blueprint / shadcn 沿用页面主题；3b1b 是视频专用的深色主题（深底、蓝线、黄色强调）。 */
 html[data-video] {
+  /* 播放控件不进入画面，也不随主题变化，固定用一组深色 token */
+  --v-ctl-bg: #0b0d11; --v-ctl-line: #1d2330; --v-ctl-fg: #c9d1dc; --v-ctl-muted: #5b6576;
+  --v-ctl-btn: #141922; --v-ctl-btn-line: #2a3240; --v-ctl-accent: #58c4dd; --v-ctl-white: #fff;
+  --v-letterbox: #000;
   --v-stage: var(--bg);
   --v-cap-fg: var(--ink); --v-cap-bg: var(--paper); --v-cap-border: var(--line);
   --v-title-font: var(--head-font);
@@ -31,7 +35,7 @@ html[data-video][data-theme="blueprint"][data-mode="dark"] {
              linear-gradient(90deg, rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px, var(--bg);
 }
 
-html[data-video], html[data-video] body { background: #000; height: 100%; overflow: hidden; }
+html[data-video], html[data-video] body { background: var(--v-letterbox); height: 100%; overflow: hidden; }
 html[data-video] body { font-size: 22px; }
 
 .amv-viewport { position: fixed; inset: 0 0 56px 0; overflow: hidden; }
@@ -138,21 +142,21 @@ html[data-video] .am-diagram .amv-hl text, html[data-video] .am-diagram text.amv
 /* ── 播放控件（不进入画面）── */
 .amv-bigplay {
   position: absolute; left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.85); background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 54px; cursor: pointer;
+  border: 2px solid var(--v-ctl-white); background: rgba(0, 0, 0, 0.55); color: var(--v-ctl-white); font-size: 54px; cursor: pointer;
   padding-left: 10px;
 }
 .amv-bigplay[hidden] { display: none; }
 .amv-controls {
   position: fixed; left: 0; right: 0; bottom: 0; height: 56px; display: flex; align-items: center; gap: 14px;
-  padding: 0 18px; background: #0b0d11; border-top: 1px solid #1d2330; color: #c9d1dc; font: 13px -apple-system, "Segoe UI", sans-serif;
+  padding: 0 18px; background: var(--v-ctl-bg); border-top: 1px solid var(--v-ctl-line); color: var(--v-ctl-fg); font: 13px -apple-system, "Segoe UI", sans-serif;
 }
-.amv-btn { width: 36px; height: 32px; border: 1px solid #2a3240; border-radius: 6px; background: #141922; color: #fff; cursor: pointer; }
+.amv-btn { width: 36px; height: 32px; border: 1px solid var(--v-ctl-btn-line); border-radius: 6px; background: var(--v-ctl-btn); color: var(--v-ctl-white); cursor: pointer; }
 .amv-time { font-family: ui-monospace, Menlo, monospace; min-width: 96px; }
 .amv-track { position: relative; flex: 1; }
-.amv-seek { width: 100%; accent-color: #58c4dd; }
+.amv-seek { width: 100%; accent-color: var(--v-ctl-accent); }
 .amv-marks { position: absolute; left: 0; right: 0; top: -6px; height: 6px; pointer-events: none; }
-.amv-marks i { position: absolute; top: 0; width: 2px; height: 6px; background: #58c4dd; }
-.amv-brand { color: #5b6576; font-size: 12px; white-space: nowrap; }
+.amv-marks i { position: absolute; top: 0; width: 2px; height: 6px; background: var(--v-ctl-accent); }
+.amv-brand { color: var(--v-ctl-muted); font-size: 12px; white-space: nowrap; }
 
 /* 导出模式：只留舞台，1:1 无缩放 */
 html[data-export] .amv-controls, html[data-export] .amv-bigplay { display: none; }

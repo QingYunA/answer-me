@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/1f13b1fe-70a9-4c39-8530-b12e553e17ea
   <img src="docs/images/plain-vs-skill.png" alt="同一个 TCP 问题的两种做法" width="100%">
 </p>
 
-<p align="center"><sub>同样的提示词、同一个模型。两页都能用：一页花了 9,351 个输出 token，另一页只花了 899 个。</sub></p>
+<p align="center"><sub>这是基准测试中的一次运行：同样的提示词、同一个模型，两页都能用。这一次直接写 HTML 花了 9,351 个输出 token，用 skill 只花了 899 个。上表是多次运行的中位数。</sub></p>
 
 为什么花费没有跟着降：用 skill 会多两轮很短的对话（加载 skill、运行 CLI），每一轮都要重读一遍上下文。省下的是等待时间，不是账单。每个题目的详细数据和复现脚本见 [bench/](bench/README.md)。
 
@@ -188,7 +188,8 @@ Server -> Client: SYN-ACK
 | 安装方式 | 更新方法 |
 | :--- | :--- |
 | `npx skills add` | `npx skills update answer-me-with-html -y`，或直接对 Agent 说"更新一下 answer-me-with-html" |
-| Claude Code 插件 | `/plugin marketplace update answer-me-with-html`，再 `/reload-plugins`。想自动更新，就在 `/plugin` → Marketplaces 里给这个插件市场打开自动更新。第三方插件市场默认不自动更新 |
+| `git clone` + `npm link` | 在仓库目录运行 `git pull && npm install` |
+| Claude Code 插件 | 终端运行 `claude plugin update answer-me-with-html@answer-me-with-html`（或在 `/plugin` → Installed 里点 Update now），再 `/reload-plugins`。想自动更新，就在 `/plugin` → Marketplaces 里给这个插件市场打开自动更新。第三方插件市场默认不自动更新 |
 
 **清理**：页面、视频和配音缓存都存在 `~/.answer-me-with-html/`。目录超过 200 MB，或超过 20 MB 且 30 天没清理过，Agent 会问你要不要清理，每周最多问一次。没有你的同意，什么都不会删。
 

@@ -32,7 +32,10 @@ function find(dir, name) {
 try {
   step('npx skills add -l');
   const list = strip(sh('npx', ['-y', 'skills@latest', 'add', ROOT, '-l']));
-  if (!/Found 1 skill/.test(list) || !/answer-me-with-html/.test(list)) throw new Error(`skills CLI 没有识别出 skill：\n${list}`);
+  // 只认关键信号，不依赖完整文案：出现跳过 / 解析错误即失败，且列表里要有 skill 名。
+  if (/Skipped|parse error|No (valid )?skills found/i.test(list) || !/answer-me-with-html/.test(list)) {
+    throw new Error(`skills CLI 没有识别出 skill：\n${list}`);
+  }
   process.stdout.write('✓ skills CLI 识别出 answer-me-with-html\n');
 
   step('npx skills add -g（临时 HOME）');
@@ -45,8 +48,8 @@ try {
 
   step('claude plugin validate');
   for (const target of [ROOT, join(ROOT, 'plugins/answer-me-with-html-always')]) {
-    const v = strip(sh('npx', ['-y', '@anthropic-ai/claude-code@latest', 'plugin', 'validate', target]));
-    if (!/Validation passed/.test(v)) throw new Error(`插件清单校验失败：\n${v}`);
+    // 校验失败时 claude 以非零退出码结束，execFileSync 会直接抛错；不再匹配输出文案。
+    sh('npx', ['-y', '@anthropic-ai/claude-code@latest', 'plugin', 'validate', target]);
   }
   process.stdout.write('✓ 插件市场与插件清单校验通过\n');
 } catch (e) {

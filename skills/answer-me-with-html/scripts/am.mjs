@@ -6,7 +6,7 @@ import { parseArgs } from "node:util";
 import { readFileSync as readFileSync4, writeFileSync as writeFileSync5, mkdirSync as mkdirSync4 } from "node:fs";
 
 // src/assets.js
-var VERSION = "0.4.0";
+var VERSION = "0.4.1";
 var BASE_CSS = '/* Answer me with HTML base \u2014 \u53EA\u5F15\u7528\u4E3B\u9898\u53D8\u91CF\uFF0C\u7981\u6B62\u5199\u6B7B\u989C\u8272\uFF08\u4E3B\u9898 token \u89C1 themes/index.js\uFF09 */\n*, *::before, *::after { box-sizing: border-box; }\nhtml, body { margin: 0; padding: 0; }\nbody {\n  background: var(--bg); color: var(--ink);\n  font-family: var(--font-sans); font-size: 14px; line-height: 1.55;\n  -webkit-font-smoothing: antialiased;\n}\ncode, pre, kbd { font-family: var(--font-mono); }\n\n/* \u2500\u2500 \u5DE5\u5177\u680F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-toolbar {\n  position: fixed; top: 12px; right: 12px; z-index: 10; display: flex; gap: 6px;\n}\n.am-btn {\n  font: 12px/1 var(--font-sans); color: var(--ink); background: var(--paper);\n  border: 1px solid var(--line-2); border-radius: var(--radius); padding: 7px 10px; cursor: pointer;\n}\n.am-btn:hover { border-color: var(--ink-3); }\n.am-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }\n\n/* \u2500\u2500 \u9875\u5934 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-head { margin: 0 0 20px; padding-right: 260px; }\n.am-head h1 { margin: 0; font-size: 24px; line-height: 1.25; letter-spacing: -0.01em; }\n.am-sub { margin: 4px 0 0; color: var(--ink-2); }\n.am-head-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12px; color: var(--ink-2); }\n.am-head-meta b { font-family: var(--font-mono); font-weight: 400; color: var(--ink-3); margin-right: 6px; }\n.am-intro { margin-top: 12px; max-width: 80ch; }\n\n/* \u2500\u2500 sheet \u56FE\u7EB8\u677F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-sheet { max-width: 1680px; margin: 0 auto; padding: 32px 28px 40px; }\n.am-frame { position: relative; }\n.am-grid {\n  display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));\n  gap: 20px; align-items: start;\n}\n.am-ruler { display: none; }\nhtml[data-theme="blueprint"] .am-frame { border: 1px solid var(--line); padding: 30px; }\nhtml[data-theme="blueprint"] .am-frame::before {\n  content: ""; position: absolute; inset: 18px; border: 1px solid var(--line); pointer-events: none;\n}\nhtml[data-theme="blueprint"] .am-ruler {\n  display: flex; position: absolute; font: 10px/1 var(--font-mono); color: var(--ink-3);\n}\n.am-ruler span { flex: 1; display: flex; align-items: center; justify-content: center; }\n.am-ruler--top, .am-ruler--bottom { left: 18px; right: 18px; height: 18px; }\n.am-ruler--top { top: 0; }\n.am-ruler--bottom { bottom: 0; }\n.am-ruler--left, .am-ruler--right { top: 18px; bottom: 18px; width: 18px; flex-direction: column; }\n.am-ruler--left { left: 0; }\n.am-ruler--right { right: 0; }\n.am-ruler--top span + span, .am-ruler--bottom span + span { border-left: 1px solid var(--line); }\n.am-ruler--left span + span, .am-ruler--right span + span { border-top: 1px solid var(--line); }\n\n/* \u2500\u2500 \u9762\u677F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-panel {\n  background: var(--paper); border: var(--bw) solid var(--line); border-radius: var(--radius);\n  box-shadow: var(--shadow); min-width: 0; overflow: hidden;\n}\n.am-panel-head {\n  display: flex; align-items: stretch; gap: 0; border-bottom: var(--bw) solid var(--line); min-height: 34px;\n}\n.am-panel-id {\n  display: flex; align-items: center; justify-content: center; min-width: 34px; padding: 0 8px;\n  background: var(--head-bg); color: var(--head-fg); font-weight: 600; font-size: 14px;\n}\nhtml[data-theme="shadcn"] .am-panel-id { border-radius: 6px; min-width: 24px; height: 24px; margin: 9px 0 9px 14px; font-size: 12px; }\nhtml[data-theme="shadcn"] .am-panel-head { border-bottom-width: 1px; }\n.am-panel-head h2 { margin: 0; padding: 7px 12px; font-size: 15px; font-weight: 600; flex: 1; display: flex; align-items: center; }\n.am-panel-meta { align-self: center; padding: 0 12px; font: 11px/1.3 var(--font-mono); color: var(--ink-2); text-align: right; }\n.am-panel-body { padding: 14px 16px 16px; }\n.am-panel-body > * + * { margin-top: 12px; }\n\n/* \u2500\u2500 Markdown \u6B63\u6587 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-md > :first-child { margin-top: 0; }\n.am-md > :last-child { margin-bottom: 0; }\n.am-md p { margin: 0 0 8px; }\n.am-md ul, .am-md ol { margin: 0 0 8px; padding-left: 20px; }\n.am-md li + li { margin-top: 3px; }\n.am-md h3, .am-md h4 { margin: 14px 0 6px; font-size: 13px; }\n.am-md a { color: var(--accent); }\n.am-md blockquote { margin: 0 0 8px; padding: 2px 12px; border-left: 3px solid var(--line-2); color: var(--ink-2); }\n.am-md :not(pre) > code { font-size: 0.9em; background: var(--fill); padding: 1px 5px; border-radius: 4px; }\n.am-md hr { border: 0; border-top: 1px solid var(--line-2); margin: 12px 0; }\n.am-md table { width: 100%; border-collapse: collapse; font-size: 13px; }\n.am-md th {\n  text-align: left; font: 11px/1.3 var(--font-mono); color: var(--ink-2); font-weight: 400;\n  padding: 6px 10px; border-bottom: 1px solid var(--line-2);\n}\n.am-md td { padding: 7px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }\n.am-md tbody tr:nth-child(even) td { background: var(--fill); }\n.am-table-wrap { overflow-x: auto; }\n.am-code {\n  margin: 0; padding: 12px 14px; background: var(--fill); border: 1px solid var(--line-2);\n  border-radius: var(--radius); overflow-x: auto; font-size: 12.5px; line-height: 1.5;\n}\n\n/* \u2500\u2500 \u72B6\u6001\u5FBD\u7AE0 ok / no / warn \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-status { white-space: nowrap; font-weight: 500; }\n.am-status--ok { color: var(--ok); }\n.am-status--no { color: var(--err); }\n.am-status--warn { color: var(--warn); }\n.am-status-icon { display: inline-block; width: 1.1em; font-weight: 700; }\n\n/* \u2500\u2500 callout \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-callout {\n  border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--accent-bg);\n  padding: 10px 14px; border-radius: var(--radius);\n}\n.am-callout--ok { border-left-color: var(--ok); background: var(--ok-bg); }\n.am-callout--warn { border-left-color: var(--warn); background: var(--warn-bg); }\n.am-callout--err { border-left-color: var(--err); background: var(--err-bg); }\n.am-callout-title { font-weight: 600; margin-bottom: 4px; }\n\n/* \u2500\u2500 kv \u6807\u9898\u680F\u683C \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-kv {\n  display: grid; grid-template-columns: repeat(var(--kv-cols, 2), minmax(0, 1fr)); margin: 0;\n  border-top: var(--bw) solid var(--line); border-left: var(--bw) solid var(--line);\n}\n.am-kv-cell { border-right: var(--bw) solid var(--line); border-bottom: var(--bw) solid var(--line); padding: 6px 10px 8px; min-width: 0; }\n.am-kv-cell--wide { grid-column: 1 / -1; }\n.am-kv dt { font: 11px/1.4 var(--font-mono); color: var(--ink-2); }\n.am-kv dd { margin: 2px 0 0; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }\n.am-kv-cell--wide dd { font-size: 17px; font-weight: 600; }\nhtml[data-theme="shadcn"] .am-kv { border-color: var(--line); border-radius: var(--radius); overflow: hidden; }\n\n/* \u2500\u2500 timeline \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-timeline { list-style: none; margin: 0; padding: 0; }\n.am-timeline--h { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); padding-top: 4px; }\n.am-timeline--h li { position: relative; text-align: center; padding: 0 6px; }\n.am-timeline--h li::before {\n  content: ""; position: absolute; top: 31px; left: 0; right: 0; border-top: var(--bw) solid var(--line);\n}\n.am-timeline--h li:first-child::before { left: 50%; }\n.am-timeline--h li:last-child::before { right: 50%; }\n.am-tl-when { display: block; font-size: 15px; font-weight: 500; height: 24px; }\n.am-tl-dot {\n  position: relative; display: block; width: 11px; height: 11px; margin: 2px auto 8px;\n  border: var(--bw) solid var(--line); border-radius: 50%; background: var(--paper);\n}\n.am-tl-item--hi .am-tl-dot { background: var(--accent); border-color: var(--accent); }\n.am-tl-title { display: block; font-size: 12.5px; font-weight: 500; }\n.am-tl-text { display: block; font-size: 12px; color: var(--ink-2); line-height: 1.45; }\n.am-timeline--v li { position: relative; padding: 0 0 14px 22px; }\n.am-timeline--v li::before { content: ""; position: absolute; left: 5px; top: 6px; bottom: -6px; border-left: var(--bw) solid var(--line-2); }\n.am-timeline--v li:last-child::before { display: none; }\n.am-timeline--v .am-tl-dot { position: absolute; left: 0; top: 4px; margin: 0; }\n.am-timeline--v .am-tl-when { display: inline; height: auto; font: 12px var(--font-mono); color: var(--ink-2); margin-right: 8px; }\n.am-timeline--v .am-tl-title { display: inline; font-size: 14px; }\n.am-timeline--v .am-tl-text { margin-top: 2px; }\n\n/* \u2500\u2500 annot \u53E5\u5B50\u6807\u6CE8 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-annot + .am-annot { border-top: 1px solid var(--line-2); padding-top: 12px; }\n.am-annot-head { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; margin-bottom: 8px; }\n.am-annot-meta { font: 11px var(--font-mono); font-weight: 400; color: var(--ink-2); }\n.am-annot-scroll { overflow-x: auto; }\n.am-annot-line {\n  position: relative; display: inline-block; white-space: pre; font: 14px/1.6 var(--font-mono);\n  padding-bottom: calc(var(--rows, 0) * 17px + 14px);\n}\n.am-annot-line--wrap { display: block; white-space: normal; padding-bottom: 10px; }\n.am-annot-line--wrap .am-seg { white-space: nowrap; }\n.am-seg { position: relative; }\n.am-seg::after {\n  content: ""; position: absolute; left: 1px; right: 1px; top: calc(100% + 1px); height: 5px;\n  border: 1px solid var(--accent); border-top: 0;\n}\n.am-seg-n {\n  position: absolute; left: 0; top: calc(100% + 8px + var(--row, 0) * 17px);\n  font: 11px/16px var(--font-sans); color: var(--accent); white-space: nowrap;\n}\n.am-seg--err { color: var(--err); }\n.am-seg--err::after { border-color: var(--err); }\n.am-seg--err .am-seg-n { color: var(--err); }\n.am-annot-caption { font-size: 12px; color: var(--ink-2); }\n\n/* \u2500\u2500 limits \u9650\u503C\u6761 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-lim + .am-lim { margin-top: 14px; }\n.am-lim-head { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; margin-bottom: 4px; }\n.am-lim-val { font: 12px var(--font-mono); color: var(--accent); white-space: nowrap; }\n.am-lim-track { position: relative; height: 12px; border: 1px solid var(--line-2); background: var(--fill); border-radius: calc(var(--radius) / 2); }\n.am-lim-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent-bg); border-right: 1px solid var(--accent); }\n.am-lim-mark { position: absolute; top: -4px; bottom: -4px; border-left: 2px solid var(--accent); }\n.am-lim.is-over .am-lim-fill { background: var(--err-bg); border-right-color: var(--err); }\n.am-lim.is-over .am-lim-val { color: var(--err); }\n.am-lim-ticks { position: relative; height: 16px; font: 10px/16px var(--font-mono); color: var(--ink-3); }\n.am-lim-ticks span { position: absolute; transform: translateX(-50%); }\n.am-lim-ticks span:first-child { transform: none; }\n.am-lim-note { font-size: 11px; color: var(--ink-2); margin-left: 6px; }\n\n/* \u2500\u2500 tree \u7ED3\u6784\u6811 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-tree { font-size: 13px; }\n.am-tree-root { display: flex; justify-content: center; position: relative; padding-bottom: 18px; }\n.am-tree-root::after { content: ""; position: absolute; bottom: 0; left: 50%; height: 18px; border-left: var(--bw) solid var(--line); }\n.am-tree-root--solo { padding-bottom: 12px; }\n.am-tree-root--solo::after { display: none; }\n.am-tree-box {\n  border: var(--bw) solid var(--line); background: var(--paper); padding: 6px 14px; text-align: center;\n  border-radius: var(--radius); font-weight: 600;\n}\n.am-tree-box small { display: block; font-weight: 400; color: var(--ink-2); font-size: 12px; }\n.am-tree-box--root { background: var(--accent-bg); font-size: 15px; padding: 8px 28px; }\n.am-tree-cols { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); }\n.am-tree-col { position: relative; padding: 18px 8px 0; min-width: 0; }\n.am-tree-col::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: var(--bw) solid var(--line); }\n.am-tree-col:first-child::before { left: 50%; }\n.am-tree-col:last-child::before { right: 50%; }\n.am-tree-col::after { content: ""; position: absolute; top: 0; left: 50%; height: 18px; border-left: var(--bw) solid var(--line); }\n.am-tree-list, .am-tree-list ul { list-style: none; margin: 0; padding: 0; }\n.am-tree-col > .am-tree-list { margin: 8px 0 0 14px; }\n.am-tree-list ul { margin-left: 16px; }\n.am-tree-list li { position: relative; padding: 3px 0 3px 18px; }\n.am-tree-list li::before { content: ""; position: absolute; left: 0; top: 0.95em; width: 12px; border-top: 1px solid var(--ink-3); }\n.am-tree-list li::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 1px solid var(--ink-3); }\n.am-tree-list li:last-child::after { bottom: auto; height: 0.95em; }\n.am-tree-tag { font: 11px var(--font-mono); color: var(--ink-3); margin-right: 4px; }\n.am-tree code { font: 12px var(--font-mono); }\n.am-tree-sub { display: block; font-size: 11.5px; color: var(--ink-2); }\n.am-tree-hi > .am-tree-label { color: var(--accent); font-weight: 600; }\n\n/* \u2500\u2500 \u56FE\uFF08flow / sequence\uFF09\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-diagram { margin: 0; overflow-x: auto; text-align: center; }\n.am-diagram svg { max-width: 100%; height: auto; font-family: var(--font-sans); }\n.am-diagram text { fill: var(--ink); font-size: 13px; }\n.am-node-shape { fill: var(--paper); stroke: var(--line); stroke-width: var(--bw); }\n.am-node--hi .am-node-shape { fill: var(--accent-bg); stroke: var(--accent); }\n.am-node--hi text { fill: var(--accent); font-weight: 600; }\n.am-edge { fill: none; stroke: var(--ink-2); stroke-width: 1.3; }\n.am-edge--dashed { stroke-dasharray: 5 4; }\n.am-arrow { fill: var(--ink-2); }\n.am-edge-label rect { fill: var(--paper); }\n.am-diagram .am-edge-label text { fill: var(--accent); font-size: 11.5px; }\n.am-cluster { fill: var(--fill); stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 4 3; }\n.am-diagram .am-cluster-label { fill: var(--ink-2); font: 11px var(--font-mono); }\n.am-lifeline { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 4; }\n.am-actor { fill: var(--paper); stroke: var(--line); stroke-width: var(--bw); }\n.am-note { fill: var(--warn-bg); stroke: var(--warn); stroke-width: 1; }\n.am-diagram .am-step { fill: var(--ink-3); font: 10px var(--font-mono); }\n\n/* \u2500\u2500 doc \u7EBF\u6027\u8BB2\u89E3 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-doc { max-width: 1120px; margin: 0 auto; padding: 40px 28px 64px; }\n.am-doc-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: start; }\n.am-doc-layout--notoc { grid-template-columns: minmax(0, 1fr); max-width: 860px; }\n.am-toc { position: sticky; top: 24px; font-size: 13px; }\n.am-toc a { display: block; color: var(--ink-2); text-decoration: none; padding: 4px 0 4px 10px; border-left: 2px solid var(--line-2); }\n.am-toc a:hover { color: var(--ink); border-left-color: var(--accent); }\n.am-doc-body > .am-panel + .am-panel { margin-top: 20px; }\n\n/* \u2500\u2500 \u54CD\u5E94\u5F0F\u4E0E\u6253\u5370 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n@media (max-width: 1100px) {\n  .am-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .am-grid > .am-panel { grid-column: auto !important; }\n  .am-grid > .am-panel.am-span-wide { grid-column: 1 / -1 !important; }\n}\n@media (max-width: 760px) {\n  .am-sheet, .am-doc { padding: 56px 12px 24px; }\n  .am-head { padding-right: 0; }\n  .am-grid { grid-template-columns: minmax(0, 1fr); }\n  .am-grid > .am-panel.am-span-wide { grid-column: auto !important; }\n  html[data-theme="blueprint"] .am-frame { padding: 0; border: 0; }\n  html[data-theme="blueprint"] .am-frame::before, html[data-theme="blueprint"] .am-ruler { display: none; }\n  .am-doc-layout { grid-template-columns: minmax(0, 1fr); }\n  .am-toc { position: static; }\n  .am-timeline--h { grid-template-columns: minmax(0, 1fr); }\n  .am-tree-cols { grid-template-columns: minmax(0, 1fr); }\n}\n.am-colophon { text-align: center; padding: 0 0 28px; font: 11px var(--font-mono); color: var(--ink-3); }\n\n@media print {\n  .am-toolbar { display: none; }\n  body { background: var(--paper); }\n  .am-panel { break-inside: avoid; box-shadow: none; }\n}\n.am-panel--bare { border: 0; background: transparent; box-shadow: none; }\n.am-panel--bare > .am-panel-body { padding: 0; }\n.am-panel--bare .am-kv { background: var(--paper); }\n';
 var RUNTIME_JS = `(() => {
   const root = document.documentElement;
@@ -46,11 +46,11 @@ var RUNTIME_JS = `(() => {
   });
 })();
 `;
-var VIDEO_CSS = '/* \u89C6\u9891\u64AD\u653E\u9875\uFF1A1920\xD71080 \u821E\u53F0\u6309\u7A97\u53E3\u7B49\u6BD4\u7F29\u653E\u3002\u989C\u8272\u5168\u90E8\u6765\u81EA\u4E3B\u9898\u53D8\u91CF\uFF1A\n   blueprint / shadcn \u6CBF\u7528\u9875\u9762\u4E3B\u9898\uFF1B3b1b \u662F\u89C6\u9891\u4E13\u7528\u7684\u6DF1\u8272\u4E3B\u9898\uFF08\u6DF1\u5E95\u3001\u84DD\u7EBF\u3001\u9EC4\u8272\u5F3A\u8C03\uFF09\u3002 */\nhtml[data-video] {\n  --v-stage: var(--bg);\n  --v-cap-fg: var(--ink); --v-cap-bg: var(--paper); --v-cap-border: var(--line);\n  --v-title-font: var(--head-font);\n  --v-glow: none;\n}\nhtml[data-video][data-theme="3b1b"] {\n  --bg: #0e1015; --paper: #141922; --ink: #eceff4; --ink-2: #a9b4c4; --ink-3: #6c7789;\n  --line: #58c4dd; --line-2: #2a3444; --fill: #171d27;\n  --accent: #f7d96f; --accent-bg: rgba(247, 217, 111, 0.12);\n  --ok: #83c167; --ok-bg: rgba(131, 193, 103, 0.14); --err: #fc6255; --err-bg: rgba(252, 98, 85, 0.14);\n  --warn: #f7d96f; --warn-bg: rgba(247, 217, 111, 0.12); --head-bg: #eceff4; --head-fg: #0e1015;\n  --radius: 6px; --bw: 1.6px; --shadow: none;\n  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;\n  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n  --head-font: var(--font-sans);\n  --v-stage: radial-gradient(ellipse at 50% 40%, #151a23 0%, #0e1015 70%);\n  --v-cap-fg: #fff; --v-cap-bg: rgba(8, 10, 14, 0.55); --v-cap-border: transparent;\n  --v-title-font: "CMU Serif", "Latin Modern Roman", "Iowan Old Style", "Palatino", "Songti SC", "STSong", "Noto Serif CJK SC", serif;\n  --v-glow: drop-shadow(0 0 6px rgba(247, 217, 111, 0.55));\n}\n/* blueprint\uFF1A\u56FE\u7EB8\u5E95\u52A0\u7EC6\u7F51\u683C */\nhtml[data-video][data-theme="blueprint"] {\n  --v-stage: linear-gradient(var(--line-2) 1px, transparent 1px) 0 0 / 40px 40px,\n             linear-gradient(90deg, var(--line-2) 1px, transparent 1px) 0 0 / 40px 40px, var(--paper);\n}\nhtml[data-video][data-theme="blueprint"][data-mode="dark"] {\n  --v-stage: linear-gradient(rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px,\n             linear-gradient(90deg, rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px, var(--bg);\n}\n\nhtml[data-video], html[data-video] body { background: #000; height: 100%; overflow: hidden; }\nhtml[data-video] body { font-size: 22px; }\n\n.amv-viewport { position: fixed; inset: 0 0 56px 0; overflow: hidden; }\n.amv-stage {\n  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;\n  background: var(--v-stage); color: var(--ink); transform-origin: 50% 50%;\n}\n.amv-camera { position: absolute; inset: 0; transform-origin: 0 0; }\n.amv-overlay { position: absolute; inset: 0; pointer-events: none; }\n.amv-ghost { position: absolute; left: 0; top: 0; transform-origin: 0 0; margin: 0; }\n.amv-ghost svg { display: block; max-width: none; overflow: visible; }\n\n/* \u2500\u2500 \u56FE\u7EB8\u5916\u6846\uFF08blueprint\uFF09\u2500\u2500 */\n.amv-sheet { display: none; }\nhtml[data-theme="blueprint"] .amv-sheet {\n  display: block; position: absolute; inset: 24px; border: 1.5px solid var(--line); pointer-events: none;\n}\nhtml[data-theme="blueprint"] .amv-sheet::before {\n  content: ""; position: absolute; inset: 24px; border: 1.5px solid var(--line);\n}\n.amv-ruler { position: absolute; display: flex; font: 13px/1 var(--font-mono); color: var(--ink-3); }\n.amv-ruler span { flex: 1; display: flex; align-items: center; justify-content: center; }\n.amv-ruler--top, .amv-ruler--bottom { left: 24px; right: 24px; height: 24px; }\n.amv-ruler--top { top: 0; }\n.amv-ruler--bottom { bottom: 0; }\n.amv-ruler--left, .amv-ruler--right { top: 24px; bottom: 24px; width: 24px; flex-direction: column; }\n.amv-ruler--left { left: 0; }\n.amv-ruler--right { right: 0; }\n.amv-ruler--top span + span, .amv-ruler--bottom span + span { border-left: 1px solid var(--line); }\n.amv-ruler--left span + span, .amv-ruler--right span + span { border-top: 1px solid var(--line); }\n\n/* \u2500\u2500 \u573A\u666F \u2500\u2500 */\n.amv-scene { position: absolute; inset: 0; visibility: hidden; }\n.amv-scene-head {\n  position: absolute; left: 72px; right: 72px; top: 72px; height: 64px; visibility: hidden;\n  display: flex; align-items: stretch; border: var(--bw) solid var(--line); background: var(--paper);\n  border-radius: var(--radius); overflow: hidden; color: var(--ink);\n}\n.amv-scene-n {\n  display: flex; align-items: center; justify-content: center; min-width: 64px; padding: 0 14px;\n  background: var(--head-bg); color: var(--head-fg); font: 700 30px var(--font-sans);\n}\n.amv-scene-title { flex: 1; display: flex; align-items: center; padding: 0 22px; font: 600 32px var(--v-title-font); }\n.amv-scene-meta { display: flex; align-items: center; padding: 0 22px; font: 16px var(--font-mono); color: var(--ink-2); letter-spacing: 0.06em; }\nhtml[data-theme="shadcn"] .amv-scene-n { margin: 12px 0 12px 14px; min-width: 40px; border-radius: 8px; font-size: 22px; }\nhtml[data-theme="shadcn"] .amv-scene-head { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }\n/* 3b1b\uFF1A\u6807\u9898\u6D6E\u5728\u5DE6\u4E0A\u89D2\uFF0C\u4E0D\u8981\u8FB9\u6846 */\nhtml[data-theme="3b1b"] .amv-scene-head { left: 96px; top: 56px; border: 0; background: none; align-items: baseline; gap: 22px; }\nhtml[data-theme="3b1b"] .amv-scene-n { background: none; color: var(--line); padding: 0; min-width: 0; font: 500 30px var(--font-mono); }\nhtml[data-theme="3b1b"] .amv-scene-title { padding: 0; font-weight: 400; font-size: 46px; }\nhtml[data-theme="3b1b"] .amv-scene-meta { display: none; }\n\n.amv-body { position: absolute; left: 96px; right: 96px; top: 160px; height: 760px; display: grid; place-items: center; }\n.amv-fit { width: max-content; max-width: 1100px; transform-origin: 50% 50%; display: flex; flex-direction: column; gap: 28px; }\n.amv-fit .am-diagram { overflow: visible; }\n.amv-fit .am-diagram svg { max-width: none; overflow: visible; }\n.amv-fit .am-md { font-size: 26px; line-height: 1.6; }\n.amv-fit table { font-size: 24px; }\n.amv-fit th { font-size: 17px; }\n\n/* \u2500\u2500 \u7247\u5934 \u2500\u2500 */\n.amv-scene--title { display: grid; place-items: center; text-align: center; }\n.amv-title-wrap { max-width: 1500px; display: flex; flex-direction: column; align-items: center; }\n.amv-title { margin: 0; font: 700 96px/1.15 var(--v-title-font); color: var(--ink); letter-spacing: -0.01em; }\n.amv-subtitle { margin: 26px 0 0; font: 36px var(--v-title-font); color: var(--accent); }\n.amv-intro { margin-top: 36px; font-size: 28px; color: var(--ink-2); }\n.amv-titleblock {\n  display: flex; margin-top: 56px; border: var(--bw) solid var(--line); border-radius: var(--radius);\n  background: var(--paper); text-align: left; overflow: hidden;\n}\n.amv-titleblock div { padding: 16px 30px; display: flex; flex-direction: column; gap: 6px; }\n.amv-titleblock div + div { border-left: 1px solid var(--line); }\n.amv-titleblock b { font: 600 16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.08em; }\n.amv-titleblock span { font: 28px var(--font-sans); color: var(--ink); }\nhtml[data-theme="3b1b"] .amv-title { font-weight: 400; font-size: 104px; letter-spacing: 0.005em; }\nhtml[data-theme="3b1b"] .amv-subtitle { color: var(--line); }\nhtml[data-theme="3b1b"] .amv-titleblock { display: none; }\n\n/* \u2500\u2500 \u5B57\u5E55 \u2500\u2500 */\n.amv-caption {\n  position: absolute; left: 0; right: 0; bottom: 76px; display: flex; justify-content: center; pointer-events: none;\n}\n.amv-caption span {\n  max-width: 1500px; padding: 12px 28px; border-radius: var(--radius); text-align: center;\n  font: 500 38px/1.45 var(--font-sans); color: var(--v-cap-fg); background: var(--v-cap-bg);\n  border: var(--bw) solid var(--v-cap-border);\n}\nhtml[data-theme="3b1b"] .amv-caption { bottom: 56px; }\nhtml[data-theme="3b1b"] .amv-caption span { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); font-size: 40px; }\n.amv-caption span:empty { display: none; }\n.amv-caption b { color: var(--accent); font-weight: 700; }\n\n/* \u2500\u2500 \u65C1\u767D\u70B9\u540D\u65F6\u7684\u9AD8\u4EAE\uFF1B\u8FDE\u7EBF\u6807\u7B7E\u5E73\u65F6\u7528\u7070\u8272\uFF0C\u88AB\u70B9\u540D\u624D\u53D8\u8272 \u2500\u2500 */\nhtml[data-video] .am-diagram .am-edge-label text { fill: var(--ink-2); }\n.amv-hl .am-node-shape, .amv-hl .am-actor {\n  stroke: var(--accent); stroke-width: 3; fill: var(--accent-bg); filter: var(--v-glow);\n}\nhtml[data-video] .am-diagram .amv-hl text, html[data-video] .am-diagram text.amv-hl { fill: var(--accent); font-weight: 600; }\n.amv-hl .am-edge { stroke: var(--accent); stroke-width: 2.4; }\n.amv-hl.am-tree-box, .amv-hl.am-tl-item, .amv-hl.am-lim, .amv-hl.am-kv-cell, li.amv-hl > .am-tree-label, tr.amv-hl td, .amv-hl.am-seg {\n  color: var(--accent); outline: 2.5px solid var(--accent); outline-offset: 4px; border-radius: 4px;\n}\n\n/* \u2500\u2500 \u64AD\u653E\u63A7\u4EF6\uFF08\u4E0D\u8FDB\u5165\u753B\u9762\uFF09\u2500\u2500 */\n.amv-bigplay {\n  position: absolute; left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%;\n  border: 2px solid rgba(255, 255, 255, 0.85); background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 54px; cursor: pointer;\n  padding-left: 10px;\n}\n.amv-bigplay[hidden] { display: none; }\n.amv-controls {\n  position: fixed; left: 0; right: 0; bottom: 0; height: 56px; display: flex; align-items: center; gap: 14px;\n  padding: 0 18px; background: #0b0d11; border-top: 1px solid #1d2330; color: #c9d1dc; font: 13px -apple-system, "Segoe UI", sans-serif;\n}\n.amv-btn { width: 36px; height: 32px; border: 1px solid #2a3240; border-radius: 6px; background: #141922; color: #fff; cursor: pointer; }\n.amv-time { font-family: ui-monospace, Menlo, monospace; min-width: 96px; }\n.amv-track { position: relative; flex: 1; }\n.amv-seek { width: 100%; accent-color: #58c4dd; }\n.amv-marks { position: absolute; left: 0; right: 0; top: -6px; height: 6px; pointer-events: none; }\n.amv-marks i { position: absolute; top: 0; width: 2px; height: 6px; background: #58c4dd; }\n.amv-brand { color: #5b6576; font-size: 12px; white-space: nowrap; }\n\n/* \u5BFC\u51FA\u6A21\u5F0F\uFF1A\u53EA\u7559\u821E\u53F0\uFF0C1:1 \u65E0\u7F29\u653E */\nhtml[data-export] .amv-controls, html[data-export] .amv-bigplay { display: none; }\nhtml[data-export] .amv-viewport { inset: 0; }\nhtml[data-export] .amv-stage { left: 0; top: 0; transform: none !important; }\n';
-var VIDEO_JS = "(() => {\n  const D = JSON.parse(document.getElementById('amv-data').textContent);\n  const W = 1920;\n  const H = 1080;\n  const T = 0.9;     // \u573A\u666F\u5207\u6362\u65F6\u957F\uFF0C\u4E0E TIMING.transition \u4E00\u81F4\n  const R = 0.6;     // \u5355\u6B65\u51FA\u73B0\u65F6\u957F\n  const CAM = 0.8;   // \u955C\u5934\u79FB\u52A8\u65F6\u957F\n  const root = document.documentElement;\n  const stage = document.querySelector('.amv-stage');\n  const camera = document.querySelector('.amv-camera');\n  const overlay = document.querySelector('.amv-overlay');\n  const caption = document.querySelector('.amv-caption span');\n  const scenes = [...document.querySelectorAll('.amv-scene')];\n  const segs = D.segments;\n  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));\n  const ease = (x) => { const v = clamp(x); return v < 0.5 ? 4 * v * v * v : 1 - (-2 * v + 2) ** 3 / 2; };\n  const lerp = (a, b, p) => a + (b - a) * p;\n  const STEP_SEL = '.am-tl-item, .am-lim, .am-seg, tbody tr, .am-kv-cell, .am-md > ul > li, .am-md > ol > li, .am-md > p, .am-md > blockquote, .am-callout';\n\n  // \u2500\u2500 1. \u8BA9\u6BCF\u4E2A\u573A\u666F\u7684\u5185\u5BB9\u9002\u914D\u753B\u9762 \u2500\u2500\n  for (const sc of scenes) {\n    const fit = sc.querySelector('.amv-fit');\n    if (!fit || !fit.children.length) continue;\n    const s = Math.min(1600 / fit.offsetWidth, 740 / fit.offsetHeight, 3.4);\n    fit.style.transform = `scale(${s})`;\n  }\n\n  // \u573A\u666F\u6807\u9898\u653E\u5728\u955C\u5934\u4E4B\u5916\uFF1A\u955C\u5934\u63A8\u8FD1\u65F6\u6807\u9898\u4FDD\u6301\u4E0D\u52A8\u3002\n  const heads = scenes.map((sc) => {\n    const h = sc.querySelector('.amv-scene-head');\n    if (h) stage.insertBefore(h, camera.nextSibling);\n    return h;\n  });\n\n  // \u4EE5\u821E\u53F0\u4E3A\u5750\u6807\u7CFB\u6D4B\u91CF\u5143\u7D20\uFF08\u6B64\u65F6\u955C\u5934\u4E3A\u5355\u4F4D\u53D8\u6362\uFF09\u3002\n  const sr = stage.getBoundingClientRect();\n  const k = sr.width / W;\n  const rectOf = (el) => {\n    const r = el.getBoundingClientRect();\n    return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k };\n  };\n\n  // \u2500\u2500 2. \u5206\u6B65\uFF1A\u7EC4\u4EF6\u81EA\u5E26 data-step \u65F6\u6309\u5B83\u5206\u7EC4\uFF0C\u5426\u5219\u6309\u884C/\u6761\u76EE\u81EA\u52A8\u5206\u6B65 \u2500\u2500\n  const items = [];   // { el, at, paths: [{ el, len }] }\n  scenes.forEach((sc, i) => {\n    if (i === 0) return;\n    const groups = [];\n    for (const block of sc.querySelectorAll('.amv-fit > *')) {\n      const marked = [...block.querySelectorAll('[data-step]')];\n      if (marked.length) {\n        const by = new Map();\n        for (const el of marked) {\n          const n = Number(el.dataset.step);\n          if (!by.has(n)) by.set(n, []);\n          by.get(n).push(el);\n        }\n        [...by.keys()].sort((a, b) => a - b).forEach((n) => groups.push(by.get(n)));\n      } else {\n        const found = [...block.querySelectorAll(STEP_SEL)].filter((el) => !el.parentElement.closest(STEP_SEL));\n        if (found.length) found.forEach((el) => groups.push([el]));\n        else groups.push([block]);\n      }\n    }\n    const beats = segs[i].beats;\n    const S = groups.length;\n    const B = beats.length;\n    const perBeat = new Map();\n    groups.forEach((g, gi) => {\n      // \u65C1\u767D\u6BD4\u6B65\u6570\u591A\u65F6\uFF0C\u591A\u51FA\u7684\u53E5\u5B50\u5F53\u5F00\u573A\u767D\uFF1A\u6B65\u9AA4\u5BF9\u9F50\u5230\u6700\u540E\u51E0\u53E5\u3002\n      const b = S <= B ? gi + (B - S) : Math.floor((gi * B) / S);\n      const rank = perBeat.get(b) ?? 0;\n      perBeat.set(b, rank + 1);\n      const beat = beats[b];\n      const count = S <= B ? 1 : Math.ceil(S / B) || 1;\n      const slot = Math.min(0.45, (beat.end - beat.start) / count);\n      for (const el of g) {\n        const paths = (el.matches('path.am-edge') ? [el] : [...el.querySelectorAll('path.am-edge')])\n          .filter((p) => !p.classList.contains('am-edge--dashed'))\n          .map((p) => ({ el: p, len: p.getTotalLength() }));\n        items.push({ el, scene: i, at: beat.start + rank * slot, paths });\n      }\n    });\n  });\n\n  // \u2500\u2500 3. \u8DE8\u573A\u666F\u53D8\u5F62\uFF1A\u524D\u540E\u4E24\u4E2A\u573A\u666F\u91CC\u540C\u540D\uFF08data-key\uFF09\u7684\u5143\u7D20 \u2500\u2500\n  const morphs = [];  // { scene, from, to, ghost, a, b }\n  const keyed = (sc) => {\n    const m = new Map();\n    for (const el of sc.querySelectorAll('[data-key]')) if (!m.has(el.dataset.key)) m.set(el.dataset.key, el);\n    return m;\n  };\n  for (let i = 2; i < scenes.length; i++) {\n    const prev = keyed(scenes[i - 1]);\n    for (const [key, to] of keyed(scenes[i])) {\n      const from = prev.get(key);\n      // \u53EA\u5728\u540C\u7C7B\u5143\u7D20\u4E4B\u95F4\u53D8\u5F62\uFF08SVG \u5BF9 SVG\u3001HTML \u5BF9 HTML\uFF09\uFF0C\u5426\u5219\u5F62\u72B6\u5BF9\u4E0D\u4E0A\u3002\n      if (!from || (from instanceof SVGElement) !== (to instanceof SVGElement)) continue;\n      try {\n        const ghost = makeGhost(from);\n        overlay.append(ghost.node);\n        morphs.push({ scene: i, from, to, ghost: ghost.node, a: ghost.place(rectOf(from)), b: ghost.place(rectOf(to)) });\n      } catch {\n        // \u53D8\u5F62\u53EA\u662F\u9526\u4E0A\u6DFB\u82B1\uFF1A\u4E2A\u522B\u5143\u7D20\u6D4B\u91CF\u5931\u8D25\u65F6\u76F4\u63A5\u8DF3\u8FC7\uFF0C\u4E0D\u5F71\u54CD\u64AD\u653E\u3002\n      }\n    }\n  }\n  const carried = new Set(morphs.map((m) => m.to));\n\n  function makeGhost(el) {\n    const wrap = document.createElement('div');\n    const host = el.closest('.am-diagram, .am-tree, .am-timeline, .am-kv, .am-limits');\n    wrap.className = `amv-ghost ${host ? host.className : ''}`;\n    if (el instanceof SVGGraphicsElement) {\n      const bb = el.getBBox();\n      const pad = 4;\n      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n      svg.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);\n      svg.setAttribute('width', bb.width + pad * 2);\n      svg.setAttribute('height', bb.height + pad * 2);\n      const clone = el.cloneNode(true);\n      clone.removeAttribute('style');\n      svg.append(clone);\n      wrap.append(svg);\n      return {\n        node: wrap,\n        place: (r) => {\n          const s = r.w / (bb.width || 1);\n          return { x: r.x - pad * s, y: r.y - pad * s, s };\n        },\n      };\n    }\n    const clone = el.cloneNode(true);\n    clone.removeAttribute('style');\n    clone.querySelectorAll('[data-key], ul').forEach((n) => n.remove());\n    const box = document.createElement(el.tagName === 'LI' ? 'ul' : 'div');\n    box.className = el.tagName === 'LI' ? 'am-tree-list' : '';\n    box.style.margin = '0';\n    box.append(clone);\n    wrap.append(box);\n    wrap.style.width = `${el.offsetWidth}px`;\n    const w0 = el.offsetWidth || 1;\n    return { node: wrap, place: (r) => ({ x: r.x, y: r.y, s: r.w / w0 }) };\n  }\n\n  // \u2500\u2500 4. \u955C\u5934\uFF1A\u65C1\u767D\u91CC [\u540D\u5B57] \u5BF9\u5E94\u7684\u5143\u7D20 \u2500\u2500\n  const findKey = (sc, key) => {\n    const all = [...sc.querySelectorAll('[data-key]')];\n    const norm = (s) => s.replace(/[`*]/g, '').trim().toLowerCase();\n    return all.find((el) => norm(el.dataset.key) === norm(key))\n      ?? all.find((el) => norm(el.dataset.key).includes(norm(key)))\n      ?? [...sc.querySelectorAll(`${STEP_SEL}, text`)].find((el) => norm(el.textContent).includes(norm(key)));\n  };\n  const IDENT = { s: 1, x: 0, y: 0 };\n  // \u63A8\u8FD1\u4F46\u4E0D\u88C1\u5207\uFF1A\u653E\u5927\u540E\u6574\u5F20\u56FE\u4ECD\u8981\u7559\u5728\u6807\u9898\u4E0E\u5B57\u5E55\u4E4B\u95F4\u7684\u5B89\u5168\u533A\u91CC\u3002\n  const SAFE = { left: 60, right: W - 60, top: 140, bottom: H - 150 };\n  function focusCam(r, sc) {\n    const fit = sc.querySelector('.amv-fit');\n    const c = fit ? rectOf(fit) : { x: 0, y: 0, w: W, h: H };\n    const room = Math.min((SAFE.right - SAFE.left) / c.w, (SAFE.bottom - SAFE.top) / c.h);\n    const s = clamp(Math.min(0.5 * W / r.w, 0.42 * H / r.h, room, 1.4), 1, 1.4);\n    const fitAxis = (want, lo, hi, a, b) => (s * (b - a) <= hi - lo ? clamp(want, lo - s * a, hi - s * b) : want);\n    return {\n      s,\n      x: fitAxis(W / 2 - s * (r.x + r.w / 2), SAFE.left, SAFE.right, c.x, c.x + c.w),\n      y: fitAxis(H * 0.5 - s * (r.y + r.h / 2), SAFE.top, SAFE.bottom, c.y, c.y + c.h),\n    };\n  }\n  const camEvents = [];   // { t, cam, hl }\n  segs.forEach((seg, i) => {\n    camEvents.push({ t: seg.start, cam: IDENT, hl: null });\n    seg.beats.forEach((b) => {\n      const el = b.focus ? findKey(scenes[i], b.focus) : null;\n      let cam = IDENT;\n      if (el) cam = focusCam(rectOf(el), scenes[i]);\n      camEvents.push({ t: b.start, cam, hl: el });\n    });\n  });\n  const hlTargets = new Set(camEvents.map((e) => e.hl).filter(Boolean));\n\n  // \u2500\u2500 5. \u786E\u5B9A\u6027\u6E32\u67D3\uFF1A\u540C\u4E00\u65F6\u523B\u6C38\u8FDC\u753B\u51FA\u540C\u4E00\u5E27 \u2500\u2500\n  function render(t) {\n    t = clamp(t, 0, D.duration);\n    const cur = segs.findLastIndex((s) => t >= s.start);\n\n    scenes.forEach((sc, i) => {\n      const seg = segs[i];\n      const next = segs[i + 1];\n      const fadeIn = i === 0 ? ease(t / 0.8) : ease((t - seg.start) / T);\n      const fadeOut = next ? 1 - ease((t - next.start) / T) : 1;\n      const op = t < seg.start ? 0 : Math.min(fadeIn, fadeOut);\n      sc.style.opacity = op;\n      sc.style.visibility = op > 0 ? 'visible' : 'hidden';\n      if (heads[i]) {\n        // \u6807\u9898\u4E0D\u4EA4\u53E0\uFF1A\u65E7\u6807\u9898\u5728\u5207\u6362\u524D\u534A\u6BB5\u6DE1\u51FA\uFF0C\u65B0\u6807\u9898\u5728\u540E\u534A\u6BB5\u6DE1\u5165\u3002\n        const hin = ease((t - seg.start - T / 2) / (T / 2));\n        const hout = next ? 1 - ease((t - next.start) / (T / 2)) : 1;\n        const hop = t < seg.start ? 0 : Math.min(hin, hout);\n        heads[i].style.opacity = hop;\n        heads[i].style.visibility = hop > 0 ? 'visible' : 'hidden';\n      }\n    });\n\n    for (const it of items) {\n      const p = ease((t - it.at) / R);\n      const fade = clamp((t - it.at) / 0.25);\n      if (carried.has(it.el)) continue;\n      it.el.style.opacity = fade;\n      if (it.paths.length) {\n        for (const { el, len } of it.paths) {\n          el.style.strokeDasharray = `${len}`;\n          el.style.strokeDashoffset = `${len * (1 - p)}`;\n          el.style.markerEnd = p < 0.97 ? 'none' : '';\n        }\n      } else {\n        it.el.style.transform = p < 1 ? `translateY(${(1 - p) * 14}px)` : '';\n      }\n    }\n\n    for (const m of morphs) {\n      const s0 = segs[m.scene].start;\n      const during = t >= s0 && t < s0 + T;\n      const p = ease((t - s0) / T);\n      m.ghost.style.display = during ? '' : 'none';\n      if (during) {\n        m.ghost.style.transform = `translate(${lerp(m.a.x, m.b.x, p)}px, ${lerp(m.a.y, m.b.y, p)}px) scale(${lerp(m.a.s, m.b.s, p)})`;\n      }\n      m.from.style.visibility = during ? 'hidden' : '';\n      m.to.style.visibility = t < s0 + T ? 'hidden' : '';\n      m.to.style.opacity = 1;\n    }\n\n    // \u955C\u5934\u4E0E\u9AD8\u4EAE\n    const ev = camEvents.findLastIndex((e) => t >= e.t);\n    let cam = IDENT;\n    let hl = null;\n    if (ev >= 0) {\n      const e = camEvents[ev];\n      const prev = ev > 0 ? camEvents[ev - 1].cam : IDENT;\n      const p = ease((t - e.t) / CAM);\n      cam = { s: lerp(prev.s, e.cam.s, p), x: lerp(prev.x, e.cam.x, p), y: lerp(prev.y, e.cam.y, p) };\n      hl = e.hl;\n    }\n    camera.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})`;\n    for (const el of hlTargets) el.classList.toggle('amv-hl', el === hl);\n\n    // \u5B57\u5E55\n    const beats = cur >= 0 ? segs[cur].beats : [];\n    const b = beats.find((x) => t >= x.start && t < x.end + 0.3);\n    const html = b ? b.html : '';\n    if (caption.dataset.html !== html) {\n      caption.innerHTML = html;\n      caption.dataset.html = html;\n    }\n    caption.style.opacity = b ? clamp((t - b.start) / 0.2) : 0;\n    updateUi(t);\n  }\n\n  // \u2500\u2500 6. \u64AD\u653E\u5668 \u2500\u2500\n  const audio = document.getElementById('amv-audio');\n  const seek = document.querySelector('.amv-seek');\n  const timeEl = document.querySelector('.amv-time');\n  const toggleBtn = document.querySelector('[data-amv=\"toggle\"]');\n  const bigPlay = document.querySelector('.amv-bigplay');\n  const marks = document.querySelector('.amv-marks');\n  const fmt = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;\n  seek.max = D.duration;\n  segs.slice(1).forEach((s) => {\n    const m = document.createElement('i');\n    m.style.left = `${(s.start / D.duration) * 100}%`;\n    m.title = s.title;\n    marks.append(m);\n  });\n\n  let playing = false;\n  let base = 0;\n  let t0 = 0;\n  const now = () => (!playing ? base : audio ? audio.currentTime : base + (performance.now() - t0) / 1000);\n\n  function updateUi(t) {\n    if (document.activeElement !== seek) seek.value = t;\n    timeEl.textContent = `${fmt(t)} / ${fmt(D.duration)}`;\n  }\n\n  function play() {\n    if (base >= D.duration - 0.05) base = 0;\n    playing = true;\n    bigPlay.hidden = true;\n    toggleBtn.textContent = '\u275A\u275A';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.pause);\n    if (audio) {\n      audio.currentTime = base;\n      audio.play().catch(() => {});\n    } else {\n      t0 = performance.now();\n    }\n    requestAnimationFrame(tick);\n  }\n\n  function pause() {\n    base = now();\n    playing = false;\n    audio?.pause();\n    toggleBtn.textContent = '\u25B6';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.play);\n  }\n\n  function seekTo(x) {\n    base = clamp(x, 0, D.duration);\n    if (audio) audio.currentTime = base;\n    t0 = performance.now();\n    render(base);\n  }\n\n  function tick() {\n    if (!playing) return;\n    const t = now();\n    if (t >= D.duration) {\n      pause();\n      base = D.duration;\n      render(D.duration);\n      return;\n    }\n    render(t);\n    requestAnimationFrame(tick);\n  }\n\n  const toggle = () => (playing ? pause() : play());\n  toggleBtn.addEventListener('click', toggle);\n  bigPlay.addEventListener('click', play);\n  stage.addEventListener('click', (e) => { if (e.target !== bigPlay) toggle(); });\n  seek.addEventListener('input', () => seekTo(Number(seek.value)));\n  document.addEventListener('keydown', (e) => {\n    if (e.key === ' ') { e.preventDefault(); toggle(); }\n    if (e.key === 'ArrowRight') seekTo(now() + 5);\n    if (e.key === 'ArrowLeft') seekTo(now() - 5);\n  });\n  audio?.addEventListener('ended', () => { pause(); base = D.duration; });\n\n  function fitStage() {\n    if (root.hasAttribute('data-export')) return;\n    const vp = stage.parentElement;\n    const s = Math.min(vp.clientWidth / W, vp.clientHeight / H);\n    stage.style.transform = `translate(-50%, -50%) scale(${s})`;\n  }\n  window.addEventListener('resize', fitStage);\n\n  // \u5BFC\u51FA\uFF1A\u628A\u821E\u53F0 1:1 \u6446\u5728\u5DE6\u4E0A\u89D2\uFF0C\u9010\u5E27\u8C03\u7528 render(t)\u3002\n  window.render = render;\n  window.__amv = {\n    duration: D.duration,\n    fps: D.fps,\n    exportMode() { root.setAttribute('data-export', ''); stage.style.transform = ''; },\n  };\n  fitStage();\n  // \u5C01\u9762\uFF1A\u663E\u793A\u5B8C\u5168\u6DE1\u5165\u540E\u7684\u7247\u5934\uFF0C\u4F46\u64AD\u653E\u4ECD\u4ECE 0 \u5F00\u59CB\u3002\n  render(Math.min(1, segs[0].end));\n  updateUi(0);\n})();\n";
+var VIDEO_CSS = '/* \u89C6\u9891\u64AD\u653E\u9875\uFF1A1920\xD71080 \u821E\u53F0\u6309\u7A97\u53E3\u7B49\u6BD4\u7F29\u653E\u3002\u989C\u8272\u5168\u90E8\u6765\u81EA\u4E3B\u9898\u53D8\u91CF\uFF1A\n   blueprint / shadcn \u6CBF\u7528\u9875\u9762\u4E3B\u9898\uFF1B3b1b \u662F\u89C6\u9891\u4E13\u7528\u7684\u6DF1\u8272\u4E3B\u9898\uFF08\u6DF1\u5E95\u3001\u84DD\u7EBF\u3001\u9EC4\u8272\u5F3A\u8C03\uFF09\u3002 */\nhtml[data-video] {\n  /* \u64AD\u653E\u63A7\u4EF6\u4E0D\u8FDB\u5165\u753B\u9762\uFF0C\u4E5F\u4E0D\u968F\u4E3B\u9898\u53D8\u5316\uFF0C\u56FA\u5B9A\u7528\u4E00\u7EC4\u6DF1\u8272 token */\n  --v-ctl-bg: #0b0d11; --v-ctl-line: #1d2330; --v-ctl-fg: #c9d1dc; --v-ctl-muted: #5b6576;\n  --v-ctl-btn: #141922; --v-ctl-btn-line: #2a3240; --v-ctl-accent: #58c4dd; --v-ctl-white: #fff;\n  --v-letterbox: #000;\n  --v-stage: var(--bg);\n  --v-cap-fg: var(--ink); --v-cap-bg: var(--paper); --v-cap-border: var(--line);\n  --v-title-font: var(--head-font);\n  --v-glow: none;\n}\nhtml[data-video][data-theme="3b1b"] {\n  --bg: #0e1015; --paper: #141922; --ink: #eceff4; --ink-2: #a9b4c4; --ink-3: #6c7789;\n  --line: #58c4dd; --line-2: #2a3444; --fill: #171d27;\n  --accent: #f7d96f; --accent-bg: rgba(247, 217, 111, 0.12);\n  --ok: #83c167; --ok-bg: rgba(131, 193, 103, 0.14); --err: #fc6255; --err-bg: rgba(252, 98, 85, 0.14);\n  --warn: #f7d96f; --warn-bg: rgba(247, 217, 111, 0.12); --head-bg: #eceff4; --head-fg: #0e1015;\n  --radius: 6px; --bw: 1.6px; --shadow: none;\n  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;\n  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n  --head-font: var(--font-sans);\n  --v-stage: radial-gradient(ellipse at 50% 40%, #151a23 0%, #0e1015 70%);\n  --v-cap-fg: #fff; --v-cap-bg: rgba(8, 10, 14, 0.55); --v-cap-border: transparent;\n  --v-title-font: "CMU Serif", "Latin Modern Roman", "Iowan Old Style", "Palatino", "Songti SC", "STSong", "Noto Serif CJK SC", serif;\n  --v-glow: drop-shadow(0 0 6px rgba(247, 217, 111, 0.55));\n}\n/* blueprint\uFF1A\u56FE\u7EB8\u5E95\u52A0\u7EC6\u7F51\u683C */\nhtml[data-video][data-theme="blueprint"] {\n  --v-stage: linear-gradient(var(--line-2) 1px, transparent 1px) 0 0 / 40px 40px,\n             linear-gradient(90deg, var(--line-2) 1px, transparent 1px) 0 0 / 40px 40px, var(--paper);\n}\nhtml[data-video][data-theme="blueprint"][data-mode="dark"] {\n  --v-stage: linear-gradient(rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px,\n             linear-gradient(90deg, rgba(201, 214, 232, 0.07) 1px, transparent 1px) 0 0 / 40px 40px, var(--bg);\n}\n\nhtml[data-video], html[data-video] body { background: var(--v-letterbox); height: 100%; overflow: hidden; }\nhtml[data-video] body { font-size: 22px; }\n\n.amv-viewport { position: fixed; inset: 0 0 56px 0; overflow: hidden; }\n.amv-stage {\n  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;\n  background: var(--v-stage); color: var(--ink); transform-origin: 50% 50%;\n}\n.amv-camera { position: absolute; inset: 0; transform-origin: 0 0; }\n.amv-overlay { position: absolute; inset: 0; pointer-events: none; }\n.amv-ghost { position: absolute; left: 0; top: 0; transform-origin: 0 0; margin: 0; }\n.amv-ghost svg { display: block; max-width: none; overflow: visible; }\n\n/* \u2500\u2500 \u56FE\u7EB8\u5916\u6846\uFF08blueprint\uFF09\u2500\u2500 */\n.amv-sheet { display: none; }\nhtml[data-theme="blueprint"] .amv-sheet {\n  display: block; position: absolute; inset: 24px; border: 1.5px solid var(--line); pointer-events: none;\n}\nhtml[data-theme="blueprint"] .amv-sheet::before {\n  content: ""; position: absolute; inset: 24px; border: 1.5px solid var(--line);\n}\n.amv-ruler { position: absolute; display: flex; font: 13px/1 var(--font-mono); color: var(--ink-3); }\n.amv-ruler span { flex: 1; display: flex; align-items: center; justify-content: center; }\n.amv-ruler--top, .amv-ruler--bottom { left: 24px; right: 24px; height: 24px; }\n.amv-ruler--top { top: 0; }\n.amv-ruler--bottom { bottom: 0; }\n.amv-ruler--left, .amv-ruler--right { top: 24px; bottom: 24px; width: 24px; flex-direction: column; }\n.amv-ruler--left { left: 0; }\n.amv-ruler--right { right: 0; }\n.amv-ruler--top span + span, .amv-ruler--bottom span + span { border-left: 1px solid var(--line); }\n.amv-ruler--left span + span, .amv-ruler--right span + span { border-top: 1px solid var(--line); }\n\n/* \u2500\u2500 \u573A\u666F \u2500\u2500 */\n.amv-scene { position: absolute; inset: 0; visibility: hidden; }\n.amv-scene-head {\n  position: absolute; left: 72px; right: 72px; top: 72px; height: 64px; visibility: hidden;\n  display: flex; align-items: stretch; border: var(--bw) solid var(--line); background: var(--paper);\n  border-radius: var(--radius); overflow: hidden; color: var(--ink);\n}\n.amv-scene-n {\n  display: flex; align-items: center; justify-content: center; min-width: 64px; padding: 0 14px;\n  background: var(--head-bg); color: var(--head-fg); font: 700 30px var(--font-sans);\n}\n.amv-scene-title { flex: 1; display: flex; align-items: center; padding: 0 22px; font: 600 32px var(--v-title-font); }\n.amv-scene-meta { display: flex; align-items: center; padding: 0 22px; font: 16px var(--font-mono); color: var(--ink-2); letter-spacing: 0.06em; }\nhtml[data-theme="shadcn"] .amv-scene-n { margin: 12px 0 12px 14px; min-width: 40px; border-radius: 8px; font-size: 22px; }\nhtml[data-theme="shadcn"] .amv-scene-head { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }\n/* 3b1b\uFF1A\u6807\u9898\u6D6E\u5728\u5DE6\u4E0A\u89D2\uFF0C\u4E0D\u8981\u8FB9\u6846 */\nhtml[data-theme="3b1b"] .amv-scene-head { left: 96px; top: 56px; border: 0; background: none; align-items: baseline; gap: 22px; }\nhtml[data-theme="3b1b"] .amv-scene-n { background: none; color: var(--line); padding: 0; min-width: 0; font: 500 30px var(--font-mono); }\nhtml[data-theme="3b1b"] .amv-scene-title { padding: 0; font-weight: 400; font-size: 46px; }\nhtml[data-theme="3b1b"] .amv-scene-meta { display: none; }\n\n.amv-body { position: absolute; left: 96px; right: 96px; top: 160px; height: 760px; display: grid; place-items: center; }\n.amv-fit { width: max-content; max-width: 1100px; transform-origin: 50% 50%; display: flex; flex-direction: column; gap: 28px; }\n.amv-fit .am-diagram { overflow: visible; }\n.amv-fit .am-diagram svg { max-width: none; overflow: visible; }\n.amv-fit .am-md { font-size: 26px; line-height: 1.6; }\n.amv-fit table { font-size: 24px; }\n.amv-fit th { font-size: 17px; }\n\n/* \u2500\u2500 \u7247\u5934 \u2500\u2500 */\n.amv-scene--title { display: grid; place-items: center; text-align: center; }\n.amv-title-wrap { max-width: 1500px; display: flex; flex-direction: column; align-items: center; }\n.amv-title { margin: 0; font: 700 96px/1.15 var(--v-title-font); color: var(--ink); letter-spacing: -0.01em; }\n.amv-subtitle { margin: 26px 0 0; font: 36px var(--v-title-font); color: var(--accent); }\n.amv-intro { margin-top: 36px; font-size: 28px; color: var(--ink-2); }\n.amv-titleblock {\n  display: flex; margin-top: 56px; border: var(--bw) solid var(--line); border-radius: var(--radius);\n  background: var(--paper); text-align: left; overflow: hidden;\n}\n.amv-titleblock div { padding: 16px 30px; display: flex; flex-direction: column; gap: 6px; }\n.amv-titleblock div + div { border-left: 1px solid var(--line); }\n.amv-titleblock b { font: 600 16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.08em; }\n.amv-titleblock span { font: 28px var(--font-sans); color: var(--ink); }\nhtml[data-theme="3b1b"] .amv-title { font-weight: 400; font-size: 104px; letter-spacing: 0.005em; }\nhtml[data-theme="3b1b"] .amv-subtitle { color: var(--line); }\nhtml[data-theme="3b1b"] .amv-titleblock { display: none; }\n\n/* \u2500\u2500 \u5B57\u5E55 \u2500\u2500 */\n.amv-caption {\n  position: absolute; left: 0; right: 0; bottom: 76px; display: flex; justify-content: center; pointer-events: none;\n}\n.amv-caption span {\n  max-width: 1500px; padding: 12px 28px; border-radius: var(--radius); text-align: center;\n  font: 500 38px/1.45 var(--font-sans); color: var(--v-cap-fg); background: var(--v-cap-bg);\n  border: var(--bw) solid var(--v-cap-border);\n}\nhtml[data-theme="3b1b"] .amv-caption { bottom: 56px; }\nhtml[data-theme="3b1b"] .amv-caption span { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); font-size: 40px; }\n.amv-caption span:empty { display: none; }\n.amv-caption b { color: var(--accent); font-weight: 700; }\n\n/* \u2500\u2500 \u65C1\u767D\u70B9\u540D\u65F6\u7684\u9AD8\u4EAE\uFF1B\u8FDE\u7EBF\u6807\u7B7E\u5E73\u65F6\u7528\u7070\u8272\uFF0C\u88AB\u70B9\u540D\u624D\u53D8\u8272 \u2500\u2500 */\nhtml[data-video] .am-diagram .am-edge-label text { fill: var(--ink-2); }\n.amv-hl .am-node-shape, .amv-hl .am-actor {\n  stroke: var(--accent); stroke-width: 3; fill: var(--accent-bg); filter: var(--v-glow);\n}\nhtml[data-video] .am-diagram .amv-hl text, html[data-video] .am-diagram text.amv-hl { fill: var(--accent); font-weight: 600; }\n.amv-hl .am-edge { stroke: var(--accent); stroke-width: 2.4; }\n.amv-hl.am-tree-box, .amv-hl.am-tl-item, .amv-hl.am-lim, .amv-hl.am-kv-cell, li.amv-hl > .am-tree-label, tr.amv-hl td, .amv-hl.am-seg {\n  color: var(--accent); outline: 2.5px solid var(--accent); outline-offset: 4px; border-radius: 4px;\n}\n\n/* \u2500\u2500 \u64AD\u653E\u63A7\u4EF6\uFF08\u4E0D\u8FDB\u5165\u753B\u9762\uFF09\u2500\u2500 */\n.amv-bigplay {\n  position: absolute; left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%;\n  border: 2px solid var(--v-ctl-white); background: rgba(0, 0, 0, 0.55); color: var(--v-ctl-white); font-size: 54px; cursor: pointer;\n  padding-left: 10px;\n}\n.amv-bigplay[hidden] { display: none; }\n.amv-controls {\n  position: fixed; left: 0; right: 0; bottom: 0; height: 56px; display: flex; align-items: center; gap: 14px;\n  padding: 0 18px; background: var(--v-ctl-bg); border-top: 1px solid var(--v-ctl-line); color: var(--v-ctl-fg); font: 13px -apple-system, "Segoe UI", sans-serif;\n}\n.amv-btn { width: 36px; height: 32px; border: 1px solid var(--v-ctl-btn-line); border-radius: 6px; background: var(--v-ctl-btn); color: var(--v-ctl-white); cursor: pointer; }\n.amv-time { font-family: ui-monospace, Menlo, monospace; min-width: 96px; }\n.amv-track { position: relative; flex: 1; }\n.amv-seek { width: 100%; accent-color: var(--v-ctl-accent); }\n.amv-marks { position: absolute; left: 0; right: 0; top: -6px; height: 6px; pointer-events: none; }\n.amv-marks i { position: absolute; top: 0; width: 2px; height: 6px; background: var(--v-ctl-accent); }\n.amv-brand { color: var(--v-ctl-muted); font-size: 12px; white-space: nowrap; }\n\n/* \u5BFC\u51FA\u6A21\u5F0F\uFF1A\u53EA\u7559\u821E\u53F0\uFF0C1:1 \u65E0\u7F29\u653E */\nhtml[data-export] .amv-controls, html[data-export] .amv-bigplay { display: none; }\nhtml[data-export] .amv-viewport { inset: 0; }\nhtml[data-export] .amv-stage { left: 0; top: 0; transform: none !important; }\n';
+var VIDEO_JS = "(() => {\n  const D = JSON.parse(document.getElementById('amv-data').textContent);\n  const W = 1920;\n  const H = 1080;\n  const T = 0.9;     // \u573A\u666F\u5207\u6362\u65F6\u957F\uFF0C\u4E0E TIMING.transition \u4E00\u81F4\n  const R = 0.6;     // \u5355\u6B65\u51FA\u73B0\u65F6\u957F\n  const CAM = 0.8;   // \u955C\u5934\u79FB\u52A8\u65F6\u957F\n  const root = document.documentElement;\n  const stage = document.querySelector('.amv-stage');\n  const camera = document.querySelector('.amv-camera');\n  const overlay = document.querySelector('.amv-overlay');\n  const caption = document.querySelector('.amv-caption span');\n  const scenes = [...document.querySelectorAll('.amv-scene')];\n  const segs = D.segments;\n  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));\n  const ease = (x) => { const v = clamp(x); return v < 0.5 ? 4 * v * v * v : 1 - (-2 * v + 2) ** 3 / 2; };\n  const lerp = (a, b, p) => a + (b - a) * p;\n  const STEP_SEL = '.am-tl-item, .am-lim, .am-seg, tbody tr, .am-kv-cell, .am-md > ul > li, .am-md > ol > li, .am-md > p, .am-md > blockquote, .am-callout';\n\n  // \u2500\u2500 1. \u8BA9\u6BCF\u4E2A\u573A\u666F\u7684\u5185\u5BB9\u9002\u914D\u753B\u9762 \u2500\u2500\n  for (const sc of scenes) {\n    const fit = sc.querySelector('.amv-fit');\n    if (!fit || !fit.children.length) continue;\n    const s = Math.min(1600 / fit.offsetWidth, 740 / fit.offsetHeight, 3.4);\n    fit.style.transform = `scale(${s})`;\n  }\n\n  // \u573A\u666F\u6807\u9898\u653E\u5728\u955C\u5934\u4E4B\u5916\uFF1A\u955C\u5934\u63A8\u8FD1\u65F6\u6807\u9898\u4FDD\u6301\u4E0D\u52A8\u3002\n  const heads = scenes.map((sc) => {\n    const h = sc.querySelector('.amv-scene-head');\n    if (h) stage.insertBefore(h, camera.nextSibling);\n    return h;\n  });\n\n  // \u4EE5\u821E\u53F0\u4E3A\u5750\u6807\u7CFB\u6D4B\u91CF\u5143\u7D20\uFF08\u6B64\u65F6\u955C\u5934\u4E3A\u5355\u4F4D\u53D8\u6362\uFF09\u3002\n  const sr = stage.getBoundingClientRect();\n  const k = sr.width / W;\n  const rectOf = (el) => {\n    const r = el.getBoundingClientRect();\n    return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k };\n  };\n\n  // \u2500\u2500 2. \u5206\u6B65\uFF1A\u7EC4\u4EF6\u81EA\u5E26 data-step \u65F6\u6309\u5B83\u5206\u7EC4\uFF0C\u5426\u5219\u6309\u884C/\u6761\u76EE\u81EA\u52A8\u5206\u6B65 \u2500\u2500\n  const items = [];   // { el, at, paths: [{ el, len }] }\n  scenes.forEach((sc, i) => {\n    if (i === 0) return;\n    const groups = [];\n    for (const block of sc.querySelectorAll('.amv-fit > *')) {\n      const marked = [...block.querySelectorAll('[data-step]')];\n      if (marked.length) {\n        const by = new Map();\n        for (const el of marked) {\n          const n = Number(el.dataset.step);\n          if (!by.has(n)) by.set(n, []);\n          by.get(n).push(el);\n        }\n        [...by.keys()].sort((a, b) => a - b).forEach((n) => groups.push(by.get(n)));\n      } else {\n        const found = [...block.querySelectorAll(STEP_SEL)].filter((el) => !el.parentElement.closest(STEP_SEL));\n        if (found.length) found.forEach((el) => groups.push([el]));\n        else groups.push([block]);\n      }\n    }\n    const beats = segs[i].beats;\n    const S = groups.length;\n    const B = beats.length;\n    const perBeat = new Map();\n    groups.forEach((g, gi) => {\n      // \u65C1\u767D\u6BD4\u6B65\u6570\u591A\u65F6\uFF0C\u591A\u51FA\u7684\u53E5\u5B50\u5F53\u5F00\u573A\u767D\uFF1A\u6B65\u9AA4\u5BF9\u9F50\u5230\u6700\u540E\u51E0\u53E5\u3002\n      const b = S <= B ? gi + (B - S) : Math.floor((gi * B) / S);\n      const rank = perBeat.get(b) ?? 0;\n      perBeat.set(b, rank + 1);\n      const beat = beats[b];\n      const count = S <= B ? 1 : Math.ceil(S / B) || 1;\n      const slot = Math.min(0.45, (beat.end - beat.start) / count);\n      for (const el of g) {\n        const paths = (el.matches('path.am-edge') ? [el] : [...el.querySelectorAll('path.am-edge')])\n          .filter((p) => !p.classList.contains('am-edge--dashed'))\n          .map((p) => ({ el: p, len: p.getTotalLength() }));\n        items.push({ el, scene: i, at: beat.start + rank * slot, paths });\n      }\n    });\n  });\n\n  // \u2500\u2500 3. \u8DE8\u573A\u666F\u53D8\u5F62\uFF1A\u524D\u540E\u4E24\u4E2A\u573A\u666F\u91CC\u540C\u540D\uFF08data-key\uFF09\u7684\u5143\u7D20 \u2500\u2500\n  const morphs = [];  // { scene, from, to, ghost, a, b }\n  const keyed = (sc) => {\n    const m = new Map();\n    for (const el of sc.querySelectorAll('[data-key]')) if (!m.has(el.dataset.key)) m.set(el.dataset.key, el);\n    return m;\n  };\n  for (let i = 2; i < scenes.length; i++) {\n    const prev = keyed(scenes[i - 1]);\n    for (const [key, to] of keyed(scenes[i])) {\n      const from = prev.get(key);\n      // \u53EA\u5728\u540C\u7C7B\u5143\u7D20\u4E4B\u95F4\u53D8\u5F62\uFF08SVG \u5BF9 SVG\u3001HTML \u5BF9 HTML\uFF09\uFF0C\u5426\u5219\u5F62\u72B6\u5BF9\u4E0D\u4E0A\u3002\n      if (!from || (from instanceof SVGElement) !== (to instanceof SVGElement)) continue;\n      try {\n        const ghost = makeGhost(from);\n        overlay.append(ghost.node);\n        morphs.push({ scene: i, from, to, ghost: ghost.node, a: ghost.place(rectOf(from)), b: ghost.place(rectOf(to)) });\n      } catch {\n        // \u53D8\u5F62\u53EA\u662F\u9526\u4E0A\u6DFB\u82B1\uFF1A\u4E2A\u522B\u5143\u7D20\u6D4B\u91CF\u5931\u8D25\u65F6\u76F4\u63A5\u8DF3\u8FC7\uFF0C\u4E0D\u5F71\u54CD\u64AD\u653E\u3002\n      }\n    }\n  }\n  const carried = new Set(morphs.map((m) => m.to));\n\n  function makeGhost(el) {\n    const wrap = document.createElement('div');\n    const host = el.closest('.am-diagram, .am-tree, .am-timeline, .am-kv, .am-limits');\n    wrap.className = `amv-ghost ${host ? host.className : ''}`;\n    if (el instanceof SVGGraphicsElement) {\n      const bb = el.getBBox();\n      const pad = 4;\n      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n      svg.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);\n      svg.setAttribute('width', bb.width + pad * 2);\n      svg.setAttribute('height', bb.height + pad * 2);\n      const clone = el.cloneNode(true);\n      clone.removeAttribute('style');\n      svg.append(clone);\n      wrap.append(svg);\n      return {\n        node: wrap,\n        place: (r) => {\n          const s = r.w / (bb.width || 1);\n          return { x: r.x - pad * s, y: r.y - pad * s, s };\n        },\n      };\n    }\n    const clone = el.cloneNode(true);\n    clone.removeAttribute('style');\n    clone.querySelectorAll('[data-key], ul').forEach((n) => n.remove());\n    const box = document.createElement(el.tagName === 'LI' ? 'ul' : 'div');\n    box.className = el.tagName === 'LI' ? 'am-tree-list' : '';\n    box.style.margin = '0';\n    box.append(clone);\n    wrap.append(box);\n    wrap.style.width = `${el.offsetWidth}px`;\n    const w0 = el.offsetWidth || 1;\n    return { node: wrap, place: (r) => ({ x: r.x, y: r.y, s: r.w / w0 }) };\n  }\n\n  // \u2500\u2500 4. \u955C\u5934\uFF1A\u65C1\u767D\u91CC [\u540D\u5B57] \u5BF9\u5E94\u7684\u5143\u7D20 \u2500\u2500\n  const findKey = (sc, key) => {\n    const all = [...sc.querySelectorAll('[data-key]')];\n    const norm = (s) => s.replace(/[`*]/g, '').trim().toLowerCase();\n    return all.find((el) => norm(el.dataset.key) === norm(key))\n      ?? all.find((el) => norm(el.dataset.key).includes(norm(key)))\n      ?? [...sc.querySelectorAll(`${STEP_SEL}, text`)].find((el) => norm(el.textContent).includes(norm(key)));\n  };\n  const IDENT = { s: 1, x: 0, y: 0 };\n  // \u63A8\u8FD1\u4F46\u4E0D\u88C1\u5207\uFF1A\u653E\u5927\u540E\u6574\u5F20\u56FE\u4ECD\u8981\u7559\u5728\u6807\u9898\u4E0E\u5B57\u5E55\u4E4B\u95F4\u7684\u5B89\u5168\u533A\u91CC\u3002\n  const SAFE = { left: 60, right: W - 60, top: 140, bottom: H - 150 };\n  function focusCam(r, sc) {\n    const fit = sc.querySelector('.amv-fit');\n    const c = fit ? rectOf(fit) : { x: 0, y: 0, w: W, h: H };\n    const room = Math.min((SAFE.right - SAFE.left) / c.w, (SAFE.bottom - SAFE.top) / c.h);\n    const s = clamp(Math.min(0.5 * W / r.w, 0.42 * H / r.h, room, 1.4), 1, 1.4);\n    const fitAxis = (want, lo, hi, a, b) => (s * (b - a) <= hi - lo ? clamp(want, lo - s * a, hi - s * b) : want);\n    return {\n      s,\n      x: fitAxis(W / 2 - s * (r.x + r.w / 2), SAFE.left, SAFE.right, c.x, c.x + c.w),\n      y: fitAxis(H * 0.5 - s * (r.y + r.h / 2), SAFE.top, SAFE.bottom, c.y, c.y + c.h),\n    };\n  }\n  const camEvents = [];   // { t, cam, hl }\n  segs.forEach((seg, i) => {\n    camEvents.push({ t: seg.start, cam: IDENT, hl: null });\n    seg.beats.forEach((b) => {\n      const el = b.focus ? findKey(scenes[i], b.focus) : null;\n      let cam = IDENT;\n      if (el) cam = focusCam(rectOf(el), scenes[i]);\n      camEvents.push({ t: b.start, cam, hl: el });\n    });\n  });\n  const hlTargets = new Set(camEvents.map((e) => e.hl).filter(Boolean));\n\n  // \u573A\u666F\u4E0E\u6807\u9898\u7684\u6DE1\u5165\u6DE1\u51FA\u3002\u6807\u9898\u4E0D\u4EA4\u53E0\uFF1A\u65E7\u6807\u9898\u5728\u5207\u6362\u524D\u534A\u6BB5\u6DE1\u51FA\uFF0C\u65B0\u6807\u9898\u5728\u540E\u534A\u6BB5\u6DE1\u5165\u3002\n  const show = (el, op) => {\n    el.style.opacity = op;\n    el.style.visibility = op > 0 ? 'visible' : 'hidden';\n  };\n  function drawScenes(t) {\n    scenes.forEach((sc, i) => {\n      const seg = segs[i];\n      const next = segs[i + 1];\n      const before = t < seg.start;\n      const fadeIn = i === 0 ? ease(t / 0.8) : ease((t - seg.start) / T);\n      const fadeOut = next ? 1 - ease((t - next.start) / T) : 1;\n      show(sc, before ? 0 : Math.min(fadeIn, fadeOut));\n      if (!heads[i]) return;\n      const hin = ease((t - seg.start - T / 2) / (T / 2));\n      const hout = next ? 1 - ease((t - next.start) / (T / 2)) : 1;\n      show(heads[i], before ? 0 : Math.min(hin, hout));\n    });\n  }\n\n  // \u9010\u6B65\u51FA\u73B0\uFF1A\u8FDE\u7EBF\u4E00\u7B14\u753B\u51FA\uFF0C\u5176\u4F59\u5143\u7D20\u6DE1\u5165\u5E76\u8F7B\u5FAE\u4E0A\u79FB\u3002\n  function drawSteps(t) {\n    for (const it of items) {\n      if (carried.has(it.el)) continue;\n      const p = ease((t - it.at) / R);\n      it.el.style.opacity = clamp((t - it.at) / 0.25);\n      if (!it.paths.length) {\n        it.el.style.transform = p < 1 ? `translateY(${(1 - p) * 14}px)` : '';\n        continue;\n      }\n      for (const { el, len } of it.paths) {\n        el.style.strokeDasharray = `${len}`;\n        el.style.strokeDashoffset = `${len * (1 - p)}`;\n        el.style.markerEnd = p < 0.97 ? 'none' : '';\n      }\n    }\n  }\n\n  // \u8DE8\u573A\u666F\u53D8\u5F62\uFF1A\u5207\u6362\u671F\u95F4\u7528\u66FF\u8EAB\u4ECE\u65E7\u4F4D\u7F6E\u79FB\u5230\u65B0\u4F4D\u7F6E\uFF0C\u771F\u8EAB\u6682\u65F6\u9690\u85CF\u3002\n  function drawMorphs(t) {\n    for (const m of morphs) {\n      const s0 = segs[m.scene].start;\n      const during = t >= s0 && t < s0 + T;\n      const p = ease((t - s0) / T);\n      m.ghost.style.display = during ? '' : 'none';\n      if (during) {\n        m.ghost.style.transform = `translate(${lerp(m.a.x, m.b.x, p)}px, ${lerp(m.a.y, m.b.y, p)}px) scale(${lerp(m.a.s, m.b.s, p)})`;\n      }\n      m.from.style.visibility = during ? 'hidden' : '';\n      m.to.style.visibility = t < s0 + T ? 'hidden' : '';\n      m.to.style.opacity = 1;\n    }\n  }\n\n  // \u955C\u5934\u4E0E\u9AD8\u4EAE\uFF1A\u5728\u4E0A\u4E00\u4E2A\u955C\u5934\u4F4D\u7F6E\u548C\u5F53\u524D\u76EE\u6807\u4E4B\u95F4\u63D2\u503C\u3002\n  function drawCamera(t) {\n    const ev = camEvents.findLastIndex((e) => t >= e.t);\n    const e = ev >= 0 ? camEvents[ev] : null;\n    const prev = ev > 0 ? camEvents[ev - 1].cam : IDENT;\n    const p = e ? ease((t - e.t) / CAM) : 0;\n    const to = e ? e.cam : IDENT;\n    camera.style.transform = `translate(${lerp(prev.x, to.x, p)}px, ${lerp(prev.y, to.y, p)}px) scale(${lerp(prev.s, to.s, p)})`;\n    for (const el of hlTargets) el.classList.toggle('amv-hl', el === e?.hl);\n  }\n\n  function drawCaption(t) {\n    const cur = segs.findLastIndex((s) => t >= s.start);\n    const beats = cur >= 0 ? segs[cur].beats : [];\n    const b = beats.find((x) => t >= x.start && t < x.end + 0.3);\n    const html = b ? b.html : '';\n    if (caption.dataset.html !== html) {\n      caption.innerHTML = html;\n      caption.dataset.html = html;\n    }\n    caption.style.opacity = b ? clamp((t - b.start) / 0.2) : 0;\n  }\n\n  // \u2500\u2500 5. \u786E\u5B9A\u6027\u6E32\u67D3\uFF1A\u540C\u4E00\u65F6\u523B\u6C38\u8FDC\u753B\u51FA\u540C\u4E00\u5E27 \u2500\u2500\n  function render(time) {\n    const t = clamp(time, 0, D.duration);\n    drawScenes(t);\n    drawSteps(t);\n    drawMorphs(t);\n    drawCamera(t);\n    drawCaption(t);\n    updateUi(t);\n  }\n\n  // \u2500\u2500 6. \u64AD\u653E\u5668 \u2500\u2500\n  const audio = document.getElementById('amv-audio');\n  const seek = document.querySelector('.amv-seek');\n  const timeEl = document.querySelector('.amv-time');\n  const toggleBtn = document.querySelector('[data-amv=\"toggle\"]');\n  const bigPlay = document.querySelector('.amv-bigplay');\n  const marks = document.querySelector('.amv-marks');\n  const fmt = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;\n  seek.max = D.duration;\n  segs.slice(1).forEach((s) => {\n    const m = document.createElement('i');\n    m.style.left = `${(s.start / D.duration) * 100}%`;\n    m.title = s.title;\n    marks.append(m);\n  });\n\n  let playing = false;\n  let base = 0;\n  let t0 = 0;\n  const now = () => (!playing ? base : audio ? audio.currentTime : base + (performance.now() - t0) / 1000);\n\n  function updateUi(t) {\n    if (document.activeElement !== seek) seek.value = t;\n    timeEl.textContent = `${fmt(t)} / ${fmt(D.duration)}`;\n  }\n\n  function play() {\n    if (base >= D.duration - 0.05) base = 0;\n    playing = true;\n    bigPlay.hidden = true;\n    toggleBtn.textContent = '\u275A\u275A';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.pause);\n    if (audio) {\n      audio.currentTime = base;\n      audio.play().catch(() => {});\n    } else {\n      t0 = performance.now();\n    }\n    requestAnimationFrame(tick);\n  }\n\n  function pause() {\n    base = now();\n    playing = false;\n    audio?.pause();\n    toggleBtn.textContent = '\u25B6';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.play);\n  }\n\n  function seekTo(x) {\n    base = clamp(x, 0, D.duration);\n    if (audio) audio.currentTime = base;\n    t0 = performance.now();\n    render(base);\n  }\n\n  function tick() {\n    if (!playing) return;\n    const t = now();\n    if (t >= D.duration) {\n      pause();\n      base = D.duration;\n      render(D.duration);\n      return;\n    }\n    render(t);\n    requestAnimationFrame(tick);\n  }\n\n  const toggle = () => (playing ? pause() : play());\n  toggleBtn.addEventListener('click', toggle);\n  bigPlay.addEventListener('click', play);\n  stage.addEventListener('click', (e) => { if (e.target !== bigPlay) toggle(); });\n  seek.addEventListener('input', () => seekTo(Number(seek.value)));\n  document.addEventListener('keydown', (e) => {\n    if (e.key === ' ') { e.preventDefault(); toggle(); }\n    if (e.key === 'ArrowRight') seekTo(now() + 5);\n    if (e.key === 'ArrowLeft') seekTo(now() - 5);\n  });\n  audio?.addEventListener('ended', () => { pause(); base = D.duration; });\n\n  function fitStage() {\n    if (root.hasAttribute('data-export')) return;\n    const vp = stage.parentElement;\n    const s = Math.min(vp.clientWidth / W, vp.clientHeight / H);\n    stage.style.transform = `translate(-50%, -50%) scale(${s})`;\n  }\n  window.addEventListener('resize', fitStage);\n\n  // \u5BFC\u51FA\uFF1A\u628A\u821E\u53F0 1:1 \u6446\u5728\u5DE6\u4E0A\u89D2\uFF0C\u9010\u5E27\u8C03\u7528 render(t)\u3002\n  window.render = render;\n  window.__amv = {\n    duration: D.duration,\n    fps: D.fps,\n    exportMode() { root.setAttribute('data-export', ''); stage.style.transform = ''; },\n  };\n  fitStage();\n  // \u5C01\u9762\uFF1A\u663E\u793A\u5B8C\u5168\u6DE1\u5165\u540E\u7684\u7247\u5934\uFF0C\u4F46\u64AD\u653E\u4ECD\u4ECE 0 \u5F00\u59CB\u3002\n  render(Math.min(1, segs[0].end));\n  updateUi(0);\n})();\n";
 
 // src/cli.js
-import { join as join5, resolve, dirname as dirname2 } from "node:path";
+import { join as join6, resolve, dirname as dirname2 } from "node:path";
 import { spawn as spawn4 } from "node:child_process";
 
 // src/parse.js
@@ -4720,15 +4720,24 @@ var allBeats = (video) => [...video.introBeats, ...video.scenes.flatMap((s) => s
 var round2 = (x2) => Math.round(x2 * 1e3) / 1e3;
 
 // src/video/tts.js
-import { spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync as spawnSync2 } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+
+// src/sys.js
+import { spawnSync } from "node:child_process";
+function hasCommand(cmd) {
+  return spawnSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" }).status === 0;
+}
+
+// src/video/tts.js
 var SAMPLE_RATE = 22050;
 var VOICES = ["auto", "elevenlabs", "system", "off"];
 var ELEVEN_DEFAULT_VOICE = "JBFqnCBsd6RMkjVDRZzb";
 var ELEVEN_MODEL = "eleven_multilingual_v2";
+var ELEVEN_TIMEOUT_MS = 6e4;
 var TtsError = class extends Error {
   constructor(message) {
     super(message);
@@ -4759,11 +4768,17 @@ function elevenLabs(env) {
     concurrency: 2,
     async synth(text) {
       const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=pcm_${SAMPLE_RATE}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" },
-        body: JSON.stringify({ text, model_id: ELEVEN_MODEL })
-      });
+      let res;
+      try {
+        res = await fetch(url, {
+          method: "POST",
+          headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" },
+          body: JSON.stringify({ text, model_id: ELEVEN_MODEL }),
+          signal: AbortSignal.timeout(ELEVEN_TIMEOUT_MS)
+        });
+      } catch (e) {
+        throw new TtsError(`\u65E0\u6CD5\u8FDE\u63A5 ElevenLabs\uFF1A${e.name === "TimeoutError" ? `${ELEVEN_TIMEOUT_MS / 1e3} \u79D2\u5185\u6CA1\u6709\u54CD\u5E94` : e.message}`);
+      }
       if (!res.ok) throw new TtsError(`ElevenLabs \u8FD4\u56DE ${res.status}\uFF1A${(await res.text()).slice(0, 200)}`);
       const buf = Buffer.from(await res.arrayBuffer());
       return new Int16Array(buf.buffer, buf.byteOffset, Math.floor(buf.length / 2)).slice();
@@ -4779,7 +4794,7 @@ function systemVoice(platform, which) {
       concurrency: 4,
       synth: (text) => withTemp(async (file) => {
         const v = voices[detectLang(text)];
-        await run("say", [...v ? ["-v", v] : [], "-o", file, "--file-format=WAVE", `--data-format=LEI16@${SAMPLE_RATE}`, text]);
+        await run("say", [...v ? ["-v", v] : [], "-o", file, "--file-format=WAVE", `--data-format=LEI16@${SAMPLE_RATE}`, "-f", textFile(file, text)]);
         return readWav(readFileSync(file));
       })
     };
@@ -4790,7 +4805,7 @@ function systemVoice(platform, which) {
       id: "espeak-ng",
       concurrency: 4,
       synth: (text) => withTemp(async (file) => {
-        await run("espeak-ng", ["-v", detectLang(text) === "zh" ? "cmn" : "en-us", "-w", file, text]);
+        await run("espeak-ng", ["-v", detectLang(text) === "zh" ? "cmn" : "en-us", "-w", file, "-f", textFile(file, text)]);
         return readWav(readFileSync(file));
       })
     };
@@ -4798,7 +4813,7 @@ function systemVoice(platform, which) {
   return null;
 }
 function macVoices() {
-  return pickMacVoices(spawnSync("say", ["-v", "?"], { encoding: "utf8" }).stdout || "");
+  return pickMacVoices(spawnSync2("say", ["-v", "?"], { encoding: "utf8" }).stdout || "");
 }
 function pickMacVoices(out) {
   const list = out.split("\n").map((l3) => l3.match(/^(.+?)\s+([a-z]{2}_[A-Z]{2})\s+#/)).filter(Boolean).map((m) => ({ name: m[1].trim(), locale: m[2] }));
@@ -4808,9 +4823,6 @@ function pickMacVoices(out) {
     zh: pick(["Tingting", "Ting-Ting", "Lilian", "Reed", "Flo", "Eddy"], "zh_CN"),
     en: pick(["Samantha", "Alex", "Ava", "Allison", "Reed", "Flo", "Eddy"], "en_US")
   };
-}
-function hasCommand(cmd) {
-  return spawnSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" }).status === 0;
 }
 function run(cmd, args) {
   return new Promise((resolve2, reject) => {
@@ -4822,6 +4834,11 @@ function run(cmd, args) {
     p.on("error", reject);
     p.on("close", (code) => code === 0 ? resolve2() : reject(new TtsError(`${cmd} \u5931\u8D25\uFF08${code}\uFF09\uFF1A${err.slice(0, 200)}`)));
   });
+}
+function textFile(wavFile, text) {
+  const p = `${wavFile}.txt`;
+  writeFileSync(p, text);
+  return p;
 }
 async function withTemp(fn3) {
   const dir = mkdtempSync(join(tmpdir(), "am-tts-"));
@@ -4872,17 +4889,28 @@ async function synthAll(texts, provider, { cacheDir } = {}) {
       const i = next++;
       const file = cacheDir && join(cacheDir, `${createHash("sha1").update(`${provider.id}
 ${texts[i]}`).digest("hex")}.pcm`);
-      if (file && existsSync(file)) {
-        const buf = readFileSync(file);
-        results[i] = new Int16Array(buf.buffer, buf.byteOffset, buf.length / 2).slice();
+      const cached = file && readCache(file);
+      if (cached) {
+        results[i] = cached;
         continue;
       }
       results[i] = trimSilence(await provider.synth(texts[i]));
-      if (file) writeFileSync(file, Buffer.from(results[i].buffer, results[i].byteOffset, results[i].byteLength));
+      if (file) writeCache(file, results[i]);
     }
   };
   await Promise.all(Array.from({ length: Math.min(provider.concurrency ?? 2, texts.length) }, worker));
   return results;
+}
+function readCache(file) {
+  if (!existsSync(file)) return null;
+  const buf = readFileSync(file);
+  if (!buf.length || buf.length % 2) return null;
+  return new Int16Array(buf.buffer, buf.byteOffset, buf.length / 2).slice();
+}
+function writeCache(file, samples) {
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, Buffer.from(samples.buffer, samples.byteOffset, samples.byteLength));
+  renameSync(tmp, file);
 }
 function trimSilence(samples, threshold = 300) {
   let a = 0;
@@ -4927,34 +4955,38 @@ var UI2 = {
 };
 async function renderVideo(source, { provider = null, cacheDir, defaults: defaults2 = {}, overrides = {}, onProgress } = {}) {
   const video = parseVideo(source, { defaults: defaults2 });
-  const { meta } = video;
-  const allowed = { ...CHOICES, theme: VIDEO_THEMES };
-  for (const [key, value] of Object.entries(overrides)) {
-    if (value === void 0) continue;
-    if (allowed[key] && !allowed[key].includes(String(value))) {
-      throw new ParseError(`${key} \u7684\u503C "${value}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${allowed[key].join(" | ")}`, 0);
-    }
-    meta[key] = value;
-  }
+  const meta = applyOverrides(video.meta, overrides);
   const warnings = meta.style === "off" ? [] : lintDoc(video.doc).filter((w) => w.rule !== "paragraph-length");
   if (meta.style === "strict" && warnings.length) throw new LintError(warnings);
   const beats = allBeats(video);
-  let clips = null;
-  let durations;
-  if (provider) {
-    onProgress?.(`\u914D\u97F3\uFF1A${provider.name}\uFF0C${beats.length} \u53E5`);
-    clips = await synthAll(beats.map((b) => b.text), provider, { cacheDir });
-    durations = clips.map((c) => c.length / SAMPLE_RATE);
-  } else {
-    durations = beats.map((b) => estimateSeconds(b.text));
-  }
+  const { clips, durations } = await voiceBeats(beats, provider, cacheDir, onProgress);
   const timeline = buildTimeline(video, durations);
   const flat = [...timeline.title.beats, ...timeline.scenes.flatMap((s) => s.beats)];
   const wav2 = clips ? mixTrack(clips, flat.map((b) => b.start), timeline.duration) : null;
   const stats = { panels: video.scenes.length, components: {} };
-  const ctx = { seq: 0, stats };
+  const scenesHtml = renderScenes(video, meta, timeline, { seq: 0, stats });
   const lang = meta.lang || detectLang(source);
-  const data = {
+  const html = shell2({ meta, lang, scenesHtml, data: playerData(video, meta, timeline), wav: wav2, source });
+  return { html, wav: wav2, warnings, stats, meta, duration: timeline.duration, beats: beats.length };
+}
+function applyOverrides(meta, overrides) {
+  const allowed = { ...CHOICES, theme: VIDEO_THEMES };
+  const set = Object.entries(overrides).filter(([, v]) => v !== void 0);
+  for (const [key, value] of set) {
+    if (allowed[key] && !allowed[key].includes(String(value))) {
+      throw new ParseError(`${key} \u7684\u503C "${value}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${allowed[key].join(" | ")}`, 0);
+    }
+  }
+  return { ...meta, ...Object.fromEntries(set) };
+}
+async function voiceBeats(beats, provider, cacheDir, onProgress) {
+  if (!provider) return { clips: null, durations: beats.map((b) => estimateSeconds(b.text)) };
+  onProgress?.(`\u914D\u97F3\uFF1A${provider.name}\uFF0C${beats.length} \u53E5`);
+  const clips = await synthAll(beats.map((b) => b.text), provider, { cacheDir });
+  return { clips, durations: clips.map((c) => c.length / SAMPLE_RATE) };
+}
+function playerData(video, meta, timeline) {
+  return {
     duration: timeline.duration,
     fps: 30,
     segments: [timeline.title, ...timeline.scenes].map((s, i) => ({
@@ -4964,13 +4996,13 @@ async function renderVideo(source, { provider = null, cacheDir, defaults: defaul
       beats: s.beats.map((b, k2) => ({ ...b, html: captionHtml(beatsOf(video, i)[k2].raw) }))
     }))
   };
+}
+function renderScenes(video, meta, timeline, ctx) {
   const total = video.scenes.length;
-  const scenesHtml = [
+  return [
     titleScene(meta, renderBlocks(video.intro, ctx), { scenes: total, duration: timeline.duration }),
     ...video.scenes.map((s, i) => scene(s, i, total, renderBlocks(s.blocks, ctx)))
   ].join("\n");
-  const html = shell2({ meta, lang, scenesHtml, data, wav: wav2, source });
-  return { html, wav: wav2, warnings, stats, meta, duration: timeline.duration, beats: beats.length };
 }
 var beatsOf = (video, i) => i === 0 ? video.introBeats : video.scenes[i - 1].beats;
 function captionHtml(raw) {
@@ -5253,32 +5285,18 @@ function connect(url) {
 }
 
 // src/housekeeping.js
-import { readdirSync, statSync, rmSync as rmSync3, readFileSync as readFileSync2, writeFileSync as writeFileSync3, mkdirSync as mkdirSync2, existsSync as existsSync3 } from "node:fs";
+import { readdirSync, lstatSync, rmSync as rmSync3, existsSync as existsSync3 } from "node:fs";
+import { join as join4 } from "node:path";
+
+// src/state.js
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync3, mkdirSync as mkdirSync2, renameSync as renameSync2 } from "node:fs";
 import { join as join3 } from "node:path";
-import { spawn as spawn3 } from "node:child_process";
 var DAY = 24 * 60 * 60 * 1e3;
-var CLEAN = Object.freeze({
-  days: 30,
-  // am clean 默认删除 30 天前的页面和视频
-  bigBytes: 200 * 2 ** 20,
-  // 超过 200 MB 立即提示
-  staleDays: 30,
-  // 距上次清理超过 30 天……
-  staleBytes: 20 * 2 ** 20,
-  // ……且超过 20 MB 时提示
-  hintEveryDays: 7
-  // 同一提示最多每 7 天出现一次
-});
-var UPDATE = Object.freeze({
-  checkEveryDays: 7,
-  hintEveryDays: 3,
-  url: "https://raw.githubusercontent.com/QingYunA/answer-me-with-html/main/package.json"
-});
-var DIRS2 = ["pages", "videos", "cache"];
 var statePath = (home) => join3(home, "state.json");
 function readState(home) {
   try {
-    return JSON.parse(readFileSync2(statePath(home), "utf8"));
+    const data = JSON.parse(readFileSync2(statePath(home), "utf8"));
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
   } catch {
     return {};
   }
@@ -5286,73 +5304,48 @@ function readState(home) {
 function writeState(home, patch) {
   const next = { ...readState(home), ...patch };
   mkdirSync2(home, { recursive: true });
-  writeFileSync3(statePath(home), `${JSON.stringify(next, null, 2)}
+  const tmp = `${statePath(home)}.${process.pid}.tmp`;
+  writeFileSync3(tmp, `${JSON.stringify(next, null, 2)}
 `);
+  renameSync2(tmp, statePath(home));
   return next;
 }
-function walk(dir) {
-  if (!existsSync3(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
-    const p = join3(dir, e.name);
-    if (e.isDirectory()) return walk(p);
-    const s = statSync(p);
-    return [{ path: p, bytes: s.size, mtime: s.mtimeMs }];
-  });
-}
-function usage(home) {
-  const out = { total: 0 };
-  for (const d of DIRS2) {
-    const files = walk(join3(home, d));
-    const bytes = files.reduce((n, f2) => n + f2.bytes, 0);
-    out[d] = { count: files.length, bytes };
-    out.total += bytes;
-  }
-  return out;
-}
-function clean2(home, { days = CLEAN.days, all = false, dryRun = false, now = Date.now() } = {}) {
-  const cutoff = now - days * DAY;
-  const victims = [
-    ...["pages", "videos"].flatMap((d) => walk(join3(home, d)).filter((f2) => all || f2.mtime < cutoff)),
-    ...walk(join3(home, "cache"))
-  ];
-  if (!dryRun) {
-    for (const f2 of victims) rmSync3(f2.path, { force: true });
-    writeState(home, { lastClean: now, lastCleanHint: null });
-  }
-  return { files: victims.length, bytes: victims.reduce((n, f2) => n + f2.bytes, 0) };
-}
-var mb = (bytes) => bytes < 2 ** 20 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 2 ** 20).toFixed(bytes < 10 * 2 ** 20 ? 1 : 0)} MB`;
-function cleanHint(state, use, now = Date.now()) {
-  if (state.lastCleanHint && now - state.lastCleanHint < CLEAN.hintEveryDays * DAY) return null;
-  const since = state.lastClean ?? state.firstSeen ?? now;
-  const days = Math.floor((now - since) / DAY);
-  const big = use.total >= CLEAN.bigBytes;
-  const stale = days >= CLEAN.staleDays && use.total >= CLEAN.staleBytes;
-  if (!big && !stale) return null;
-  const parts = `\u9875\u9762 ${use.pages.count} \u4E2A ${mb(use.pages.bytes)}\uFF0C\u89C6\u9891 ${mb(use.videos.bytes)}\uFF0C\u914D\u97F3\u7F13\u5B58 ${mb(use.cache.bytes)}`;
-  const when = state.lastClean ? `\u4E0A\u6B21\u6E05\u7406\u5728 ${days} \u5929\u524D` : "\u8FD8\u6CA1\u6709\u6E05\u7406\u8FC7";
-  return `! \u6E05\u7406\u63D0\u793A\uFF1A\u6570\u636E\u76EE\u5F55\u5DF2\u5360\u7528 ${mb(use.total)}\uFF08${parts}\uFF09\uFF0C${when}\u3002\u8BF7\u95EE\u7528\u6237\u662F\u5426\u8FD0\u884C am clean\uFF08\u5220\u9664 ${CLEAN.days} \u5929\u524D\u7684\u9875\u9762\u548C\u89C6\u9891\uFF0C\u5E76\u6E05\u7A7A\u914D\u97F3\u7F13\u5B58\uFF1B\u5168\u90E8\u6E05\u6389\u7528 am clean --all\uFF09\u3002`;
+
+// src/update.js
+import { spawn as spawn3 } from "node:child_process";
+var UPDATE = Object.freeze({
+  checkEveryDays: 7,
+  hintEveryDays: 3,
+  timeoutMs: 5e3,
+  url: "https://raw.githubusercontent.com/QingYunA/answer-me-with-html/main/package.json"
+});
+var SEMVER = /^v?(\d+)\.(\d+)\.(\d+)$/;
+function parseVersion(v) {
+  const m = String(v).trim().match(SEMVER);
+  return m ? m.slice(1, 4).map(Number) : null;
 }
 function newer(a, b) {
-  const pa = String(a).split(".").map(Number);
-  const pb = String(b).split(".").map(Number);
-  for (let i = 0; i < 3; i++) {
-    if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
-  }
-  return false;
+  const pa = parseVersion(a);
+  const pb = parseVersion(b);
+  if (!pa || !pb) return false;
+  const i = pa.findIndex((n, k2) => n !== pb[k2]);
+  return i !== -1 && pa[i] > pb[i];
 }
 function updateCommand(scriptPath = "") {
   if (/[\\/]\.claude[\\/]plugins[\\/]/.test(scriptPath)) {
-    return "Claude Code \u91CC\u8FD0\u884C /plugin marketplace update answer-me-with-html\uFF0C\u518D /reload-plugins";
+    return "\u7EC8\u7AEF\u8FD0\u884C claude plugin update answer-me-with-html@answer-me-with-html\uFF08\u6216\u5728 /plugin \u7684 Installed \u9875\u70B9 Update now\uFF09\uFF0C\u518D /reload-plugins";
+  }
+  if (/[\\/]bin[\\/]am\.js$/.test(scriptPath)) {
+    return "\u5728 answer-me-with-html \u4ED3\u5E93\u76EE\u5F55\u8FD0\u884C git pull && npm install";
   }
   return "\u8FD0\u884C npx skills update answer-me-with-html -y";
 }
+var updateEnabled = (env, config) => !(config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK);
 function updateHint(state, current, scriptPath, now = Date.now()) {
-  if (!state.latestVersion || !newer(state.latestVersion, current)) return null;
+  if (!newer(state.latestVersion, current)) return null;
   if (state.lastUpdateHint && now - state.lastUpdateHint < UPDATE.hintEveryDays * DAY) return null;
   return `! \u66F4\u65B0\u63D0\u793A\uFF1AAnswer me with HTML \u6709\u65B0\u7248\u672C ${state.latestVersion}\uFF08\u5F53\u524D ${current}\uFF09\u3002\u8BF7\u95EE\u7528\u6237\u662F\u5426\u66F4\u65B0\uFF1A${updateCommand(scriptPath)}\u3002`;
 }
-var updateEnabled = (env, config) => !(config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK);
 function shouldCheckUpdate(state, env, config, now = Date.now()) {
   if (!updateEnabled(env, config)) return false;
   return !state.lastUpdateCheck || now - state.lastUpdateCheck >= UPDATE.checkEveryDays * DAY;
@@ -5367,15 +5360,75 @@ function spawnUpdateCheck(home, scriptPath) {
 }
 async function runUpdateCheck(home, fetchImpl = fetch) {
   try {
-    const res = await fetchImpl(UPDATE.url, { signal: AbortSignal.timeout(5e3) });
+    const res = await fetchImpl(UPDATE.url, { signal: AbortSignal.timeout(UPDATE.timeoutMs) });
     if (!res.ok) return null;
     const { version } = await res.json();
-    if (typeof version !== "string") return null;
-    writeState(home, { latestVersion: version, lastUpdateCheck: Date.now() });
-    return version;
+    if (!parseVersion(version)) return null;
+    writeState(home, { latestVersion: version.trim(), lastUpdateCheck: Date.now() });
+    return version.trim();
   } catch {
     return null;
   }
+}
+
+// src/housekeeping.js
+var CLEAN = Object.freeze({
+  days: 30,
+  // am clean 默认删除 30 天前的页面和视频
+  bigBytes: 200 * 2 ** 20,
+  // 超过 200 MB 立即提示
+  staleDays: 30,
+  // 距上次清理超过 30 天……
+  staleBytes: 20 * 2 ** 20,
+  // ……且超过 20 MB 时提示
+  hintEveryDays: 7
+  // 同一提示最多每 7 天出现一次
+});
+var DIRS2 = ["pages", "videos", "cache"];
+function walk(dir) {
+  if (!existsSync3(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = join4(dir, e.name);
+    if (e.isDirectory()) return walk(p);
+    try {
+      const s = lstatSync(p);
+      return s.isFile() ? [{ path: p, bytes: s.size, mtime: s.mtimeMs }] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+var sum = (files) => files.reduce((n, f2) => n + f2.bytes, 0);
+function usage(home) {
+  const parts = Object.fromEntries(DIRS2.map((d) => {
+    const files = walk(join4(home, d));
+    return [d, { count: files.length, bytes: sum(files) }];
+  }));
+  return { ...parts, total: DIRS2.reduce((n, d) => n + parts[d].bytes, 0) };
+}
+function clean2(home, { days = CLEAN.days, all = false, dryRun = false, now = Date.now() } = {}) {
+  const cutoff = now - days * DAY;
+  const victims = [
+    ...["pages", "videos"].flatMap((d) => walk(join4(home, d)).filter((f2) => all || f2.mtime < cutoff)),
+    ...walk(join4(home, "cache"))
+  ];
+  if (!dryRun) {
+    for (const f2 of victims) rmSync3(f2.path, { force: true });
+    writeState(home, { lastClean: now, lastCleanHint: null });
+  }
+  return { files: victims.length, bytes: sum(victims) };
+}
+var mb = (bytes) => bytes < 2 ** 20 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 2 ** 20).toFixed(bytes < 10 * 2 ** 20 ? 1 : 0)} MB`;
+function cleanHint(state, use, now = Date.now()) {
+  if (state.lastCleanHint && now - state.lastCleanHint < CLEAN.hintEveryDays * DAY) return null;
+  const since = state.lastClean ?? state.firstSeen ?? now;
+  const days = Math.floor((now - since) / DAY);
+  const big = use.total >= CLEAN.bigBytes;
+  const stale = days >= CLEAN.staleDays && use.total >= CLEAN.staleBytes;
+  if (!big && !stale) return null;
+  const parts = `\u9875\u9762 ${use.pages.count} \u4E2A ${mb(use.pages.bytes)}\uFF0C\u89C6\u9891 ${mb(use.videos.bytes)}\uFF0C\u914D\u97F3\u7F13\u5B58 ${mb(use.cache.bytes)}`;
+  const when = state.lastClean ? `\u4E0A\u6B21\u6E05\u7406\u5728 ${days} \u5929\u524D` : "\u8FD8\u6CA1\u6709\u6E05\u7406\u8FC7";
+  return `! \u6E05\u7406\u63D0\u793A\uFF1A\u6570\u636E\u76EE\u5F55\u5DF2\u5360\u7528 ${mb(use.total)}\uFF08${parts}\uFF09\uFF0C${when}\u3002\u8BF7\u95EE\u7528\u6237\u662F\u5426\u8FD0\u884C am clean\uFF08\u5220\u9664 ${CLEAN.days} \u5929\u524D\u7684\u9875\u9762\u548C\u89C6\u9891\uFF0C\u5E76\u6E05\u7A7A\u914D\u97F3\u7F13\u5B58\uFF1B\u5168\u90E8\u6E05\u6389\u7528 am clean --all\uFF09\u3002`;
 }
 function afterRender({ home, env, config, current, scriptPath, background, now = Date.now() }) {
   let state = readState(home);
@@ -5398,7 +5451,7 @@ function afterRender({ home, env, config, current, scriptPath, background, now =
 // src/config.js
 import { readFileSync as readFileSync3, writeFileSync as writeFileSync4, mkdirSync as mkdirSync3, rmSync as rmSync4, existsSync as existsSync4 } from "node:fs";
 import { homedir } from "node:os";
-import { join as join4, dirname } from "node:path";
+import { join as join5, dirname } from "node:path";
 var ConfigError = class extends Error {
   constructor(message) {
     super(message);
@@ -5417,10 +5470,10 @@ var CONFIG_KEYS = Object.freeze({
 var TRUE = /* @__PURE__ */ new Set(["on", "true", "yes", "1", "\u5F00", "\u5F00\u542F", "\u6253\u5F00"]);
 var FALSE = /* @__PURE__ */ new Set(["off", "false", "no", "0", "\u5173", "\u5173\u95ED"]);
 function amHome(env = process.env) {
-  return env.AM_HOME || join4(homedir(), ".answer-me-with-html");
+  return env.AM_HOME || join5(homedir(), ".answer-me-with-html");
 }
 function configPath(env = process.env) {
-  return join4(amHome(env), "config.json");
+  return join5(amHome(env), "config.json");
 }
 var defaults = () => Object.fromEntries(Object.entries(CONFIG_KEYS).map(([k2, s]) => [k2, s.default]));
 function coerce2(key, raw) {
@@ -5496,7 +5549,7 @@ var USAGE = `Answer me with HTML ${VERSION} \u2014 \u628A Markdown \u5185\u5BB9\
   am config [set <\u952E> <\u503C> | get <\u952E> | reset [\u952E]] \u67E5\u770B\u6216\u4FEE\u6539\u914D\u7F6E
   am clean  [--days 30] [--all] [--dry-run]       \u6E05\u7406\u65E7\u9875\u9762\u3001\u65E7\u89C6\u9891\u548C\u914D\u97F3\u7F13\u5B58
   am list                                         \u5217\u51FA\u6A21\u677F\u3001\u4E3B\u9898\u3001\u7EC4\u4EF6
-  am help [\u7EC4\u4EF6\u540D|format]                          \u67E5\u770B\u7EC4\u4EF6\u8BED\u6CD5 / \u7A3F\u4EF6\u683C\u5F0F
+  am help [\u7EC4\u4EF6\u540D|format|video]                    \u67E5\u770B\u7EC4\u4EF6\u8BED\u6CD5 / \u9875\u9762\u7A3F\u683C\u5F0F / \u89C6\u9891\u7A3F\u683C\u5F0F
 
 - \u6587\u4EF6\u53C2\u6570\u5199 - \u8868\u793A\u4ECE stdin \u8BFB\u53D6\uFF08\u9002\u5408 heredoc\uFF1Aam render - <<'EOF' ... EOF\uFF09\u3002
 - \u9ED8\u8BA4\u8F93\u51FA\u5230 ~/.answer-me-with-html/pages/\uFF08\u53EF\u7528\u73AF\u5883\u53D8\u91CF AM_HOME \u4FEE\u6539\uFF09\u3002
@@ -5529,6 +5582,15 @@ A -> B
 
 - "## " \u5F00\u542F\u4E00\u4E2A\u9762\u677F\uFF1B\u5B57\u6BCD ID \u53EF\u7701\u7565\uFF08\u81EA\u52A8\u5206\u914D A\u3001B\u3001C\u2026\uFF09\u3002span \u8BA9\u9762\u677F\u8DE8\u5217\u3002
 - \u7EC4\u4EF6\u5217\u8868\u89C1 am list\uFF1B\u5355\u4E2A\u7EC4\u4EF6\u8BED\u6CD5\u89C1 am help <\u7EC4\u4EF6\u540D>\u3002`;
+var RAW_HELP = `LANG \u2014 \u539F\u6837\u5D4C\u5165\uFF08\u9003\u751F\u53E3\uFF09
+
+\u56F4\u680F\u5757\u8BED\u8A00\u540D\u5199 LANG \u65F6\uFF0C\u5185\u5BB9\u4E0D\u7ECF\u5904\u7406\u76F4\u63A5\u653E\u8FDB\u9875\u9762\u3002\u53EA\u5728\u73B0\u6709\u7EC4\u4EF6\u8868\u8FBE\u4E0D\u4E86\u65F6\u4F7F\u7528\uFF1B
+\u989C\u8272\u8BF7\u7528\u4E3B\u9898\u53D8\u91CF\uFF08\u5982 var(--ink)\u3001var(--accent)\uFF09\uFF0C\u8FD9\u6837\u5207\u6362\u4E3B\u9898\u548C\u660E\u6697\u65F6\u4E5F\u80FD\u770B\u6E05\u3002
+
+\u793A\u4F8B\uFF1A
+\`\`\`LANG
+<div style="color: var(--accent)">\u4EFB\u610F\u5185\u5BB9</div>
+\`\`\``;
 var VIDEO_FORMAT = `\u89C6\u9891\u7A3F\u683C\u5F0F\uFF08am video\uFF09
 
 ---
@@ -5599,9 +5661,9 @@ ${USAGE}`);
   if (opts.help || !cmd) return print(USAGE), 0;
   switch (cmd) {
     case "render":
-      return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd, io }));
+      return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, io }));
     case "video":
-      return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider, io }));
+      return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, io }));
     case "lint":
       return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case "config":
@@ -5651,9 +5713,9 @@ function shouldOpen(opts, env, config) {
   if (env.CI) return false;
   return config.open !== false;
 }
-function cmdRender(src, opts, { print, fail, env, cwd, io }) {
-  const config = readConfig(env);
-  if (config.warning) fail(`! ${config.warning}`);
+function cmdRender(src, opts, ctx) {
+  const { print, fail, env } = ctx;
+  const config = loadConfig(ctx);
   const { theme, mode, style } = config.values;
   let result;
   try {
@@ -5661,20 +5723,16 @@ function cmdRender(src, opts, { print, fail, env, cwd, io }) {
   } catch (e) {
     return reportError(e, fail);
   }
-  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join5(amHome(env), "pages", `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync4(dirname2(file), { recursive: true });
-  writeFileSync5(file, result.html);
+  const file = writeOutput(result.html, "pages", result.meta.title, opts, ctx);
   const comps = Object.entries(result.stats.components).map(([k2, v]) => `${k2}\xD7${v}`).join(" ");
   print(`\u2713 ${file}`);
   print(`  ${result.meta.template} \xB7 ${result.meta.theme} \xB7 ${result.stats.panels} \u9762\u677F${comps ? ` \xB7 ${comps}` : ""}`);
   printWarnings(result.warnings, print, result.meta.style);
-  printHints({ env, config, io, print });
-  if (shouldOpen(opts, env, config.values)) openFile(file);
-  return 0;
+  return finish(file, opts, config, ctx);
 }
-async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected, io }) {
-  const config = readConfig(env);
-  if (config.warning) fail(`! ${config.warning}`);
+async function cmdVideo(src, opts, ctx) {
+  const { print, fail } = ctx;
+  const config = loadConfig(ctx);
   const voice = opts.voice ?? config.values.voice;
   if (!VOICES.includes(voice)) {
     fail(`\u2717 voice \u7684\u503C "${voice}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${VOICES.join(" | ")}`);
@@ -5682,45 +5740,60 @@ async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected, 
   }
   let result;
   try {
-    const provider = injected !== void 0 ? injected : pickProvider(voice, env);
-    result = await renderVideo(src, {
-      provider,
-      cacheDir: join5(amHome(env), "cache", "tts"),
-      defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
-      overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
-      onProgress: (msg) => fail(`  ${msg}`)
-    });
-    result.voiceName = provider ? provider.name : "\u65E0\uFF08\u53EA\u51FA\u5B57\u5E55\uFF09";
+    result = await buildVideo(src, voice, opts, config, ctx);
   } catch (e) {
-    if (e instanceof TtsError) {
-      fail(`\u2717 \u914D\u97F3\u5931\u8D25\uFF1A${e.message}\u3002\u53EF\u52A0 --voice off \u53EA\u51FA\u5B57\u5E55`);
-      return 1;
-    }
-    return reportError(e, fail);
+    if (!(e instanceof TtsError)) return reportError(e, fail);
+    fail(`\u2717 \u914D\u97F3\u5931\u8D25\uFF1A${e.message}\u3002\u53EF\u52A0 --voice off \u53EA\u51FA\u5B57\u5E55`);
+    return 1;
   }
-  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join5(amHome(env), "videos", `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync4(dirname2(file), { recursive: true });
-  writeFileSync5(file, result.html);
+  const file = writeOutput(result.html, "videos", result.meta.title, opts, ctx);
   print(`\u2713 ${file}`);
   print(`  video \xB7 ${result.stats.panels} \u573A\u666F \xB7 ${result.beats} \u53E5\u65C1\u767D \xB7 ${result.duration.toFixed(1)}s \xB7 \u914D\u97F3\uFF1A${result.voiceName}`);
   printWarnings(result.warnings, print, result.meta.style);
-  if (opts.mp4) {
-    const mp4 = file.replace(/\.html?$/i, "") + ".mp4";
-    try {
-      const started = Date.now();
-      await exportMp4(file, mp4, { wav: result.wav, env, onProgress: (i, n) => fail(`  \u5BFC\u51FA MP4\uFF1A${i}/${n} \u5E27`) });
-      print(`\u2713 ${mp4}\uFF08${((Date.now() - started) / 1e3).toFixed(0)}s \u5BFC\u51FA\uFF09`);
-    } catch (e) {
-      if (!(e instanceof ExportError)) throw e;
-      fail(`\u2717 MP4 \u5BFC\u51FA\u5931\u8D25\uFF1A${e.message}\u3002\u64AD\u653E\u9875\u5DF2\u751F\u6210\uFF0C\u53EF\u76F4\u63A5\u5728\u6D4F\u89C8\u5668\u64AD\u653E`);
-      return 1;
-    }
+  if (opts.mp4 && !await exportVideoMp4(file, result.wav, ctx)) return 1;
+  return finish(file, opts, config, ctx);
+}
+async function buildVideo(src, voice, opts, config, { fail, env, io }) {
+  const provider = io.ttsProvider !== void 0 ? io.ttsProvider : pickProvider(voice, env);
+  const result = await renderVideo(src, {
+    provider,
+    cacheDir: join6(amHome(env), "cache", "tts"),
+    defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
+    overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
+    onProgress: (msg) => fail(`  ${msg}`)
+  });
+  return { ...result, voiceName: provider ? provider.name : "\u65E0\uFF08\u53EA\u51FA\u5B57\u5E55\uFF09" };
+}
+async function exportVideoMp4(file, wav2, { print, fail, env }) {
+  const mp4 = `${file.replace(/\.html?$/i, "")}.mp4`;
+  const started = Date.now();
+  try {
+    await exportMp4(file, mp4, { wav: wav2, env, onProgress: (i, n) => fail(`  \u5BFC\u51FA MP4\uFF1A${i}/${n} \u5E27`) });
+  } catch (e) {
+    if (!(e instanceof ExportError)) throw e;
+    fail(`\u2717 MP4 \u5BFC\u51FA\u5931\u8D25\uFF1A${e.message}\u3002\u64AD\u653E\u9875\u5DF2\u751F\u6210\uFF0C\u53EF\u76F4\u63A5\u5728\u6D4F\u89C8\u5668\u64AD\u653E`);
+    return false;
   }
-  printHints({ env, config, io, print });
-  if (shouldOpen(opts, env, config.values)) openFile(file);
+  print(`\u2713 ${mp4}\uFF08${((Date.now() - started) / 1e3).toFixed(0)}s \u5BFC\u51FA\uFF09`);
+  return true;
+}
+function loadConfig({ fail, env }) {
+  const config = readConfig(env);
+  if (config.warning) fail(`! ${config.warning}`);
+  return config;
+}
+function writeOutput(html, dir, title, opts, { env, io }) {
+  const file = opts.out ? resolve(io.cwd ?? process.cwd(), opts.out) : join6(amHome(env), dir, `${slug(title)}-${stamp()}.html`);
+  mkdirSync4(dirname2(file), { recursive: true });
+  writeFileSync5(file, html);
+  return file;
+}
+function finish(file, opts, config, ctx) {
+  printHints(config, ctx);
+  if (shouldOpen(opts, ctx.env, config.values)) openFile(file);
   return 0;
 }
-function printHints({ env, config, io, print }) {
+function printHints(config, { env, io, print }) {
   try {
     const hints = afterRender({
       home: amHome(env),
@@ -5844,9 +5917,10 @@ function cmdHelp(name, { print, fail }) {
   if (!name) return print(USAGE), 0;
   if (name === "format") return print(FORMAT), 0;
   if (name === "video") return print(VIDEO_FORMAT), 0;
+  if (name === "html" || name === "svg") return print(RAW_HELP.replace(/LANG/g, name)), 0;
   const comp = COMPONENTS.get(name);
   if (!comp) {
-    fail(`\u2717 \u6CA1\u6709\u7EC4\u4EF6 "${name}"\u3002\u53EF\u7528\uFF1A${[...COMPONENTS.keys()].join(", ")}, format`);
+    fail(`\u2717 \u6CA1\u6709\u7EC4\u4EF6 "${name}"\u3002\u53EF\u7528\uFF1A${[...COMPONENTS.keys()].join(", ")}, html, svg, format, video`);
     return 2;
   }
   print(`${comp.name} \u2014 ${comp.summary}

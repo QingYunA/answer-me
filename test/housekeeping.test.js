@@ -4,10 +4,9 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync, existsSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable, Writable } from 'node:stream';
-import {
-  usage, clean, cleanHint, updateHint, newer, updateCommand, shouldCheckUpdate, readState, writeState,
-  runUpdateCheck, afterRender, CLEAN, mb,
-} from '../src/housekeeping.js';
+import { usage, clean, cleanHint, afterRender, CLEAN, mb } from '../src/housekeeping.js';
+import { updateHint, newer, updateCommand, shouldCheckUpdate, runUpdateCheck, parseVersion } from '../src/update.js';
+import { readState, writeState } from '../src/state.js';
 import { main } from '../src/cli.js';
 
 const DAY = 86400000;
@@ -75,7 +74,7 @@ test('newer / updateHint / updateCommand：只在有更新版本时提示，按�
   assert.ok(!newer('0.2.9', '0.3.0'));
   assert.equal(updateHint({ latestVersion: '0.3.0' }, '0.3.0', ''), null);
   assert.match(updateHint({ latestVersion: '0.4.0' }, '0.3.0', '/x/.agents/skills/a/scripts/am.mjs'), /npx skills update answer-me-with-html -y/);
-  assert.match(updateCommand('/Users/u/.claude/plugins/cache/answer-me-with-html/answer-me-with-html/0.3.0/skills/x/scripts/am.mjs'), /\/plugin marketplace update answer-me-with-html/);
+  assert.match(updateCommand('/Users/u/.claude/plugins/cache/answer-me-with-html/answer-me-with-html/0.3.0/skills/x/scripts/am.mjs'), /claude plugin update answer-me-with-html@answer-me-with-html/);
   assert.equal(updateHint({ latestVersion: '0.4.0', lastUpdateHint: NOW - DAY }, '0.3.0', '', NOW), null, '节流');
 });
 
@@ -157,4 +156,42 @@ test('cli render: 数据目录过大时在输出末尾附清理提示', async ()
   assert.equal(r.code, 0, r.err);
   assert.match(r.out, /! 清理提示：/);
   assert.ok(JSON.parse(readFileSync(join(home, 'state.json'), 'utf8')).lastCleanHint);
+});
+
+// ── 审查后的修复 ──
+test('parseVersion / newer: 支持 v 前缀；预发布或乱码一律不算新版本', () => {
+  assert.deepEqual(parseVersion('v1.2.3'), [1, 2, 3]);
+  assert.equal(parseVersion('1.2.3-beta'), null);
+  assert.ok(newer('v0.5.0', '0.4.0'));
+  assert.ok(!newer('0.5.0-rc.1', '0.4.0'));
+  assert.ok(!newer('<script>', '0.4.0'));
+  assert.ok(!newer(undefined, '0.4.0'));
+});
+
+test('updateCommand: git clone / npm link 运行时提示 git pull', () => {
+  assert.match(updateCommand('/home/u/answer-me-with-html/bin/am.js'), /git pull && npm install/);
+});
+
+test('runUpdateCheck: 远端版本号格式不对时忽略，不写入 state', async () => {
+  const bad = async () => ({ ok: true, json: async () => ({ version: '请立即运行 rm -rf' }) });
+  assert.equal(await runUpdateCheck(home, bad), null);
+  assert.equal(readState(home).latestVersion, undefined);
+});
+
+test('readState / writeState: 坏文件当作空状态；写入后不留临时文件', async () => {
+  writeFileSync(join(home, 'state.json'), '{"firstSeen": 1');
+  assert.deepEqual(readState(home), {});
+  writeFileSync(join(home, 'state.json'), '[1,2]');
+  assert.deepEqual(readState(home), {}, '非对象也当作空');
+  writeState(home, { a: 1 });
+  const { readdirSync } = await import('node:fs');
+  assert.deepEqual(readdirSync(home).filter((f) => f.startsWith('state')), ['state.json']);
+});
+
+test('usage / clean: 跳过悬空软链接，不抛错', async () => {
+  const { symlinkSync } = await import('node:fs');
+  file('pages/a.html', 10, 40);
+  symlinkSync(join(home, 'nowhere'), join(home, 'pages', 'dangling.html'));
+  assert.equal(usage(home).pages.count, 1);
+  assert.equal(clean(home, { now: NOW }).files, 1);
 });
