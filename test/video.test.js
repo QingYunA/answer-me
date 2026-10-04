@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseVideo, estimateSeconds, buildTimeline, allBeats, TIMING } from '../src/video/script.js';
-import { renderVideo, captionHtml } from '../src/video/render.js';
+import { renderVideo, captionHtml, formatClock } from '../src/video/render.js';
 import { readWav, wav, mixTrack, trimSilence, synthAll, pickProvider, pickMacVoices, TtsError, SAMPLE_RATE } from '../src/video/tts.js';
 import { findChrome } from '../src/video/export.js';
 import { renderDoc } from '../src/render.js';
@@ -88,6 +88,13 @@ test('buildTimeline: 片头 → 场景切换 → 旁白依次排开，时间单�
   assert.equal(noIntro.scenes[0].start, TIMING.title, '没有片头旁白时停留固定时长');
 });
 
+test('formatClock: 四舍五入后进位到下一分钟，不出现 0:60', () => {
+  assert.equal(formatClock(59.6), '1:00');
+  assert.equal(formatClock(59.4), '0:59');
+  assert.equal(formatClock(0), '0:00');
+  assert.equal(formatClock(90), '1:30');
+});
+
 test('captionHtml: 转义 HTML，[名字] 变成高亮词', () => {
   assert.equal(captionHtml('[Server] 回 <ACK>'), '<b>Server</b> 回 &lt;ACK&gt;');
 });
@@ -141,6 +148,16 @@ test('pickMacVoices: 名字很长只隔一个空格时也能认出，优先婷�
 });
 
 // ── 渲染 ──
+test('renderVideo: 片头时长进位到 1:00，不写成 0:60', async () => {
+  const samples = new Int16Array(Math.round(54 * SAMPLE_RATE));
+  samples.fill(1000);
+  const r = await renderVideo(`---\ntitle: Dur\n---\n## S\n\`\`\`flow\nA -> B\n\`\`\`\n> beat\n`, {
+    provider: { name: 'fake', id: 'fake', concurrency: 1, synth: async () => samples },
+  });
+  assert.ok(Math.abs(r.duration - 59.6) < 0.05, r.duration);
+  assert.match(r.html, /DURATION<\/b><span>1:00<\/span>/);
+});
+
 test('renderVideo: 无配音时按估算时长出播放页，场景与数据齐全', async () => {
   const r = await renderVideo(SRC);
   assert.equal(r.wav, null);

@@ -6,6 +6,7 @@ const NICE_MAX = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
 const NICE_STEP = [1, 2, 2.5, 5, 10];
 
 export function niceScale(peak) {
+  if (!Number.isFinite(peak) || peak <= 0) return { max: 1, step: 1 };
   const target = peak * 1.4;
   const pow = 10 ** Math.floor(Math.log10(target));
   const integral = Number.isInteger(peak);
@@ -54,7 +55,9 @@ function rowHtml({ label, value, limit, unit, note }) {
   const over = value !== null && value > limit;
   const valText = `${value !== null ? `${value} / ` : ''}max ${limit}${unit ? ` ${unit}` : ''}`;
   const ticks = [];
-  for (let v = 0; v <= max + 1e-9; v += step) ticks.push(`<span style="left: ${pct(round(v), max)}">${round(v)}</span>`);
+  if (step > 0 && max > 0) {
+    for (let v = 0; v <= max + 1e-9; v += step) ticks.push(`<span style="left: ${pct(round(v), max)}">${round(v)}</span>`);
+  }
   return `<div class="am-lim${over ? ' is-over' : ''}">
 <div class="am-lim-head"><span>${esc(label)}${note ? `<span class="am-lim-note">${esc(note)}</span>` : ''}</span><span class="am-lim-val">${esc(valText)}</span></div>
 <div class="am-lim-track"><div class="am-lim-fill" style="width: ${pct(shown, max)}"></div><div class="am-lim-mark" style="left: ${pct(limit, max)}"></div></div>

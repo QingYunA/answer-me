@@ -50,6 +50,12 @@ test('cli render: 文件参数 + -o + 主题覆盖', async () => {
   assert.match(readFileSync(join(dir, 'out/x.html'), 'utf8'), /data-theme="shadcn"/);
 });
 
+test('cli render: limits 0 / 0 能出页，不挂起', { timeout: 5000 }, async () => {
+  const r = await run(['render', '-', '-o', 'zero.html'], { stdin: '## A\n```limits\nx | 0 / 0\n```\n' });
+  assert.equal(r.code, 0, r.err);
+  assert.match(readFileSync(join(dir, 'zero.html'), 'utf8'), /am-lim/);
+});
+
 test('cli render: 组件语法错误 → 绝对行号 + 组件名 + 正确示例，退出码 1', async () => {
   const r = await run(['render', '-'], { stdin: '## A\n文本\n```flow\nA -> B\n(未闭合 -> C\n```' });
   assert.equal(r.code, 1);
@@ -90,6 +96,7 @@ test('cli list / help', async () => {
   const h = await run(['help', 'sequence']);
   assert.match(h.out, /sequence — 时序图[\s\S]*示例：\n```sequence/);
   assert.match((await run(['help', 'format'])).out, /template: sheet/);
+  assert.match((await run(['help', 'patch'])).out, /#am-source/);
   assert.equal((await run(['help', 'nope'])).code, 2);
 });
 
@@ -130,6 +137,74 @@ test('cli config: 布尔值输出 on/off；非法键或值返回 2', async () =>
   assert.equal((await run(['config', 'frob'])).code, 2);
 });
 
+function panelSection(html, id) {
+  const m = html.match(new RegExp(`<section class="am-panel[^"]*" id="panel-${id}"[\\s\\S]*?</section>`));
+  return m && m[0];
+}
+
+const THREE = `---
+title: 三面板
+---
+## A 甲
+甲旧文。
+## B 乙
+乙旧文。
+## C 丙
+丙旧文。
+`;
+
+test('cli patch: 渲染后改一个面板，其余面板不变，仍写回原文件', async () => {
+  const rendered = await run(['render', '-', '-o', 'page.html'], { stdin: THREE });
+  assert.equal(rendered.code, 0, rendered.err);
+  const file = rendered.out.match(/✓ (.+\.html)/)[1];
+  assert.equal(file, join(dir, 'page.html'));
+  const before = readFileSync(file, 'utf8');
+  const beforeB = panelSection(before, 'B');
+  const beforeC = panelSection(before, 'C');
+  assert.match(before, /甲旧文/);
+  assert.match(before, /乙旧文/);
+
+  const patched = await run(['patch', 'page.html', '--panel', '甲'], { stdin: '## A 甲\n甲新文。\n' });
+  assert.equal(patched.code, 0, patched.err);
+  const outFile = patched.out.match(/✓ (.+\.html)/)[1];
+  assert.equal(outFile, file, '必须覆盖原 HTML，不能另写时间戳文件');
+
+  const after = readFileSync(file, 'utf8');
+  assert.match(after, /甲新文/);
+  assert.doesNotMatch(after, /甲旧文/);
+  assert.equal(panelSection(after, 'B'), beforeB, '未点名的面板 B 应保持不变');
+  assert.equal(panelSection(after, 'C'), beforeC, '未点名的面板 C 应保持不变');
+});
+
+test('cli patch: --from 读文件；缺面板或缺 #am-source 不改文件', async () => {
+  const rendered = await run(['render', '-', '-o', 'keep.html'], { stdin: THREE });
+  const file = rendered.out.match(/✓ (.+\.html)/)[1];
+  const original = readFileSync(file, 'utf8');
+  writeFileSync(join(dir, 'panel.md'), '## B 乙\n乙新文。\n');
+
+  const fromFile = await run(['patch', 'keep.html', '--panel', '乙', '--from', 'panel.md']);
+  assert.equal(fromFile.code, 0, fromFile.err);
+  const afterFrom = readFileSync(file, 'utf8');
+  assert.match(afterFrom, /乙新文/);
+
+  const missingPanel = await run(['patch', 'keep.html', '--panel', '不存在'], { stdin: 'x\n' });
+  assert.equal(missingPanel.code, 1);
+  assert.match(missingPanel.err, /没有找到/);
+  assert.equal(readFileSync(file, 'utf8'), afterFrom, '找不到面板时不得改文件');
+
+  writeFileSync(join(dir, 'plain.html'), '<html><body>no source</body></html>');
+  const beforePlain = readFileSync(join(dir, 'plain.html'), 'utf8');
+  const noSource = await run(['patch', 'plain.html', '--panel', '甲'], { stdin: 'x\n' });
+  assert.equal(noSource.code, 1);
+  assert.match(noSource.err, /#am-source/);
+  assert.equal(readFileSync(join(dir, 'plain.html'), 'utf8'), beforePlain);
+
+  const noPanelFlag = await run(['patch', 'keep.html'], { stdin: 'x\n' });
+  assert.equal(noPanelFlag.code, 2);
+
+  assert.notEqual(original, readFileSync(file, 'utf8'));
+});
+
 test('shouldOpen: --no-open > AM_NO_OPEN > 配置 open；--open 强制打开', async () => {
   const { shouldOpen } = await import('../src/cli.js');
   assert.equal(shouldOpen({}, {}, { open: true }), true);
@@ -139,4 +214,17 @@ test('shouldOpen: --no-open > AM_NO_OPEN > 配置 open；--open 强制打开', a
   assert.equal(shouldOpen({}, { AM_NO_OPEN: '0' }, { open: true }), true, 'AM_NO_OPEN=0 不算关闭');
   assert.equal(shouldOpen({}, { CI: 'true' }, { open: true }), false);
   assert.equal(shouldOpen({ open: true }, { AM_NO_OPEN: '1' }, { open: false }), true);
+});
+
+test('cli patch: 沿用原页面的主题与模板；本次 --theme 优先', async () => {
+  const src = '---\ntitle: 保留主题\n---\n## A 一\n旧\n\n## B 二\n旧\n';
+  assert.equal((await run(['render', '-', '-o', 'keep.html', '--theme', 'shadcn', '--template', 'doc'], { stdin: src })).code, 0);
+  const r = await run(['patch', 'keep.html', '--panel', 'B'], { stdin: '新内容\n' });
+  assert.equal(r.code, 0, r.err);
+  const html = readFileSync(join(dir, 'keep.html'), 'utf8');
+  assert.match(html, /data-theme="shadcn"/);
+  assert.match(html, /<main class="am-doc/);
+  assert.match(html, /新内容/);
+  await run(['patch', 'keep.html', '--panel', 'A', '--theme', 'blueprint'], { stdin: '改主题\n' });
+  assert.match(readFileSync(join(dir, 'keep.html'), 'utf8'), /data-theme="blueprint"/);
 });

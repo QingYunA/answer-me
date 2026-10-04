@@ -87,8 +87,13 @@ export function captionHtml(raw) {
   }).join('');
 }
 
+export function formatClock(seconds) {
+  const total = Math.max(0, Math.round(Number(seconds) || 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 function titleScene(meta, introHtml, { scenes, duration }) {
-  const mmss = `${Math.floor(duration / 60)}:${String(Math.round(duration % 60)).padStart(2, '0')}`;
+  const mmss = formatClock(duration);
   const cells = [['DRAWN', 'Answer me with HTML'], ['DATE', timestamp().slice(0, 10)], ['SCENES', String(scenes)], ['DURATION', mmss]];
   const block = `<div class="amv-titleblock">${cells.map(([k, v]) => `<div><b>${k}</b><span>${esc(v)}</span></div>`).join('')}</div>`;
   return `<section class="amv-scene amv-scene--title" data-i="0">

@@ -102,6 +102,13 @@ test('错误：非法模板 / 主题 / 严格度给出可选值', () => {
   assert.throws(() => parseDoc('---\nstyle: 50\n---'), /style.*off.*80.*strict/);
 });
 
+test('frontmatter: 引号内的 # 不是注释', () => {
+  assert.equal(parseDoc('---\ntitle: "Issue #123"\n---\n## A\nx').meta.title, 'Issue #123');
+  assert.equal(parseDoc('---\ntitle: "Issue #123" # 行尾注释\n---\n## A\nx').meta.title, 'Issue #123');
+  assert.equal(parseDoc("---\ntitle: 'Issue #123'\n---\n## A\nx").meta.title, 'Issue #123');
+  assert.equal(parseDoc('---\ntitle: Hello # comment\n---\n## A\nx').meta.title, 'Hello');
+});
+
 test('CRLF 换行也能正确解析', () => {
   const doc = parseDoc('---\r\ntitle: T\r\n---\r\n## A\r\n内容\r\n');
   assert.equal(doc.meta.title, 'T');

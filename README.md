@@ -314,6 +314,7 @@ AM=skills/answer-me-with-html/scripts/am.mjs
 node $AM render examples/tcp.en.md                # render and open in the browser
 node $AM render notes.md -o out.html --no-open    # choose the output file, don't open
 node $AM render notes.md --theme shadcn           # pick a theme for this run
+node $AM patch page.html --panel "Why three messages" < panel.md   # replace one ## panel, overwrite the same file
 node $AM lint notes.md                            # writing check only
 node $AM list                                     # list components
 node $AM config                                   # view settings

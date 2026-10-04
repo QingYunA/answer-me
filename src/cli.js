@@ -1,4 +1,4 @@
-// am CLI：render / lint / list / help。main() 接收注入的流与环境变量，方便测试。
+// am CLI：render / patch / lint / list / help。main() 接收注入的流与环境变量，方便测试。
 
 import { parseArgs } from 'node:util';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -16,6 +16,7 @@ import { exportMp4, ExportError } from './video/export.js';
 import { afterRender, clean, usage, mb, CLEAN } from './housekeeping.js';
 import { runUpdateCheck } from './update.js';
 import { amHome, readConfig, setConfig, resetConfig, CONFIG_KEYS, ConfigError } from './config.js';
+import { extractSource, replacePanel, pageSettings, PatchError } from './patch.js';
 
 const MAX_LISTED_WARNINGS = 20;
 
@@ -24,6 +25,8 @@ const USAGE = `Answer me with HTML ${VERSION} — 把 Markdown 内容稿渲染�
 用法:
   am render <file|->  [-o 输出路径] [--no-open] [--theme blueprint|shadcn]
                       [--template sheet|doc] [--style off|80|strict] [--mode auto|light|dark]
+  am patch  <html> --panel <标题> [file|-] [--from file] [--theme …] [--no-open]
+                                                  替换已有页面中的一个 ## 面板，原地覆盖该 HTML
   am video  <file|->  [-o 输出路径] [--voice auto|elevenlabs|system|off] [--mp4] [--no-open]
                       [--theme blueprint|shadcn|3b1b] [--mode light|dark]
                                                   把视频稿渲染成 3b1b 风格的解释视频播放页（--mp4 另存视频文件）
@@ -31,11 +34,12 @@ const USAGE = `Answer me with HTML ${VERSION} — 把 Markdown 内容稿渲染�
   am config [set <键> <值> | get <键> | reset [键]] 查看或修改配置
   am clean  [--days 30] [--all] [--dry-run]       清理旧页面、旧视频和配音缓存
   am list                                         列出模板、主题、组件
-  am help [组件名|format|video]                    查看组件语法 / 页面稿格式 / 视频稿格式
+  am help [组件名|format|video|patch]              查看组件语法 / 页面稿格式 / 视频稿格式 / patch 用法
 
 - 文件参数写 - 表示从 stdin 读取（适合 heredoc：am render - <<'EOF' ... EOF）。
 - 默认输出到 ~/.answer-me-with-html/pages/（可用环境变量 AM_HOME 修改）。
-- 是否自动打开浏览器、默认主题等用 am config 设置；--open / --no-open 只影响这一次。`;
+- 是否自动打开浏览器、默认主题等用 am config 设置；--open / --no-open 只影响这一次。
+- am patch 从页面隐藏的 #am-source 取回源稿，只改 --panel 对应的 ## 小节，再按原路径写回。`;
 
 const FORMAT = `稿件格式（扩展 Markdown）
 
@@ -128,6 +132,8 @@ export async function main(argv, io = {}) {
         mode: { type: 'string' },
         voice: { type: 'string' },
         mp4: { type: 'boolean' },
+        panel: { type: 'string' },
+        from: { type: 'string' },
         days: { type: 'string' },
         all: { type: 'boolean' },
         'dry-run': { type: 'boolean' },
@@ -146,6 +152,7 @@ export async function main(argv, io = {}) {
 
   switch (cmd) {
     case 'render': return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, io }));
+    case 'patch': return cmdPatch(arg, rest[0], opts, { print, fail, env, io });
     case 'video': return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, io }));
     case 'lint': return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case 'config': return cmdConfig([arg, ...rest].filter((x) => x !== undefined), { print, fail, env });
@@ -204,6 +211,78 @@ function cmdRender(src, opts, ctx) {
     return reportError(e, fail);
   }
   const file = writeOutput(result.html, 'pages', result.meta.title, opts, ctx);
+  const comps = Object.entries(result.stats.components).map(([k, v]) => `${k}×${v}`).join(' ');
+  print(`✓ ${file}`);
+  print(`  ${result.meta.template} · ${result.meta.theme} · ${result.stats.panels} 面板${comps ? ` · ${comps}` : ''}`);
+  printWarnings(result.warnings, print, result.meta.style);
+  return finish(file, opts, config, ctx);
+}
+
+const PATCH_HELP = `原地替换已渲染页面中的一个面板
+
+用法:
+  am patch <html-file> --panel <标题> < new-panel.md
+  am patch <html-file> --panel <标题> --from new-panel.md
+  am patch <html-file> --panel <标题> -
+
+- 从 <html-file> 里隐藏的 <textarea id="am-source"> 取回源稿。
+- --panel 匹配 ## 小节的标题、字母 ID，或 "ID 标题"。
+- 新稿件从 stdin 或 --from / 第二个文件参数读取：可带 ## 标题，也可只写面板正文。
+- 用现有 renderer 重渲后覆盖同一个 HTML 路径，不另写带时间戳的新文件。
+- 找不到该面板，或页面没有 #am-source，退出码非 0 且不改文件。`;
+
+async function cmdPatch(htmlArg, fromArg, opts, ctx) {
+  const { print, fail, io } = ctx;
+  if (!htmlArg || htmlArg === '-') {
+    fail(htmlArg ? '✗ patch 需要已有 HTML 文件路径，不能从 stdin 读页面' : '✗ 缺少 HTML 文件路径');
+    return 2;
+  }
+  if (!opts.panel || !String(opts.panel).trim()) {
+    fail('✗ 缺少 --panel <标题>');
+    return 2;
+  }
+  const cwd = io.cwd ?? process.cwd();
+  const file = resolve(cwd, htmlArg);
+  let html;
+  try {
+    html = readFileSync(file, 'utf8');
+  } catch (e) {
+    fail(`✗ 无法读取 HTML：${e.message}`);
+    return 2;
+  }
+  const source = extractSource(html);
+  if (source == null) {
+    fail('✗ 页面里没有 #am-source，无法取回源稿');
+    return 1;
+  }
+  const from = opts.from ?? fromArg;
+  let replacement;
+  try {
+    replacement = !from || from === '-' ? await readStream(io.stdin ?? process.stdin) : readFileSync(resolve(cwd, from), 'utf8');
+  } catch (e) {
+    fail(`✗ 无法读取新面板稿件：${e.message}`);
+    return 2;
+  }
+  let patched;
+  try {
+    patched = replacePanel(source, opts.panel, replacement);
+  } catch (e) {
+    if (!(e instanceof PatchError)) return reportError(e, fail);
+    fail(`✗ ${e.message}`);
+    return 1;
+  }
+  const config = loadConfig(ctx);
+  const { theme, mode, style } = config.values;
+  // 沿用原页面的模板、主题与明暗（生成时可能用过 --theme 等参数）；本次命令行参数优先。
+  const page = pageSettings(html);
+  const overrides = { template: opts.template ?? page.template, theme: opts.theme ?? page.theme, mode: opts.mode ?? page.mode, style: opts.style };
+  let result;
+  try {
+    result = renderDoc(patched, overrides, { theme, mode, style });
+  } catch (e) {
+    return reportError(e, fail);
+  }
+  writeFileSync(file, result.html);
   const comps = Object.entries(result.stats.components).map(([k, v]) => `${k}×${v}`).join(' ');
   print(`✓ ${file}`);
   print(`  ${result.meta.template} · ${result.meta.theme} · ${result.stats.panels} 面板${comps ? ` · ${comps}` : ''}`);
@@ -415,10 +494,11 @@ function cmdHelp(name, { print, fail }) {
   if (!name) return print(USAGE), 0;
   if (name === 'format') return print(FORMAT), 0;
   if (name === 'video') return print(VIDEO_FORMAT), 0;
+  if (name === 'patch') return print(PATCH_HELP), 0;
   if (name === 'html' || name === 'svg') return print(RAW_HELP.replace(/LANG/g, name)), 0;
   const comp = COMPONENTS.get(name);
   if (!comp) {
-    fail(`✗ 没有组件 "${name}"。可用：${[...COMPONENTS.keys()].join(', ')}, html, svg, format, video`);
+    fail(`✗ 没有组件 "${name}"。可用：${[...COMPONENTS.keys()].join(', ')}, html, svg, format, video, patch`);
     return 2;
   }
   print(`${comp.name} — ${comp.summary}\n\n${comp.syntax}\n\n示例：\n${comp.example}`);

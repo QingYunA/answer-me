@@ -50,7 +50,7 @@ function parseFrontmatter(lines, base, allowed) {
 
   const entries = {};
   for (let i = 1; i < end; i++) {
-    const raw = lines[i].replace(/\s+#.*$/, '').trim();
+    const raw = stripLineComment(lines[i]).trim();
     if (!raw || raw.startsWith('#')) continue;
     const m = raw.match(/^([\w-]+)\s*:\s*(.*)$/);
     if (!m) throw new ParseError(`frontmatter 无法解析："${lines[i]}"，应为 key: value`, i + 1);
@@ -169,6 +169,24 @@ function assignIds(panels) {
 function unquote(v) {
   const s = v.trim();
   return /^(["']).*\1$/.test(s) ? s.slice(1, -1) : s;
+}
+
+// 去掉未加引号的行尾 # 注释；引号内的 # 保留（title: "Issue #123"）。
+function stripLineComment(line) {
+  let quote = '';
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (quote) {
+      if (c === quote) quote = '';
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      quote = c;
+      continue;
+    }
+    if (c === '#' && (i === 0 || /\s/.test(line[i - 1]))) return line.slice(0, i);
+  }
+  return line;
 }
 
 function coerce(key, value) {

@@ -89,6 +89,14 @@ test('limits: 刻度包含 0 与上限', () => {
   assert.match(html, /<span style="left: 100%">30<\/span>/);
 });
 
+test('limits: 0 / 0 与 max 0 能渲染，刻度步长大于 0', { timeout: 2000 }, () => {
+  assert.deepEqual(niceScale(0), { max: 1, step: 1 });
+  assert.equal(niceScale(-3).step > 0, true);
+  assert.match(render('limits', 'x | 0 / 0'), /am-lim/);
+  assert.match(render('limits', 'y | max 0'), /am-lim-val">max 0/);
+  assert.doesNotMatch(render('limits', 'x | 0 / 0'), /NaN|Infinity/);
+});
+
 test('limits: 非数字或缺列报错', () => {
   throwsAt(() => render('limits', 'a | 1 / 2\nb | 很多'), 2);
   throwsAt(() => render('limits', '只有标签'), 1);
