@@ -16,7 +16,7 @@ import { exportMp4, ExportError } from './video/export.js';
 import { afterRender, clean, usage, mb, CLEAN } from './housekeeping.js';
 import { runUpdateCheck } from './update.js';
 import { amHome, readConfig, setConfig, resetConfig, CONFIG_KEYS, ConfigError } from './config.js';
-import { extractSource, replacePanel, pageSettings, PatchError } from './patch.js';
+import { extractSource, replacePanel, pageSettings, isVideoPage, PatchError } from './patch.js';
 
 const MAX_LISTED_WARNINGS = 20;
 
@@ -274,12 +274,32 @@ async function cmdPatch(htmlArg, fromArg, opts, ctx) {
   const config = loadConfig(ctx);
   const { theme, mode, style } = config.values;
   // 沿用原页面的模板、主题与明暗（生成时可能用过 --theme 等参数）；本次命令行参数优先。
+  // 视频页必须走 renderVideo，不能交给 renderDoc。
   const page = pageSettings(html);
-  const overrides = { template: opts.template ?? page.template, theme: opts.theme ?? page.theme, mode: opts.mode ?? page.mode, style: opts.style };
+  const video = isVideoPage(html);
+  const overrides = {
+    template: video ? undefined : (opts.template ?? page.template),
+    theme: opts.theme ?? page.theme,
+    mode: opts.mode ?? page.mode,
+    style: opts.style,
+  };
   let result;
   try {
-    result = renderDoc(patched, overrides, { theme, mode, style });
+    if (video) {
+      const voice = opts.voice ?? config.values.voice;
+      if (!VOICES.includes(voice)) {
+        fail(`✗ voice 的值 "${voice}" 无效，可选：${VOICES.join(' | ')}`);
+        return 2;
+      }
+      result = await buildVideo(patched, voice, opts, config, ctx);
+    } else {
+      result = renderDoc(patched, overrides, { theme, mode, style });
+    }
   } catch (e) {
+    if (e instanceof TtsError) {
+      fail(`✗ 配音失败：${e.message}。可加 --voice off 只出字幕`);
+      return 1;
+    }
     return reportError(e, fail);
   }
   writeFileSync(file, result.html);

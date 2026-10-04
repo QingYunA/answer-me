@@ -1,8 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createContext, runInContext } from 'node:vm';
 import { renderDoc } from '../src/render.js';
+import { renderVideo } from '../src/video/render.js';
 import { parseDoc } from '../src/parse.js';
-import { extractSource, replacePanel, findPanel, PatchError } from '../src/patch.js';
+import { extractSource, replacePanel, findPanel, isVideoPage, PatchError } from '../src/patch.js';
 
 const SRC = `---
 title: Patch 测试
@@ -37,6 +40,74 @@ test('extractSource: 从 #am-source 还原转义后的源稿', () => {
 
 test('extractSource: 没有 #am-source 时返回 null', () => {
   assert.equal(extractSource('<html><body>no source</body></html>'), null);
+});
+
+test('extractSource: 正文假 #am-source 不能盖过文末真实源稿', () => {
+  const html = `<html><body>
+<p>说明</p>
+<textarea id="am-source">FAKE</textarea>
+<textarea id="am-source" hidden readonly aria-hidden="true">## A 真源稿
+正文
+</textarea>
+</body></html>`;
+  assert.equal(extractSource(html), '## A 真源稿\n正文\n');
+  assert.notEqual(extractSource(html), 'FAKE');
+});
+
+test('extractSource: markdown 正文里的假 textarea 不能盖过文末真实源稿', () => {
+  const src = `## A 说明
+<textarea id="am-source">FAKE</textarea>
+`;
+  const { html } = renderDoc(src);
+  assert.match(html, /<textarea id="am-source">FAKE<\/textarea>/);
+  assert.equal(extractSource(html), src);
+});
+
+test('extractSource: html 围栏里的假 textarea 不能盖过文末真实源稿', () => {
+  const src = `## A 说明
+\`\`\`html
+<textarea id="am-source">FAKE</textarea>
+\`\`\`
+`;
+  const { html } = renderDoc(src);
+  assert.match(html, /<textarea id="am-source">FAKE<\/textarea>/);
+  assert.equal(extractSource(html), src);
+});
+
+test('copy-source control: 正文假 #am-source 不能盖过文末真实源稿', async () => {
+  const real = { value: '## A 真源稿\n正文\n' };
+  const fake = { value: 'FAKE' };
+  const copyBtn = {
+    dataset: { done: '已复制' },
+    textContent: '复制源稿',
+    handler: null,
+    addEventListener(_ev, fn) { this.handler = fn; },
+  };
+  let copied = null;
+  const document = {
+    documentElement: { getAttribute: () => 'blueprint', setAttribute() {} },
+    querySelector(sel) { return sel === '[data-am="copy"]' ? copyBtn : null; },
+    getElementById(id) { return id === 'am-source' ? fake : null; },
+    querySelectorAll(sel) {
+      return String(sel).includes('am-source') ? [fake, real] : [];
+    },
+  };
+  const navigator = { clipboard: { writeText: async (t) => { copied = t; } } };
+  const js = readFileSync(new URL('../src/runtime/page.js', import.meta.url), 'utf8');
+  runInContext(js, createContext({ document, navigator, setTimeout() {} }));
+  assert.ok(copyBtn.handler);
+  await copyBtn.handler();
+  assert.equal(copied, real.value);
+});
+
+test('isVideoPage / pageSettings: 视频页带 data-video', async () => {
+  const { html } = await renderVideo('## 第一幕\n- 画面\n> 旁白。\n');
+  assert.equal(isVideoPage(html), true);
+  const { pageSettings } = await import('../src/patch.js');
+  const settings = pageSettings(html);
+  assert.equal(settings.template, 'video');
+  assert.match(settings.theme, /blueprint|shadcn|3b1b/);
+  assert.equal(isVideoPage('<html><body>no</body></html>'), false);
 });
 
 test('replacePanel: 只替换匹配的 ## 面板，其余小节原文不变', () => {

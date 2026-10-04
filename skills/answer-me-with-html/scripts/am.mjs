@@ -30,7 +30,8 @@ var RUNTIME_JS = `(() => {
 
   const copyBtn = document.querySelector('[data-am="copy"]');
   copyBtn?.addEventListener('click', async () => {
-    const text = document.getElementById('am-source').value;
+    const nodes = document.querySelectorAll('#am-source');
+    const text = nodes[nodes.length - 1]?.value ?? '';
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -5559,7 +5560,8 @@ function resetConfig(key, env = process.env) {
 }
 
 // src/patch.js
-var SOURCE_RE = /<textarea id="am-source"[^>]*>([\s\S]*?)<\/textarea>/;
+var SOURCE_OPEN = '<textarea id="am-source"';
+var SOURCE_RE = /^<textarea id="am-source"[^>]*>([\s\S]*?)<\/textarea>/;
 var ATTR_BLOCK2 = /\s*\{([^{}]*)\}\s*$/;
 var PatchError = class extends Error {
   constructor(message) {
@@ -5568,9 +5570,15 @@ var PatchError = class extends Error {
   }
 };
 function extractSource(html) {
-  const m = String(html).match(SOURCE_RE);
+  const s = String(html);
+  const open = s.lastIndexOf(SOURCE_OPEN);
+  if (open === -1) return null;
+  const m = s.slice(open).match(SOURCE_RE);
   if (!m) return null;
   return unescapeHtml(m[1]);
+}
+function isVideoPage(html) {
+  return /<html\b[^>]*\sdata-video\b/.test(String(html));
 }
 function unescapeHtml(s) {
   return s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
@@ -5610,7 +5618,7 @@ ${text}`);
 }
 function pageSettings(html) {
   const attr = (name) => String(html).match(new RegExp(`<html[^>]*\\s${name}="([^"]+)"`))?.[1];
-  const template = /<main class="am-doc\b/.test(html) ? "doc" : /<main class="am-sheet\b/.test(html) ? "sheet" : void 0;
+  const template = isVideoPage(html) ? "video" : /<main class="am-doc\b/.test(html) ? "doc" : /<main class="am-sheet\b/.test(html) ? "sheet" : void 0;
   return { template, theme: attr("data-theme"), mode: attr("data-mode") };
 }
 function replacePanel(source, query, replacement) {
@@ -5884,11 +5892,30 @@ async function cmdPatch(htmlArg, fromArg, opts, ctx) {
   const config = loadConfig(ctx);
   const { theme, mode, style } = config.values;
   const page = pageSettings(html);
-  const overrides = { template: opts.template ?? page.template, theme: opts.theme ?? page.theme, mode: opts.mode ?? page.mode, style: opts.style };
+  const video = isVideoPage(html);
+  const overrides = {
+    template: video ? void 0 : opts.template ?? page.template,
+    theme: opts.theme ?? page.theme,
+    mode: opts.mode ?? page.mode,
+    style: opts.style
+  };
   let result;
   try {
-    result = renderDoc(patched, overrides, { theme, mode, style });
+    if (video) {
+      const voice = opts.voice ?? config.values.voice;
+      if (!VOICES.includes(voice)) {
+        fail(`\u2717 voice \u7684\u503C "${voice}" \u65E0\u6548\uFF0C\u53EF\u9009\uFF1A${VOICES.join(" | ")}`);
+        return 2;
+      }
+      result = await buildVideo(patched, voice, opts, config, ctx);
+    } else {
+      result = renderDoc(patched, overrides, { theme, mode, style });
+    }
   } catch (e) {
+    if (e instanceof TtsError) {
+      fail(`\u2717 \u914D\u97F3\u5931\u8D25\uFF1A${e.message}\u3002\u53EF\u52A0 --voice off \u53EA\u51FA\u5B57\u5E55`);
+      return 1;
+    }
     return reportError(e, fail);
   }
   writeFileSync5(file, result.html);
