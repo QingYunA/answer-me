@@ -1,5 +1,6 @@
 ---
 name: answer-me-with-html
+argument-hint: "[config [键 值] | clean | update]"
 description: >-
   When an answer is complex, renders it as a one-page visual HTML explainer: the model writes only
   a short extended-Markdown draft; the bundled CLI handles templates, components, SVG auto-layout
