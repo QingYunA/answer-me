@@ -243,7 +243,7 @@ async function run(args, opts = {}) {
 test('cli video: 写入 AM_HOME/videos 并打印场景、旁白、时长与配音方式', async () => {
   const r = await run(['video', '-'], { stdin: SRC });
   assert.equal(r.code, 0, r.err);
-  assert.match(r.out, /✓ .+videos\/握手-.+\.html/);
+  assert.match(r.out, /✓ .+videos[\\/]握手-.+\.html/);
   assert.match(r.out, /2 场景 · 4 句旁白 · [\d.]+s · 配音：无/);
   assert.equal(readdirSync(join(dir, 'videos')).length, 1);
 });
