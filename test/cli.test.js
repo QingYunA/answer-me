@@ -216,6 +216,29 @@ test('shouldOpen: --no-open > AM_NO_OPEN > 配置 open；--open 强制打开', a
   assert.equal(shouldOpen({ open: true }, { AM_NO_OPEN: '1' }, { open: false }), true);
 });
 
+test('cli patch: 正文假 #am-source 不得覆盖页面', async () => {
+  const src = `---
+title: 假源
+---
+## A 真面板
+真内容。
+\`\`\`html
+<textarea id="am-source">FAKE</textarea>
+\`\`\`
+## B 另一格
+保留。
+`;
+  assert.equal((await run(['render', '-', '-o', 'fake-src.html'], { stdin: src })).code, 0);
+  const patched = await run(['patch', 'fake-src.html', '--panel', '真面板'], {
+    stdin: '## A 真面板\n已更新。\n```html\n<textarea id="am-source">FAKE</textarea>\n```\n',
+  });
+  assert.equal(patched.code, 0, patched.err);
+  const after = readFileSync(join(dir, 'fake-src.html'), 'utf8');
+  assert.match(after, /已更新/);
+  assert.doesNotMatch(after, /真内容/);
+  assert.match(after, /保留/);
+});
+
 test('cli patch: 沿用原页面的主题与模板；本次 --theme 优先', async () => {
   const src = '---\ntitle: 保留主题\n---\n## A 一\n旧\n\n## B 二\n旧\n';
   assert.equal((await run(['render', '-', '-o', 'keep.html', '--theme', 'shadcn', '--template', 'doc'], { stdin: src })).code, 0);
@@ -227,4 +250,15 @@ test('cli patch: 沿用原页面的主题与模板；本次 --theme 优先', asy
   assert.match(html, /新内容/);
   await run(['patch', 'keep.html', '--panel', 'A', '--theme', 'blueprint'], { stdin: '改主题\n' });
   assert.match(readFileSync(join(dir, 'keep.html'), 'utf8'), /data-theme="blueprint"/);
+});
+
+test('cli patch: 视频页沿用原主题（3b1b），输出视频摘要', async () => {
+  const src = '## 场景\n```flow\nA -> B\n```\n> [A] 连到 B。\n';
+  assert.equal((await run(['video', '-', '--voice', 'off', '--theme', '3b1b', '-o', 'v3b.html'], { stdin: src })).code, 0);
+  const r = await run(['patch', 'v3b.html', '--panel', '场景', '--voice', 'off'], { stdin: '> 新旁白。\n```flow\nA -> C\n```\n' });
+  assert.equal(r.code, 0, r.err);
+  assert.match(r.out, /video · 3b1b · 1 场景 · 1 句旁白/);
+  const html = readFileSync(join(dir, 'v3b.html'), 'utf8');
+  assert.match(html, /data-theme="3b1b" data-mode="dark" data-video/);
+  assert.match(html, /新旁白/);
 });
