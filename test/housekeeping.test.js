@@ -108,6 +108,15 @@ test('afterRender: 记录首次使用；提示后写入节流时间；未授权�
   assert.deepEqual(afterRender({ home, env: {}, config: {}, current: '0.3.0', scriptPath: '', background: false, now: NOW + DAY }), []);
 });
 
+test('afterRender: update_check off、CI、AM_NO_UPDATE_CHECK 时不再提示已知的新版本', () => {
+  writeState(home, { latestVersion: '9.0.0', lastUpdateCheck: NOW, firstSeen: NOW });
+  const run = (env, config) => afterRender({ home, env, config, current: '0.3.0', scriptPath: '', background: false, now: NOW });
+  assert.deepEqual(run({}, { update_check: false }), []);
+  assert.deepEqual(run({ CI: 'true' }, {}), []);
+  assert.deepEqual(run({ AM_NO_UPDATE_CHECK: '1' }, {}), []);
+  assert.equal(run({}, {}).length, 1, '开启时照常提示');
+});
+
 test('mb: 小于 1 MB 用 KB', () => {
   assert.equal(mb(1500), '2 KB');
   assert.equal(mb(5 * 2 ** 20), '5.0 MB');
@@ -138,6 +147,8 @@ test('cli clean: dry-run 与执行；--days 校验', async () => {
   const real = await run(['clean']);
   assert.match(real.out, /✓ 已删除 1 个文件/);
   assert.equal((await run(['clean', '--days', '-1'])).code, 2);
+  assert.equal((await run(['clean', '--days='])).code, 2, '空值不能当成 0');
+  assert.equal((await run(['clean', '--days', '1.5'])).code, 2);
 });
 
 test('cli render: 数据目录过大时在输出末尾附清理提示', async () => {

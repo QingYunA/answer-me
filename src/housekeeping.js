@@ -109,8 +109,11 @@ export function updateHint(state, current, scriptPath, now = Date.now()) {
   return `! 更新提示：Answer me with HTML 有新版本 ${state.latestVersion}（当前 ${current}）。请问用户是否更新：${updateCommand(scriptPath)}。`;
 }
 
+// update_check off、CI、AM_NO_UPDATE_CHECK 同时关掉后台检查和更新提示。
+export const updateEnabled = (env, config) => !(config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK);
+
 export function shouldCheckUpdate(state, env, config, now = Date.now()) {
-  if (config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK) return false;
+  if (!updateEnabled(env, config)) return false;
   return !state.lastUpdateCheck || now - state.lastUpdateCheck >= UPDATE.checkEveryDays * DAY;
 }
 
@@ -149,7 +152,7 @@ export function afterRender({ home, env, config, current, scriptPath, background
     hints.push(c);
     state = writeState(home, { lastCleanHint: now });
   }
-  const u = updateHint(state, current, scriptPath, now);
+  const u = updateEnabled(env, config) ? updateHint(state, current, scriptPath, now) : null;
   if (u) {
     hints.push(u);
     writeState(home, { lastUpdateHint: now });

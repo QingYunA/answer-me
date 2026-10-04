@@ -5055,6 +5055,7 @@ var ExportError = class extends Error {
     this.name = "ExportError";
   }
 };
+var CDP_TIMEOUT_MS = 3e4;
 var CHROME_PATHS = {
   darwin: [
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -5094,8 +5095,9 @@ async function exportMp4(htmlFile, mp4File, { wav: wav2, env = process.env, onPr
     "--window-size=1920,1080",
     "about:blank"
   ], { stdio: ["ignore", "ignore", "pipe"] });
+  let cdp = null;
   try {
-    const cdp = await connect(await devtoolsUrl(chrome));
+    cdp = await connect(await devtoolsUrl(chrome));
     const { targetId } = await cdp.send("Target.createTarget", { url: "about:blank" });
     const { sessionId } = await cdp.send("Target.attachToTarget", { targetId, flatten: true });
     const page = (method, params) => cdp.send(method, params, sessionId);
@@ -5139,25 +5141,41 @@ async function exportMp4(htmlFile, mp4File, { wav: wav2, env = process.env, onPr
       mp4File
     ], { stdio: ["pipe", "ignore", "pipe"] });
     let ffErr = "";
+    let exited = false;
     ffmpeg.stderr.on("data", (d) => {
       ffErr += d;
     });
+    ffmpeg.stdin.on("error", () => {
+    });
     const done = new Promise((resolve2, reject) => {
-      ffmpeg.on("error", reject);
-      ffmpeg.on("close", (code) => code === 0 ? resolve2() : reject(new ExportError(`ffmpeg \u5931\u8D25\uFF08${code}\uFF09\uFF1A${ffErr.slice(0, 300)}`)));
+      ffmpeg.on("error", (e) => {
+        exited = true;
+        reject(new ExportError(`\u65E0\u6CD5\u8FD0\u884C ffmpeg\uFF1A${e.message}`));
+      });
+      ffmpeg.on("close", (code) => {
+        exited = true;
+        if (code === 0) resolve2();
+        else reject(new ExportError(`ffmpeg \u5931\u8D25\uFF08${code}\uFF09\uFF1A${ffErr.slice(0, 300)}`));
+      });
+    });
+    done.catch(() => {
     });
     const frames = Math.ceil(info.duration * info.fps);
-    for (let i = 0; i < frames; i++) {
+    for (let i = 0; i < frames && !exited; i++) {
       await evaluate(`render(${i / info.fps})`);
       const { data } = await page("Page.captureScreenshot", { format: "jpeg", quality: 92, clip: { x: 0, y: 0, width: 1920, height: 1080, scale: 1 } });
-      if (!ffmpeg.stdin.write(Buffer.from(data, "base64"))) await new Promise((r) => ffmpeg.stdin.once("drain", r));
+      if (exited) break;
+      if (!ffmpeg.stdin.write(Buffer.from(data, "base64"))) {
+        await Promise.race([new Promise((r) => ffmpeg.stdin.once("drain", r)), done.catch(() => {
+        })]);
+      }
       if (i % 30 === 0 || i === frames - 1) onProgress(i + 1, frames);
     }
-    ffmpeg.stdin.end();
+    if (!exited) ffmpeg.stdin.end();
     await done;
-    cdp.close();
     return { frames, duration: info.duration };
   } finally {
+    cdp?.close();
     await new Promise((r) => {
       if (chrome.exitCode !== null) return r();
       const timer = setTimeout(r, 3e3);
@@ -5213,8 +5231,19 @@ function connect(url) {
     ws.addEventListener("open", () => resolve2({
       send(method, params = {}, sessionId) {
         return new Promise((ok, fail) => {
-          pending.set(++id, { ok, fail });
-          ws.send(JSON.stringify({ id, method, params, ...sessionId ? { sessionId } : {} }));
+          const msgId = ++id;
+          const timer = setTimeout(() => {
+            pending.delete(msgId);
+            fail(new ExportError(`Chrome \u65E0\u54CD\u5E94\uFF08${method} \u8D85\u8FC7 ${CDP_TIMEOUT_MS / 1e3} \u79D2\uFF09`));
+          }, CDP_TIMEOUT_MS);
+          pending.set(msgId, { ok: (v) => {
+            clearTimeout(timer);
+            ok(v);
+          }, fail: (e) => {
+            clearTimeout(timer);
+            fail(e);
+          } });
+          ws.send(JSON.stringify({ id: msgId, method, params, ...sessionId ? { sessionId } : {} }));
         });
       },
       once: (method) => new Promise((r) => waiters.set(method, r)),
@@ -5323,8 +5352,9 @@ function updateHint(state, current, scriptPath, now = Date.now()) {
   if (state.lastUpdateHint && now - state.lastUpdateHint < UPDATE.hintEveryDays * DAY) return null;
   return `! \u66F4\u65B0\u63D0\u793A\uFF1AAnswer me with HTML \u6709\u65B0\u7248\u672C ${state.latestVersion}\uFF08\u5F53\u524D ${current}\uFF09\u3002\u8BF7\u95EE\u7528\u6237\u662F\u5426\u66F4\u65B0\uFF1A${updateCommand(scriptPath)}\u3002`;
 }
+var updateEnabled = (env, config) => !(config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK);
 function shouldCheckUpdate(state, env, config, now = Date.now()) {
-  if (config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK) return false;
+  if (!updateEnabled(env, config)) return false;
   return !state.lastUpdateCheck || now - state.lastUpdateCheck >= UPDATE.checkEveryDays * DAY;
 }
 function spawnUpdateCheck(home, scriptPath) {
@@ -5356,7 +5386,7 @@ function afterRender({ home, env, config, current, scriptPath, background, now =
     hints.push(c);
     state = writeState(home, { lastCleanHint: now });
   }
-  const u = updateHint(state, current, scriptPath, now);
+  const u = updateEnabled(env, config) ? updateHint(state, current, scriptPath, now) : null;
   if (u) {
     hints.push(u);
     writeState(home, { lastUpdateHint: now });
@@ -5705,11 +5735,11 @@ function printHints({ env, config, io, print }) {
   }
 }
 function cmdClean(opts, { print, fail, env }) {
-  const days = opts.days === void 0 ? CLEAN.days : Number(opts.days);
-  if (!Number.isInteger(days) || days < 0) {
+  if (opts.days !== void 0 && !/^\d+$/.test(opts.days.trim())) {
     fail("\u2717 --days \u9700\u8981\u975E\u8D1F\u6574\u6570");
     return 2;
   }
+  const days = opts.days === void 0 ? CLEAN.days : Number(opts.days);
   const home = amHome(env);
   const before = usage(home);
   const dry = Boolean(opts["dry-run"]);

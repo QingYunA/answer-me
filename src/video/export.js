@@ -14,6 +14,8 @@ export class ExportError extends Error {
   }
 }
 
+const CDP_TIMEOUT_MS = 30000;
+
 const CHROME_PATHS = {
   darwin: [
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -48,8 +50,9 @@ export async function exportMp4(htmlFile, mp4File, { wav, env = process.env, onP
     '--no-first-run', '--no-default-browser-check', '--hide-scrollbars', '--mute-audio',
     '--force-device-scale-factor=1', '--window-size=1920,1080', 'about:blank',
   ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  let cdp = null;
   try {
-    const cdp = await connect(await devtoolsUrl(chrome));
+    cdp = await connect(await devtoolsUrl(chrome));
     const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
     const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
     const page = (method, params) => cdp.send(method, params, sessionId);
@@ -75,24 +78,35 @@ export async function exportMp4(htmlFile, mp4File, { wav, env = process.env, onP
       '-movflags', '+faststart', mp4File,
     ], { stdio: ['pipe', 'ignore', 'pipe'] });
     let ffErr = '';
+    let exited = false;
     ffmpeg.stderr.on('data', (d) => { ffErr += d; });
+    // ffmpeg 提前退出时，写入 stdin 会触发 EPIPE；这里吞掉，由 done 统一报错。
+    ffmpeg.stdin.on('error', () => {});
     const done = new Promise((resolve, reject) => {
-      ffmpeg.on('error', reject);
-      ffmpeg.on('close', (code) => (code === 0 ? resolve() : reject(new ExportError(`ffmpeg 失败（${code}）：${ffErr.slice(0, 300)}`))));
+      ffmpeg.on('error', (e) => { exited = true; reject(new ExportError(`无法运行 ffmpeg：${e.message}`)); });
+      ffmpeg.on('close', (code) => {
+        exited = true;
+        if (code === 0) resolve();
+        else reject(new ExportError(`ffmpeg 失败（${code}）：${ffErr.slice(0, 300)}`));
+      });
     });
+    done.catch(() => {}); // 先挂上处理器，避免帧循环期间出现未处理的 rejection
 
     const frames = Math.ceil(info.duration * info.fps);
-    for (let i = 0; i < frames; i++) {
+    for (let i = 0; i < frames && !exited; i++) {
       await evaluate(`render(${i / info.fps})`);
       const { data } = await page('Page.captureScreenshot', { format: 'jpeg', quality: 92, clip: { x: 0, y: 0, width: 1920, height: 1080, scale: 1 } });
-      if (!ffmpeg.stdin.write(Buffer.from(data, 'base64'))) await new Promise((r) => ffmpeg.stdin.once('drain', r));
+      if (exited) break;
+      if (!ffmpeg.stdin.write(Buffer.from(data, 'base64'))) {
+        await Promise.race([new Promise((r) => ffmpeg.stdin.once('drain', r)), done.catch(() => {})]);
+      }
       if (i % 30 === 0 || i === frames - 1) onProgress(i + 1, frames);
     }
-    ffmpeg.stdin.end();
+    if (!exited) ffmpeg.stdin.end();
     await done;
-    cdp.close();
     return { frames, duration: info.duration };
   } finally {
+    cdp?.close();
     await new Promise((r) => {
       if (chrome.exitCode !== null) return r();
       const timer = setTimeout(r, 3000);
@@ -146,8 +160,13 @@ function connect(url) {
     ws.addEventListener('open', () => resolve({
       send(method, params = {}, sessionId) {
         return new Promise((ok, fail) => {
-          pending.set(++id, { ok, fail });
-          ws.send(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) }));
+          const msgId = ++id;
+          const timer = setTimeout(() => {
+            pending.delete(msgId);
+            fail(new ExportError(`Chrome 无响应（${method} 超过 ${CDP_TIMEOUT_MS / 1000} 秒）`));
+          }, CDP_TIMEOUT_MS);
+          pending.set(msgId, { ok: (v) => { clearTimeout(timer); ok(v); }, fail: (e) => { clearTimeout(timer); fail(e); } });
+          ws.send(JSON.stringify({ id: msgId, method, params, ...(sessionId ? { sessionId } : {}) }));
         });
       },
       once: (method) => new Promise((r) => waiters.set(method, r)),

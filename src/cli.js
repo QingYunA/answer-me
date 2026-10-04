@@ -273,11 +273,11 @@ function printHints({ env, config, io, print }) {
 }
 
 function cmdClean(opts, { print, fail, env }) {
-  const days = opts.days === undefined ? CLEAN.days : Number(opts.days);
-  if (!Number.isInteger(days) || days < 0) {
+  if (opts.days !== undefined && !/^\d+$/.test(opts.days.trim())) {
     fail('✗ --days 需要非负整数');
     return 2;
   }
+  const days = opts.days === undefined ? CLEAN.days : Number(opts.days);
   const home = amHome(env);
   const before = usage(home);
   const dry = Boolean(opts['dry-run']);
