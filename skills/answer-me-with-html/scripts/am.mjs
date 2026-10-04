@@ -3,10 +3,10 @@
 
 // src/cli.js
 import { parseArgs } from "node:util";
-import { readFileSync as readFileSync3, writeFileSync as writeFileSync4, mkdirSync as mkdirSync3 } from "node:fs";
+import { readFileSync as readFileSync4, writeFileSync as writeFileSync5, mkdirSync as mkdirSync4 } from "node:fs";
 
 // src/assets.js
-var VERSION = "0.3.0";
+var VERSION = "0.4.0";
 var BASE_CSS = '/* Answer me with HTML base \u2014 \u53EA\u5F15\u7528\u4E3B\u9898\u53D8\u91CF\uFF0C\u7981\u6B62\u5199\u6B7B\u989C\u8272\uFF08\u4E3B\u9898 token \u89C1 themes/index.js\uFF09 */\n*, *::before, *::after { box-sizing: border-box; }\nhtml, body { margin: 0; padding: 0; }\nbody {\n  background: var(--bg); color: var(--ink);\n  font-family: var(--font-sans); font-size: 14px; line-height: 1.55;\n  -webkit-font-smoothing: antialiased;\n}\ncode, pre, kbd { font-family: var(--font-mono); }\n\n/* \u2500\u2500 \u5DE5\u5177\u680F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-toolbar {\n  position: fixed; top: 12px; right: 12px; z-index: 10; display: flex; gap: 6px;\n}\n.am-btn {\n  font: 12px/1 var(--font-sans); color: var(--ink); background: var(--paper);\n  border: 1px solid var(--line-2); border-radius: var(--radius); padding: 7px 10px; cursor: pointer;\n}\n.am-btn:hover { border-color: var(--ink-3); }\n.am-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }\n\n/* \u2500\u2500 \u9875\u5934 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-head { margin: 0 0 20px; padding-right: 260px; }\n.am-head h1 { margin: 0; font-size: 24px; line-height: 1.25; letter-spacing: -0.01em; }\n.am-sub { margin: 4px 0 0; color: var(--ink-2); }\n.am-head-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12px; color: var(--ink-2); }\n.am-head-meta b { font-family: var(--font-mono); font-weight: 400; color: var(--ink-3); margin-right: 6px; }\n.am-intro { margin-top: 12px; max-width: 80ch; }\n\n/* \u2500\u2500 sheet \u56FE\u7EB8\u677F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-sheet { max-width: 1680px; margin: 0 auto; padding: 32px 28px 40px; }\n.am-frame { position: relative; }\n.am-grid {\n  display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));\n  gap: 20px; align-items: start;\n}\n.am-ruler { display: none; }\nhtml[data-theme="blueprint"] .am-frame { border: 1px solid var(--line); padding: 30px; }\nhtml[data-theme="blueprint"] .am-frame::before {\n  content: ""; position: absolute; inset: 18px; border: 1px solid var(--line); pointer-events: none;\n}\nhtml[data-theme="blueprint"] .am-ruler {\n  display: flex; position: absolute; font: 10px/1 var(--font-mono); color: var(--ink-3);\n}\n.am-ruler span { flex: 1; display: flex; align-items: center; justify-content: center; }\n.am-ruler--top, .am-ruler--bottom { left: 18px; right: 18px; height: 18px; }\n.am-ruler--top { top: 0; }\n.am-ruler--bottom { bottom: 0; }\n.am-ruler--left, .am-ruler--right { top: 18px; bottom: 18px; width: 18px; flex-direction: column; }\n.am-ruler--left { left: 0; }\n.am-ruler--right { right: 0; }\n.am-ruler--top span + span, .am-ruler--bottom span + span { border-left: 1px solid var(--line); }\n.am-ruler--left span + span, .am-ruler--right span + span { border-top: 1px solid var(--line); }\n\n/* \u2500\u2500 \u9762\u677F \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-panel {\n  background: var(--paper); border: var(--bw) solid var(--line); border-radius: var(--radius);\n  box-shadow: var(--shadow); min-width: 0; overflow: hidden;\n}\n.am-panel-head {\n  display: flex; align-items: stretch; gap: 0; border-bottom: var(--bw) solid var(--line); min-height: 34px;\n}\n.am-panel-id {\n  display: flex; align-items: center; justify-content: center; min-width: 34px; padding: 0 8px;\n  background: var(--head-bg); color: var(--head-fg); font-weight: 600; font-size: 14px;\n}\nhtml[data-theme="shadcn"] .am-panel-id { border-radius: 6px; min-width: 24px; height: 24px; margin: 9px 0 9px 14px; font-size: 12px; }\nhtml[data-theme="shadcn"] .am-panel-head { border-bottom-width: 1px; }\n.am-panel-head h2 { margin: 0; padding: 7px 12px; font-size: 15px; font-weight: 600; flex: 1; display: flex; align-items: center; }\n.am-panel-meta { align-self: center; padding: 0 12px; font: 11px/1.3 var(--font-mono); color: var(--ink-2); text-align: right; }\n.am-panel-body { padding: 14px 16px 16px; }\n.am-panel-body > * + * { margin-top: 12px; }\n\n/* \u2500\u2500 Markdown \u6B63\u6587 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-md > :first-child { margin-top: 0; }\n.am-md > :last-child { margin-bottom: 0; }\n.am-md p { margin: 0 0 8px; }\n.am-md ul, .am-md ol { margin: 0 0 8px; padding-left: 20px; }\n.am-md li + li { margin-top: 3px; }\n.am-md h3, .am-md h4 { margin: 14px 0 6px; font-size: 13px; }\n.am-md a { color: var(--accent); }\n.am-md blockquote { margin: 0 0 8px; padding: 2px 12px; border-left: 3px solid var(--line-2); color: var(--ink-2); }\n.am-md :not(pre) > code { font-size: 0.9em; background: var(--fill); padding: 1px 5px; border-radius: 4px; }\n.am-md hr { border: 0; border-top: 1px solid var(--line-2); margin: 12px 0; }\n.am-md table { width: 100%; border-collapse: collapse; font-size: 13px; }\n.am-md th {\n  text-align: left; font: 11px/1.3 var(--font-mono); color: var(--ink-2); font-weight: 400;\n  padding: 6px 10px; border-bottom: 1px solid var(--line-2);\n}\n.am-md td { padding: 7px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }\n.am-md tbody tr:nth-child(even) td { background: var(--fill); }\n.am-table-wrap { overflow-x: auto; }\n.am-code {\n  margin: 0; padding: 12px 14px; background: var(--fill); border: 1px solid var(--line-2);\n  border-radius: var(--radius); overflow-x: auto; font-size: 12.5px; line-height: 1.5;\n}\n\n/* \u2500\u2500 \u72B6\u6001\u5FBD\u7AE0 ok / no / warn \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-status { white-space: nowrap; font-weight: 500; }\n.am-status--ok { color: var(--ok); }\n.am-status--no { color: var(--err); }\n.am-status--warn { color: var(--warn); }\n.am-status-icon { display: inline-block; width: 1.1em; font-weight: 700; }\n\n/* \u2500\u2500 callout \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-callout {\n  border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--accent-bg);\n  padding: 10px 14px; border-radius: var(--radius);\n}\n.am-callout--ok { border-left-color: var(--ok); background: var(--ok-bg); }\n.am-callout--warn { border-left-color: var(--warn); background: var(--warn-bg); }\n.am-callout--err { border-left-color: var(--err); background: var(--err-bg); }\n.am-callout-title { font-weight: 600; margin-bottom: 4px; }\n\n/* \u2500\u2500 kv \u6807\u9898\u680F\u683C \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-kv {\n  display: grid; grid-template-columns: repeat(var(--kv-cols, 2), minmax(0, 1fr)); margin: 0;\n  border-top: var(--bw) solid var(--line); border-left: var(--bw) solid var(--line);\n}\n.am-kv-cell { border-right: var(--bw) solid var(--line); border-bottom: var(--bw) solid var(--line); padding: 6px 10px 8px; min-width: 0; }\n.am-kv-cell--wide { grid-column: 1 / -1; }\n.am-kv dt { font: 11px/1.4 var(--font-mono); color: var(--ink-2); }\n.am-kv dd { margin: 2px 0 0; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }\n.am-kv-cell--wide dd { font-size: 17px; font-weight: 600; }\nhtml[data-theme="shadcn"] .am-kv { border-color: var(--line); border-radius: var(--radius); overflow: hidden; }\n\n/* \u2500\u2500 timeline \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-timeline { list-style: none; margin: 0; padding: 0; }\n.am-timeline--h { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); padding-top: 4px; }\n.am-timeline--h li { position: relative; text-align: center; padding: 0 6px; }\n.am-timeline--h li::before {\n  content: ""; position: absolute; top: 31px; left: 0; right: 0; border-top: var(--bw) solid var(--line);\n}\n.am-timeline--h li:first-child::before { left: 50%; }\n.am-timeline--h li:last-child::before { right: 50%; }\n.am-tl-when { display: block; font-size: 15px; font-weight: 500; height: 24px; }\n.am-tl-dot {\n  position: relative; display: block; width: 11px; height: 11px; margin: 2px auto 8px;\n  border: var(--bw) solid var(--line); border-radius: 50%; background: var(--paper);\n}\n.am-tl-item--hi .am-tl-dot { background: var(--accent); border-color: var(--accent); }\n.am-tl-title { display: block; font-size: 12.5px; font-weight: 500; }\n.am-tl-text { display: block; font-size: 12px; color: var(--ink-2); line-height: 1.45; }\n.am-timeline--v li { position: relative; padding: 0 0 14px 22px; }\n.am-timeline--v li::before { content: ""; position: absolute; left: 5px; top: 6px; bottom: -6px; border-left: var(--bw) solid var(--line-2); }\n.am-timeline--v li:last-child::before { display: none; }\n.am-timeline--v .am-tl-dot { position: absolute; left: 0; top: 4px; margin: 0; }\n.am-timeline--v .am-tl-when { display: inline; height: auto; font: 12px var(--font-mono); color: var(--ink-2); margin-right: 8px; }\n.am-timeline--v .am-tl-title { display: inline; font-size: 14px; }\n.am-timeline--v .am-tl-text { margin-top: 2px; }\n\n/* \u2500\u2500 annot \u53E5\u5B50\u6807\u6CE8 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-annot + .am-annot { border-top: 1px solid var(--line-2); padding-top: 12px; }\n.am-annot-head { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; margin-bottom: 8px; }\n.am-annot-meta { font: 11px var(--font-mono); font-weight: 400; color: var(--ink-2); }\n.am-annot-scroll { overflow-x: auto; }\n.am-annot-line {\n  position: relative; display: inline-block; white-space: pre; font: 14px/1.6 var(--font-mono);\n  padding-bottom: calc(var(--rows, 0) * 17px + 14px);\n}\n.am-annot-line--wrap { display: block; white-space: normal; padding-bottom: 10px; }\n.am-annot-line--wrap .am-seg { white-space: nowrap; }\n.am-seg { position: relative; }\n.am-seg::after {\n  content: ""; position: absolute; left: 1px; right: 1px; top: calc(100% + 1px); height: 5px;\n  border: 1px solid var(--accent); border-top: 0;\n}\n.am-seg-n {\n  position: absolute; left: 0; top: calc(100% + 8px + var(--row, 0) * 17px);\n  font: 11px/16px var(--font-sans); color: var(--accent); white-space: nowrap;\n}\n.am-seg--err { color: var(--err); }\n.am-seg--err::after { border-color: var(--err); }\n.am-seg--err .am-seg-n { color: var(--err); }\n.am-annot-caption { font-size: 12px; color: var(--ink-2); }\n\n/* \u2500\u2500 limits \u9650\u503C\u6761 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-lim + .am-lim { margin-top: 14px; }\n.am-lim-head { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; margin-bottom: 4px; }\n.am-lim-val { font: 12px var(--font-mono); color: var(--accent); white-space: nowrap; }\n.am-lim-track { position: relative; height: 12px; border: 1px solid var(--line-2); background: var(--fill); border-radius: calc(var(--radius) / 2); }\n.am-lim-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent-bg); border-right: 1px solid var(--accent); }\n.am-lim-mark { position: absolute; top: -4px; bottom: -4px; border-left: 2px solid var(--accent); }\n.am-lim.is-over .am-lim-fill { background: var(--err-bg); border-right-color: var(--err); }\n.am-lim.is-over .am-lim-val { color: var(--err); }\n.am-lim-ticks { position: relative; height: 16px; font: 10px/16px var(--font-mono); color: var(--ink-3); }\n.am-lim-ticks span { position: absolute; transform: translateX(-50%); }\n.am-lim-ticks span:first-child { transform: none; }\n.am-lim-note { font-size: 11px; color: var(--ink-2); margin-left: 6px; }\n\n/* \u2500\u2500 tree \u7ED3\u6784\u6811 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-tree { font-size: 13px; }\n.am-tree-root { display: flex; justify-content: center; position: relative; padding-bottom: 18px; }\n.am-tree-root::after { content: ""; position: absolute; bottom: 0; left: 50%; height: 18px; border-left: var(--bw) solid var(--line); }\n.am-tree-root--solo { padding-bottom: 12px; }\n.am-tree-root--solo::after { display: none; }\n.am-tree-box {\n  border: var(--bw) solid var(--line); background: var(--paper); padding: 6px 14px; text-align: center;\n  border-radius: var(--radius); font-weight: 600;\n}\n.am-tree-box small { display: block; font-weight: 400; color: var(--ink-2); font-size: 12px; }\n.am-tree-box--root { background: var(--accent-bg); font-size: 15px; padding: 8px 28px; }\n.am-tree-cols { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); }\n.am-tree-col { position: relative; padding: 18px 8px 0; min-width: 0; }\n.am-tree-col::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: var(--bw) solid var(--line); }\n.am-tree-col:first-child::before { left: 50%; }\n.am-tree-col:last-child::before { right: 50%; }\n.am-tree-col::after { content: ""; position: absolute; top: 0; left: 50%; height: 18px; border-left: var(--bw) solid var(--line); }\n.am-tree-list, .am-tree-list ul { list-style: none; margin: 0; padding: 0; }\n.am-tree-col > .am-tree-list { margin: 8px 0 0 14px; }\n.am-tree-list ul { margin-left: 16px; }\n.am-tree-list li { position: relative; padding: 3px 0 3px 18px; }\n.am-tree-list li::before { content: ""; position: absolute; left: 0; top: 0.95em; width: 12px; border-top: 1px solid var(--ink-3); }\n.am-tree-list li::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 1px solid var(--ink-3); }\n.am-tree-list li:last-child::after { bottom: auto; height: 0.95em; }\n.am-tree-tag { font: 11px var(--font-mono); color: var(--ink-3); margin-right: 4px; }\n.am-tree code { font: 12px var(--font-mono); }\n.am-tree-sub { display: block; font-size: 11.5px; color: var(--ink-2); }\n.am-tree-hi > .am-tree-label { color: var(--accent); font-weight: 600; }\n\n/* \u2500\u2500 \u56FE\uFF08flow / sequence\uFF09\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-diagram { margin: 0; overflow-x: auto; text-align: center; }\n.am-diagram svg { max-width: 100%; height: auto; font-family: var(--font-sans); }\n.am-diagram text { fill: var(--ink); font-size: 13px; }\n.am-node-shape { fill: var(--paper); stroke: var(--line); stroke-width: var(--bw); }\n.am-node--hi .am-node-shape { fill: var(--accent-bg); stroke: var(--accent); }\n.am-node--hi text { fill: var(--accent); font-weight: 600; }\n.am-edge { fill: none; stroke: var(--ink-2); stroke-width: 1.3; }\n.am-edge--dashed { stroke-dasharray: 5 4; }\n.am-arrow { fill: var(--ink-2); }\n.am-edge-label rect { fill: var(--paper); }\n.am-diagram .am-edge-label text { fill: var(--accent); font-size: 11.5px; }\n.am-cluster { fill: var(--fill); stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 4 3; }\n.am-diagram .am-cluster-label { fill: var(--ink-2); font: 11px var(--font-mono); }\n.am-lifeline { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 4; }\n.am-actor { fill: var(--paper); stroke: var(--line); stroke-width: var(--bw); }\n.am-note { fill: var(--warn-bg); stroke: var(--warn); stroke-width: 1; }\n.am-diagram .am-step { fill: var(--ink-3); font: 10px var(--font-mono); }\n\n/* \u2500\u2500 doc \u7EBF\u6027\u8BB2\u89E3 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.am-doc { max-width: 1120px; margin: 0 auto; padding: 40px 28px 64px; }\n.am-doc-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: start; }\n.am-doc-layout--notoc { grid-template-columns: minmax(0, 1fr); max-width: 860px; }\n.am-toc { position: sticky; top: 24px; font-size: 13px; }\n.am-toc a { display: block; color: var(--ink-2); text-decoration: none; padding: 4px 0 4px 10px; border-left: 2px solid var(--line-2); }\n.am-toc a:hover { color: var(--ink); border-left-color: var(--accent); }\n.am-doc-body > .am-panel + .am-panel { margin-top: 20px; }\n\n/* \u2500\u2500 \u54CD\u5E94\u5F0F\u4E0E\u6253\u5370 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n@media (max-width: 1100px) {\n  .am-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .am-grid > .am-panel { grid-column: auto !important; }\n  .am-grid > .am-panel.am-span-wide { grid-column: 1 / -1 !important; }\n}\n@media (max-width: 760px) {\n  .am-sheet, .am-doc { padding: 56px 12px 24px; }\n  .am-head { padding-right: 0; }\n  .am-grid { grid-template-columns: minmax(0, 1fr); }\n  .am-grid > .am-panel.am-span-wide { grid-column: auto !important; }\n  html[data-theme="blueprint"] .am-frame { padding: 0; border: 0; }\n  html[data-theme="blueprint"] .am-frame::before, html[data-theme="blueprint"] .am-ruler { display: none; }\n  .am-doc-layout { grid-template-columns: minmax(0, 1fr); }\n  .am-toc { position: static; }\n  .am-timeline--h { grid-template-columns: minmax(0, 1fr); }\n  .am-tree-cols { grid-template-columns: minmax(0, 1fr); }\n}\n.am-colophon { text-align: center; padding: 0 0 28px; font: 11px var(--font-mono); color: var(--ink-3); }\n\n@media print {\n  .am-toolbar { display: none; }\n  body { background: var(--paper); }\n  .am-panel { break-inside: avoid; box-shadow: none; }\n}\n.am-panel--bare { border: 0; background: transparent; box-shadow: none; }\n.am-panel--bare > .am-panel-body { padding: 0; }\n.am-panel--bare .am-kv { background: var(--paper); }\n';
 var RUNTIME_JS = `(() => {
   const root = document.documentElement;
@@ -50,8 +50,8 @@ var VIDEO_CSS = '/* \u89C6\u9891\u64AD\u653E\u9875\uFF1A1920\xD71080 \u821E\u53F
 var VIDEO_JS = "(() => {\n  const D = JSON.parse(document.getElementById('amv-data').textContent);\n  const W = 1920;\n  const H = 1080;\n  const T = 0.9;     // \u573A\u666F\u5207\u6362\u65F6\u957F\uFF0C\u4E0E TIMING.transition \u4E00\u81F4\n  const R = 0.6;     // \u5355\u6B65\u51FA\u73B0\u65F6\u957F\n  const CAM = 0.8;   // \u955C\u5934\u79FB\u52A8\u65F6\u957F\n  const root = document.documentElement;\n  const stage = document.querySelector('.amv-stage');\n  const camera = document.querySelector('.amv-camera');\n  const overlay = document.querySelector('.amv-overlay');\n  const caption = document.querySelector('.amv-caption span');\n  const scenes = [...document.querySelectorAll('.amv-scene')];\n  const segs = D.segments;\n  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));\n  const ease = (x) => { const v = clamp(x); return v < 0.5 ? 4 * v * v * v : 1 - (-2 * v + 2) ** 3 / 2; };\n  const lerp = (a, b, p) => a + (b - a) * p;\n  const STEP_SEL = '.am-tl-item, .am-lim, .am-seg, tbody tr, .am-kv-cell, .am-md > ul > li, .am-md > ol > li, .am-md > p, .am-md > blockquote, .am-callout';\n\n  // \u2500\u2500 1. \u8BA9\u6BCF\u4E2A\u573A\u666F\u7684\u5185\u5BB9\u9002\u914D\u753B\u9762 \u2500\u2500\n  for (const sc of scenes) {\n    const fit = sc.querySelector('.amv-fit');\n    if (!fit || !fit.children.length) continue;\n    const s = Math.min(1600 / fit.offsetWidth, 740 / fit.offsetHeight, 3.4);\n    fit.style.transform = `scale(${s})`;\n  }\n\n  // \u573A\u666F\u6807\u9898\u653E\u5728\u955C\u5934\u4E4B\u5916\uFF1A\u955C\u5934\u63A8\u8FD1\u65F6\u6807\u9898\u4FDD\u6301\u4E0D\u52A8\u3002\n  const heads = scenes.map((sc) => {\n    const h = sc.querySelector('.amv-scene-head');\n    if (h) stage.insertBefore(h, camera.nextSibling);\n    return h;\n  });\n\n  // \u4EE5\u821E\u53F0\u4E3A\u5750\u6807\u7CFB\u6D4B\u91CF\u5143\u7D20\uFF08\u6B64\u65F6\u955C\u5934\u4E3A\u5355\u4F4D\u53D8\u6362\uFF09\u3002\n  const sr = stage.getBoundingClientRect();\n  const k = sr.width / W;\n  const rectOf = (el) => {\n    const r = el.getBoundingClientRect();\n    return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k };\n  };\n\n  // \u2500\u2500 2. \u5206\u6B65\uFF1A\u7EC4\u4EF6\u81EA\u5E26 data-step \u65F6\u6309\u5B83\u5206\u7EC4\uFF0C\u5426\u5219\u6309\u884C/\u6761\u76EE\u81EA\u52A8\u5206\u6B65 \u2500\u2500\n  const items = [];   // { el, at, paths: [{ el, len }] }\n  scenes.forEach((sc, i) => {\n    if (i === 0) return;\n    const groups = [];\n    for (const block of sc.querySelectorAll('.amv-fit > *')) {\n      const marked = [...block.querySelectorAll('[data-step]')];\n      if (marked.length) {\n        const by = new Map();\n        for (const el of marked) {\n          const n = Number(el.dataset.step);\n          if (!by.has(n)) by.set(n, []);\n          by.get(n).push(el);\n        }\n        [...by.keys()].sort((a, b) => a - b).forEach((n) => groups.push(by.get(n)));\n      } else {\n        const found = [...block.querySelectorAll(STEP_SEL)].filter((el) => !el.parentElement.closest(STEP_SEL));\n        if (found.length) found.forEach((el) => groups.push([el]));\n        else groups.push([block]);\n      }\n    }\n    const beats = segs[i].beats;\n    const S = groups.length;\n    const B = beats.length;\n    const perBeat = new Map();\n    groups.forEach((g, gi) => {\n      // \u65C1\u767D\u6BD4\u6B65\u6570\u591A\u65F6\uFF0C\u591A\u51FA\u7684\u53E5\u5B50\u5F53\u5F00\u573A\u767D\uFF1A\u6B65\u9AA4\u5BF9\u9F50\u5230\u6700\u540E\u51E0\u53E5\u3002\n      const b = S <= B ? gi + (B - S) : Math.floor((gi * B) / S);\n      const rank = perBeat.get(b) ?? 0;\n      perBeat.set(b, rank + 1);\n      const beat = beats[b];\n      const count = S <= B ? 1 : Math.ceil(S / B) || 1;\n      const slot = Math.min(0.45, (beat.end - beat.start) / count);\n      for (const el of g) {\n        const paths = (el.matches('path.am-edge') ? [el] : [...el.querySelectorAll('path.am-edge')])\n          .filter((p) => !p.classList.contains('am-edge--dashed'))\n          .map((p) => ({ el: p, len: p.getTotalLength() }));\n        items.push({ el, scene: i, at: beat.start + rank * slot, paths });\n      }\n    });\n  });\n\n  // \u2500\u2500 3. \u8DE8\u573A\u666F\u53D8\u5F62\uFF1A\u524D\u540E\u4E24\u4E2A\u573A\u666F\u91CC\u540C\u540D\uFF08data-key\uFF09\u7684\u5143\u7D20 \u2500\u2500\n  const morphs = [];  // { scene, from, to, ghost, a, b }\n  const keyed = (sc) => {\n    const m = new Map();\n    for (const el of sc.querySelectorAll('[data-key]')) if (!m.has(el.dataset.key)) m.set(el.dataset.key, el);\n    return m;\n  };\n  for (let i = 2; i < scenes.length; i++) {\n    const prev = keyed(scenes[i - 1]);\n    for (const [key, to] of keyed(scenes[i])) {\n      const from = prev.get(key);\n      // \u53EA\u5728\u540C\u7C7B\u5143\u7D20\u4E4B\u95F4\u53D8\u5F62\uFF08SVG \u5BF9 SVG\u3001HTML \u5BF9 HTML\uFF09\uFF0C\u5426\u5219\u5F62\u72B6\u5BF9\u4E0D\u4E0A\u3002\n      if (!from || (from instanceof SVGElement) !== (to instanceof SVGElement)) continue;\n      try {\n        const ghost = makeGhost(from);\n        overlay.append(ghost.node);\n        morphs.push({ scene: i, from, to, ghost: ghost.node, a: ghost.place(rectOf(from)), b: ghost.place(rectOf(to)) });\n      } catch {\n        // \u53D8\u5F62\u53EA\u662F\u9526\u4E0A\u6DFB\u82B1\uFF1A\u4E2A\u522B\u5143\u7D20\u6D4B\u91CF\u5931\u8D25\u65F6\u76F4\u63A5\u8DF3\u8FC7\uFF0C\u4E0D\u5F71\u54CD\u64AD\u653E\u3002\n      }\n    }\n  }\n  const carried = new Set(morphs.map((m) => m.to));\n\n  function makeGhost(el) {\n    const wrap = document.createElement('div');\n    const host = el.closest('.am-diagram, .am-tree, .am-timeline, .am-kv, .am-limits');\n    wrap.className = `amv-ghost ${host ? host.className : ''}`;\n    if (el instanceof SVGGraphicsElement) {\n      const bb = el.getBBox();\n      const pad = 4;\n      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n      svg.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);\n      svg.setAttribute('width', bb.width + pad * 2);\n      svg.setAttribute('height', bb.height + pad * 2);\n      const clone = el.cloneNode(true);\n      clone.removeAttribute('style');\n      svg.append(clone);\n      wrap.append(svg);\n      return {\n        node: wrap,\n        place: (r) => {\n          const s = r.w / (bb.width || 1);\n          return { x: r.x - pad * s, y: r.y - pad * s, s };\n        },\n      };\n    }\n    const clone = el.cloneNode(true);\n    clone.removeAttribute('style');\n    clone.querySelectorAll('[data-key], ul').forEach((n) => n.remove());\n    const box = document.createElement(el.tagName === 'LI' ? 'ul' : 'div');\n    box.className = el.tagName === 'LI' ? 'am-tree-list' : '';\n    box.style.margin = '0';\n    box.append(clone);\n    wrap.append(box);\n    wrap.style.width = `${el.offsetWidth}px`;\n    const w0 = el.offsetWidth || 1;\n    return { node: wrap, place: (r) => ({ x: r.x, y: r.y, s: r.w / w0 }) };\n  }\n\n  // \u2500\u2500 4. \u955C\u5934\uFF1A\u65C1\u767D\u91CC [\u540D\u5B57] \u5BF9\u5E94\u7684\u5143\u7D20 \u2500\u2500\n  const findKey = (sc, key) => {\n    const all = [...sc.querySelectorAll('[data-key]')];\n    const norm = (s) => s.replace(/[`*]/g, '').trim().toLowerCase();\n    return all.find((el) => norm(el.dataset.key) === norm(key))\n      ?? all.find((el) => norm(el.dataset.key).includes(norm(key)))\n      ?? [...sc.querySelectorAll(`${STEP_SEL}, text`)].find((el) => norm(el.textContent).includes(norm(key)));\n  };\n  const IDENT = { s: 1, x: 0, y: 0 };\n  // \u63A8\u8FD1\u4F46\u4E0D\u88C1\u5207\uFF1A\u653E\u5927\u540E\u6574\u5F20\u56FE\u4ECD\u8981\u7559\u5728\u6807\u9898\u4E0E\u5B57\u5E55\u4E4B\u95F4\u7684\u5B89\u5168\u533A\u91CC\u3002\n  const SAFE = { left: 60, right: W - 60, top: 140, bottom: H - 150 };\n  function focusCam(r, sc) {\n    const fit = sc.querySelector('.amv-fit');\n    const c = fit ? rectOf(fit) : { x: 0, y: 0, w: W, h: H };\n    const room = Math.min((SAFE.right - SAFE.left) / c.w, (SAFE.bottom - SAFE.top) / c.h);\n    const s = clamp(Math.min(0.5 * W / r.w, 0.42 * H / r.h, room, 1.4), 1, 1.4);\n    const fitAxis = (want, lo, hi, a, b) => (s * (b - a) <= hi - lo ? clamp(want, lo - s * a, hi - s * b) : want);\n    return {\n      s,\n      x: fitAxis(W / 2 - s * (r.x + r.w / 2), SAFE.left, SAFE.right, c.x, c.x + c.w),\n      y: fitAxis(H * 0.5 - s * (r.y + r.h / 2), SAFE.top, SAFE.bottom, c.y, c.y + c.h),\n    };\n  }\n  const camEvents = [];   // { t, cam, hl }\n  segs.forEach((seg, i) => {\n    camEvents.push({ t: seg.start, cam: IDENT, hl: null });\n    seg.beats.forEach((b) => {\n      const el = b.focus ? findKey(scenes[i], b.focus) : null;\n      let cam = IDENT;\n      if (el) cam = focusCam(rectOf(el), scenes[i]);\n      camEvents.push({ t: b.start, cam, hl: el });\n    });\n  });\n  const hlTargets = new Set(camEvents.map((e) => e.hl).filter(Boolean));\n\n  // \u2500\u2500 5. \u786E\u5B9A\u6027\u6E32\u67D3\uFF1A\u540C\u4E00\u65F6\u523B\u6C38\u8FDC\u753B\u51FA\u540C\u4E00\u5E27 \u2500\u2500\n  function render(t) {\n    t = clamp(t, 0, D.duration);\n    const cur = segs.findLastIndex((s) => t >= s.start);\n\n    scenes.forEach((sc, i) => {\n      const seg = segs[i];\n      const next = segs[i + 1];\n      const fadeIn = i === 0 ? ease(t / 0.8) : ease((t - seg.start) / T);\n      const fadeOut = next ? 1 - ease((t - next.start) / T) : 1;\n      const op = t < seg.start ? 0 : Math.min(fadeIn, fadeOut);\n      sc.style.opacity = op;\n      sc.style.visibility = op > 0 ? 'visible' : 'hidden';\n      if (heads[i]) {\n        // \u6807\u9898\u4E0D\u4EA4\u53E0\uFF1A\u65E7\u6807\u9898\u5728\u5207\u6362\u524D\u534A\u6BB5\u6DE1\u51FA\uFF0C\u65B0\u6807\u9898\u5728\u540E\u534A\u6BB5\u6DE1\u5165\u3002\n        const hin = ease((t - seg.start - T / 2) / (T / 2));\n        const hout = next ? 1 - ease((t - next.start) / (T / 2)) : 1;\n        const hop = t < seg.start ? 0 : Math.min(hin, hout);\n        heads[i].style.opacity = hop;\n        heads[i].style.visibility = hop > 0 ? 'visible' : 'hidden';\n      }\n    });\n\n    for (const it of items) {\n      const p = ease((t - it.at) / R);\n      const fade = clamp((t - it.at) / 0.25);\n      if (carried.has(it.el)) continue;\n      it.el.style.opacity = fade;\n      if (it.paths.length) {\n        for (const { el, len } of it.paths) {\n          el.style.strokeDasharray = `${len}`;\n          el.style.strokeDashoffset = `${len * (1 - p)}`;\n          el.style.markerEnd = p < 0.97 ? 'none' : '';\n        }\n      } else {\n        it.el.style.transform = p < 1 ? `translateY(${(1 - p) * 14}px)` : '';\n      }\n    }\n\n    for (const m of morphs) {\n      const s0 = segs[m.scene].start;\n      const during = t >= s0 && t < s0 + T;\n      const p = ease((t - s0) / T);\n      m.ghost.style.display = during ? '' : 'none';\n      if (during) {\n        m.ghost.style.transform = `translate(${lerp(m.a.x, m.b.x, p)}px, ${lerp(m.a.y, m.b.y, p)}px) scale(${lerp(m.a.s, m.b.s, p)})`;\n      }\n      m.from.style.visibility = during ? 'hidden' : '';\n      m.to.style.visibility = t < s0 + T ? 'hidden' : '';\n      m.to.style.opacity = 1;\n    }\n\n    // \u955C\u5934\u4E0E\u9AD8\u4EAE\n    const ev = camEvents.findLastIndex((e) => t >= e.t);\n    let cam = IDENT;\n    let hl = null;\n    if (ev >= 0) {\n      const e = camEvents[ev];\n      const prev = ev > 0 ? camEvents[ev - 1].cam : IDENT;\n      const p = ease((t - e.t) / CAM);\n      cam = { s: lerp(prev.s, e.cam.s, p), x: lerp(prev.x, e.cam.x, p), y: lerp(prev.y, e.cam.y, p) };\n      hl = e.hl;\n    }\n    camera.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})`;\n    for (const el of hlTargets) el.classList.toggle('amv-hl', el === hl);\n\n    // \u5B57\u5E55\n    const beats = cur >= 0 ? segs[cur].beats : [];\n    const b = beats.find((x) => t >= x.start && t < x.end + 0.3);\n    const html = b ? b.html : '';\n    if (caption.dataset.html !== html) {\n      caption.innerHTML = html;\n      caption.dataset.html = html;\n    }\n    caption.style.opacity = b ? clamp((t - b.start) / 0.2) : 0;\n    updateUi(t);\n  }\n\n  // \u2500\u2500 6. \u64AD\u653E\u5668 \u2500\u2500\n  const audio = document.getElementById('amv-audio');\n  const seek = document.querySelector('.amv-seek');\n  const timeEl = document.querySelector('.amv-time');\n  const toggleBtn = document.querySelector('[data-amv=\"toggle\"]');\n  const bigPlay = document.querySelector('.amv-bigplay');\n  const marks = document.querySelector('.amv-marks');\n  const fmt = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;\n  seek.max = D.duration;\n  segs.slice(1).forEach((s) => {\n    const m = document.createElement('i');\n    m.style.left = `${(s.start / D.duration) * 100}%`;\n    m.title = s.title;\n    marks.append(m);\n  });\n\n  let playing = false;\n  let base = 0;\n  let t0 = 0;\n  const now = () => (!playing ? base : audio ? audio.currentTime : base + (performance.now() - t0) / 1000);\n\n  function updateUi(t) {\n    if (document.activeElement !== seek) seek.value = t;\n    timeEl.textContent = `${fmt(t)} / ${fmt(D.duration)}`;\n  }\n\n  function play() {\n    if (base >= D.duration - 0.05) base = 0;\n    playing = true;\n    bigPlay.hidden = true;\n    toggleBtn.textContent = '\u275A\u275A';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.pause);\n    if (audio) {\n      audio.currentTime = base;\n      audio.play().catch(() => {});\n    } else {\n      t0 = performance.now();\n    }\n    requestAnimationFrame(tick);\n  }\n\n  function pause() {\n    base = now();\n    playing = false;\n    audio?.pause();\n    toggleBtn.textContent = '\u25B6';\n    toggleBtn.setAttribute('aria-label', toggleBtn.dataset.play);\n  }\n\n  function seekTo(x) {\n    base = clamp(x, 0, D.duration);\n    if (audio) audio.currentTime = base;\n    t0 = performance.now();\n    render(base);\n  }\n\n  function tick() {\n    if (!playing) return;\n    const t = now();\n    if (t >= D.duration) {\n      pause();\n      base = D.duration;\n      render(D.duration);\n      return;\n    }\n    render(t);\n    requestAnimationFrame(tick);\n  }\n\n  const toggle = () => (playing ? pause() : play());\n  toggleBtn.addEventListener('click', toggle);\n  bigPlay.addEventListener('click', play);\n  stage.addEventListener('click', (e) => { if (e.target !== bigPlay) toggle(); });\n  seek.addEventListener('input', () => seekTo(Number(seek.value)));\n  document.addEventListener('keydown', (e) => {\n    if (e.key === ' ') { e.preventDefault(); toggle(); }\n    if (e.key === 'ArrowRight') seekTo(now() + 5);\n    if (e.key === 'ArrowLeft') seekTo(now() - 5);\n  });\n  audio?.addEventListener('ended', () => { pause(); base = D.duration; });\n\n  function fitStage() {\n    if (root.hasAttribute('data-export')) return;\n    const vp = stage.parentElement;\n    const s = Math.min(vp.clientWidth / W, vp.clientHeight / H);\n    stage.style.transform = `translate(-50%, -50%) scale(${s})`;\n  }\n  window.addEventListener('resize', fitStage);\n\n  // \u5BFC\u51FA\uFF1A\u628A\u821E\u53F0 1:1 \u6446\u5728\u5DE6\u4E0A\u89D2\uFF0C\u9010\u5E27\u8C03\u7528 render(t)\u3002\n  window.render = render;\n  window.__amv = {\n    duration: D.duration,\n    fps: D.fps,\n    exportMode() { root.setAttribute('data-export', ''); stage.style.transform = ''; },\n  };\n  fitStage();\n  // \u5C01\u9762\uFF1A\u663E\u793A\u5B8C\u5168\u6DE1\u5165\u540E\u7684\u7247\u5934\uFF0C\u4F46\u64AD\u653E\u4ECD\u4ECE 0 \u5F00\u59CB\u3002\n  render(Math.min(1, segs[0].end));\n  updateUi(0);\n})();\n";
 
 // src/cli.js
-import { join as join4, resolve, dirname as dirname2 } from "node:path";
-import { spawn as spawn3 } from "node:child_process";
+import { join as join5, resolve, dirname as dirname2 } from "node:path";
+import { spawn as spawn4 } from "node:child_process";
 
 // src/parse.js
 var ParseError = class extends Error {
@@ -5223,10 +5223,152 @@ function connect(url) {
   });
 }
 
+// src/housekeeping.js
+import { readdirSync, statSync, rmSync as rmSync3, readFileSync as readFileSync2, writeFileSync as writeFileSync3, mkdirSync as mkdirSync2, existsSync as existsSync3 } from "node:fs";
+import { join as join3 } from "node:path";
+import { spawn as spawn3 } from "node:child_process";
+var DAY = 24 * 60 * 60 * 1e3;
+var CLEAN = Object.freeze({
+  days: 30,
+  // am clean 默认删除 30 天前的页面和视频
+  bigBytes: 200 * 2 ** 20,
+  // 超过 200 MB 立即提示
+  staleDays: 30,
+  // 距上次清理超过 30 天……
+  staleBytes: 20 * 2 ** 20,
+  // ……且超过 20 MB 时提示
+  hintEveryDays: 7
+  // 同一提示最多每 7 天出现一次
+});
+var UPDATE = Object.freeze({
+  checkEveryDays: 7,
+  hintEveryDays: 3,
+  url: "https://raw.githubusercontent.com/QingYunA/answer-me-with-html/main/package.json"
+});
+var DIRS2 = ["pages", "videos", "cache"];
+var statePath = (home) => join3(home, "state.json");
+function readState(home) {
+  try {
+    return JSON.parse(readFileSync2(statePath(home), "utf8"));
+  } catch {
+    return {};
+  }
+}
+function writeState(home, patch) {
+  const next = { ...readState(home), ...patch };
+  mkdirSync2(home, { recursive: true });
+  writeFileSync3(statePath(home), `${JSON.stringify(next, null, 2)}
+`);
+  return next;
+}
+function walk(dir) {
+  if (!existsSync3(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = join3(dir, e.name);
+    if (e.isDirectory()) return walk(p);
+    const s = statSync(p);
+    return [{ path: p, bytes: s.size, mtime: s.mtimeMs }];
+  });
+}
+function usage(home) {
+  const out = { total: 0 };
+  for (const d of DIRS2) {
+    const files = walk(join3(home, d));
+    const bytes = files.reduce((n, f2) => n + f2.bytes, 0);
+    out[d] = { count: files.length, bytes };
+    out.total += bytes;
+  }
+  return out;
+}
+function clean2(home, { days = CLEAN.days, all = false, dryRun = false, now = Date.now() } = {}) {
+  const cutoff = now - days * DAY;
+  const victims = [
+    ...["pages", "videos"].flatMap((d) => walk(join3(home, d)).filter((f2) => all || f2.mtime < cutoff)),
+    ...walk(join3(home, "cache"))
+  ];
+  if (!dryRun) {
+    for (const f2 of victims) rmSync3(f2.path, { force: true });
+    writeState(home, { lastClean: now, lastCleanHint: null });
+  }
+  return { files: victims.length, bytes: victims.reduce((n, f2) => n + f2.bytes, 0) };
+}
+var mb = (bytes) => bytes < 2 ** 20 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 2 ** 20).toFixed(bytes < 10 * 2 ** 20 ? 1 : 0)} MB`;
+function cleanHint(state, use, now = Date.now()) {
+  if (state.lastCleanHint && now - state.lastCleanHint < CLEAN.hintEveryDays * DAY) return null;
+  const since = state.lastClean ?? state.firstSeen ?? now;
+  const days = Math.floor((now - since) / DAY);
+  const big = use.total >= CLEAN.bigBytes;
+  const stale = days >= CLEAN.staleDays && use.total >= CLEAN.staleBytes;
+  if (!big && !stale) return null;
+  const parts = `\u9875\u9762 ${use.pages.count} \u4E2A ${mb(use.pages.bytes)}\uFF0C\u89C6\u9891 ${mb(use.videos.bytes)}\uFF0C\u914D\u97F3\u7F13\u5B58 ${mb(use.cache.bytes)}`;
+  const when = state.lastClean ? `\u4E0A\u6B21\u6E05\u7406\u5728 ${days} \u5929\u524D` : "\u8FD8\u6CA1\u6709\u6E05\u7406\u8FC7";
+  return `! \u6E05\u7406\u63D0\u793A\uFF1A\u6570\u636E\u76EE\u5F55\u5DF2\u5360\u7528 ${mb(use.total)}\uFF08${parts}\uFF09\uFF0C${when}\u3002\u8BF7\u95EE\u7528\u6237\u662F\u5426\u8FD0\u884C am clean\uFF08\u5220\u9664 ${CLEAN.days} \u5929\u524D\u7684\u9875\u9762\u548C\u89C6\u9891\uFF0C\u5E76\u6E05\u7A7A\u914D\u97F3\u7F13\u5B58\uFF1B\u5168\u90E8\u6E05\u6389\u7528 am clean --all\uFF09\u3002`;
+}
+function newer(a, b) {
+  const pa = String(a).split(".").map(Number);
+  const pb = String(b).split(".").map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+  }
+  return false;
+}
+function updateCommand(scriptPath = "") {
+  if (/[\\/]\.claude[\\/]plugins[\\/]/.test(scriptPath)) {
+    return "Claude Code \u91CC\u8FD0\u884C /plugin marketplace update answer-me-with-html\uFF0C\u518D /reload-plugins";
+  }
+  return "\u8FD0\u884C npx skills update answer-me-with-html -y";
+}
+function updateHint(state, current, scriptPath, now = Date.now()) {
+  if (!state.latestVersion || !newer(state.latestVersion, current)) return null;
+  if (state.lastUpdateHint && now - state.lastUpdateHint < UPDATE.hintEveryDays * DAY) return null;
+  return `! \u66F4\u65B0\u63D0\u793A\uFF1AAnswer me with HTML \u6709\u65B0\u7248\u672C ${state.latestVersion}\uFF08\u5F53\u524D ${current}\uFF09\u3002\u8BF7\u95EE\u7528\u6237\u662F\u5426\u66F4\u65B0\uFF1A${updateCommand(scriptPath)}\u3002`;
+}
+function shouldCheckUpdate(state, env, config, now = Date.now()) {
+  if (config.update_check === false || env.CI || env.AM_NO_UPDATE_CHECK) return false;
+  return !state.lastUpdateCheck || now - state.lastUpdateCheck >= UPDATE.checkEveryDays * DAY;
+}
+function spawnUpdateCheck(home, scriptPath) {
+  writeState(home, { lastUpdateCheck: Date.now() });
+  try {
+    spawn3(process.execPath, [scriptPath, "__update-check"], { detached: true, stdio: "ignore", env: { ...process.env, AM_HOME: home } }).on("error", () => {
+    }).unref();
+  } catch {
+  }
+}
+async function runUpdateCheck(home, fetchImpl = fetch) {
+  try {
+    const res = await fetchImpl(UPDATE.url, { signal: AbortSignal.timeout(5e3) });
+    if (!res.ok) return null;
+    const { version } = await res.json();
+    if (typeof version !== "string") return null;
+    writeState(home, { latestVersion: version, lastUpdateCheck: Date.now() });
+    return version;
+  } catch {
+    return null;
+  }
+}
+function afterRender({ home, env, config, current, scriptPath, background, now = Date.now() }) {
+  let state = readState(home);
+  if (!state.firstSeen) state = writeState(home, { firstSeen: now });
+  const hints = [];
+  const c = cleanHint(state, usage(home), now);
+  if (c) {
+    hints.push(c);
+    state = writeState(home, { lastCleanHint: now });
+  }
+  const u = updateHint(state, current, scriptPath, now);
+  if (u) {
+    hints.push(u);
+    writeState(home, { lastUpdateHint: now });
+  }
+  if (background && scriptPath && shouldCheckUpdate(state, env, config, now)) spawnUpdateCheck(home, scriptPath);
+  return hints;
+}
+
 // src/config.js
-import { readFileSync as readFileSync2, writeFileSync as writeFileSync3, mkdirSync as mkdirSync2, rmSync as rmSync3, existsSync as existsSync3 } from "node:fs";
+import { readFileSync as readFileSync3, writeFileSync as writeFileSync4, mkdirSync as mkdirSync3, rmSync as rmSync4, existsSync as existsSync4 } from "node:fs";
 import { homedir } from "node:os";
-import { join as join3, dirname } from "node:path";
+import { join as join4, dirname } from "node:path";
 var ConfigError = class extends Error {
   constructor(message) {
     super(message);
@@ -5239,15 +5381,16 @@ var CONFIG_KEYS = Object.freeze({
   theme: { type: "enum", choices: CHOICES.theme, default: "blueprint", label: "\u9ED8\u8BA4\u4E3B\u9898" },
   mode: { type: "enum", choices: CHOICES.mode, default: "auto", label: "\u9ED8\u8BA4\u660E\u6697\u6A21\u5F0F" },
   style: { type: "enum", choices: CHOICES.style, default: "80", label: "STE \u5199\u4F5C\u68C0\u67E5\u4E25\u683C\u5EA6" },
+  update_check: { type: "bool", default: true, label: "\u6BCF\u5468\u5728\u540E\u53F0\u68C0\u67E5\u4E00\u6B21\u65B0\u7248\u672C\uFF0C\u6709\u65B0\u7248\u672C\u65F6\u63D0\u793A\uFF08\u4E0D\u4F1A\u81EA\u52A8\u66F4\u65B0\uFF09" },
   voice: { type: "enum", choices: ["auto", "elevenlabs", "system", "off"], default: "auto", label: "\u89C6\u9891\u65C1\u767D\u914D\u97F3\uFF08auto\uFF1A\u6709 ELEVENLABS_API_KEY \u7528 ElevenLabs\uFF0C\u5426\u5219\u7528\u7CFB\u7EDF TTS\uFF09" }
 });
 var TRUE = /* @__PURE__ */ new Set(["on", "true", "yes", "1", "\u5F00", "\u5F00\u542F", "\u6253\u5F00"]);
 var FALSE = /* @__PURE__ */ new Set(["off", "false", "no", "0", "\u5173", "\u5173\u95ED"]);
 function amHome(env = process.env) {
-  return env.AM_HOME || join3(homedir(), ".answer-me-with-html");
+  return env.AM_HOME || join4(homedir(), ".answer-me-with-html");
 }
 function configPath(env = process.env) {
-  return join3(amHome(env), "config.json");
+  return join4(amHome(env), "config.json");
 }
 var defaults = () => Object.fromEntries(Object.entries(CONFIG_KEYS).map(([k2, s]) => [k2, s.default]));
 function coerce2(key, raw) {
@@ -5266,9 +5409,9 @@ function coerce2(key, raw) {
 }
 function readStored(env) {
   const file = configPath(env);
-  if (!existsSync3(file)) return { stored: {} };
+  if (!existsSync4(file)) return { stored: {} };
   try {
-    const data = JSON.parse(readFileSync2(file, "utf8"));
+    const data = JSON.parse(readFileSync3(file, "utf8"));
     return { stored: data && typeof data === "object" && !Array.isArray(data) ? data : {} };
   } catch (e) {
     return { stored: {}, warning: `${file} \u65E0\u6CD5\u89E3\u6790\uFF0C\u5DF2\u4F7F\u7528\u9ED8\u8BA4\u914D\u7F6E\uFF08${e.message}\uFF09` };
@@ -5289,11 +5432,11 @@ function readConfig(env = process.env) {
 function writeStored(stored, env) {
   const file = configPath(env);
   if (!Object.keys(stored).length) {
-    rmSync3(file, { force: true });
+    rmSync4(file, { force: true });
     return;
   }
-  mkdirSync2(dirname(file), { recursive: true });
-  writeFileSync3(file, `${JSON.stringify(stored, null, 2)}
+  mkdirSync3(dirname(file), { recursive: true });
+  writeFileSync4(file, `${JSON.stringify(stored, null, 2)}
 `);
 }
 function setConfig(key, raw, env = process.env) {
@@ -5321,6 +5464,7 @@ var USAGE = `Answer me with HTML ${VERSION} \u2014 \u628A Markdown \u5185\u5BB9\
                                                   \u628A\u89C6\u9891\u7A3F\u6E32\u67D3\u6210 3b1b \u98CE\u683C\u7684\u89E3\u91CA\u89C6\u9891\u64AD\u653E\u9875\uFF08--mp4 \u53E6\u5B58\u89C6\u9891\u6587\u4EF6\uFF09
   am lint   <file|->  [--style off|80|strict]     \u53EA\u505A STE \u53D7\u63A7\u5199\u4F5C\u68C0\u67E5
   am config [set <\u952E> <\u503C> | get <\u952E> | reset [\u952E]] \u67E5\u770B\u6216\u4FEE\u6539\u914D\u7F6E
+  am clean  [--days 30] [--all] [--dry-run]       \u6E05\u7406\u65E7\u9875\u9762\u3001\u65E7\u89C6\u9891\u548C\u914D\u97F3\u7F13\u5B58
   am list                                         \u5217\u51FA\u6A21\u677F\u3001\u4E3B\u9898\u3001\u7EC4\u4EF6
   am help [\u7EC4\u4EF6\u540D|format]                          \u67E5\u770B\u7EC4\u4EF6\u8BED\u6CD5 / \u7A3F\u4EF6\u683C\u5F0F
 
@@ -5407,6 +5551,9 @@ async function main(argv, io = {}) {
         mode: { type: "string" },
         voice: { type: "string" },
         mp4: { type: "boolean" },
+        days: { type: "string" },
+        all: { type: "boolean" },
+        "dry-run": { type: "boolean" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" }
       }
@@ -5422,13 +5569,17 @@ ${USAGE}`);
   if (opts.help || !cmd) return print(USAGE), 0;
   switch (cmd) {
     case "render":
-      return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd }));
+      return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd, io }));
     case "video":
-      return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider }));
+      return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider, io }));
     case "lint":
       return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case "config":
       return cmdConfig([arg, ...rest].filter((x2) => x2 !== void 0), { print, fail, env });
+    case "clean":
+      return cmdClean(opts, { print, fail, env });
+    case "__update-check":
+      return await runUpdateCheck(amHome(env)) ? 0 : 1;
     case "list":
       return cmdList(print), 0;
     case "help":
@@ -5447,7 +5598,7 @@ async function withSource(arg, io, fail, fn3) {
   }
   let src;
   try {
-    src = arg === "-" ? await readStream(io.stdin ?? process.stdin) : readFileSync3(resolve(io.cwd ?? process.cwd(), arg), "utf8");
+    src = arg === "-" ? await readStream(io.stdin ?? process.stdin) : readFileSync4(resolve(io.cwd ?? process.cwd(), arg), "utf8");
   } catch (e) {
     fail(`\u2717 \u65E0\u6CD5\u8BFB\u53D6\u7A3F\u4EF6\uFF1A${e.message}`);
     return 2;
@@ -5470,7 +5621,7 @@ function shouldOpen(opts, env, config) {
   if (env.CI) return false;
   return config.open !== false;
 }
-function cmdRender(src, opts, { print, fail, env, cwd }) {
+function cmdRender(src, opts, { print, fail, env, cwd, io }) {
   const config = readConfig(env);
   if (config.warning) fail(`! ${config.warning}`);
   const { theme, mode, style } = config.values;
@@ -5480,17 +5631,18 @@ function cmdRender(src, opts, { print, fail, env, cwd }) {
   } catch (e) {
     return reportError(e, fail);
   }
-  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join4(amHome(env), "pages", `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync3(dirname2(file), { recursive: true });
-  writeFileSync4(file, result.html);
+  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join5(amHome(env), "pages", `${slug(result.meta.title)}-${stamp()}.html`);
+  mkdirSync4(dirname2(file), { recursive: true });
+  writeFileSync5(file, result.html);
   const comps = Object.entries(result.stats.components).map(([k2, v]) => `${k2}\xD7${v}`).join(" ");
   print(`\u2713 ${file}`);
   print(`  ${result.meta.template} \xB7 ${result.meta.theme} \xB7 ${result.stats.panels} \u9762\u677F${comps ? ` \xB7 ${comps}` : ""}`);
   printWarnings(result.warnings, print, result.meta.style);
+  printHints({ env, config, io, print });
   if (shouldOpen(opts, env, config.values)) openFile(file);
   return 0;
 }
-async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }) {
+async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected, io }) {
   const config = readConfig(env);
   if (config.warning) fail(`! ${config.warning}`);
   const voice = opts.voice ?? config.values.voice;
@@ -5503,7 +5655,7 @@ async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }
     const provider = injected !== void 0 ? injected : pickProvider(voice, env);
     result = await renderVideo(src, {
       provider,
-      cacheDir: join4(amHome(env), "cache", "tts"),
+      cacheDir: join5(amHome(env), "cache", "tts"),
       defaults: { style: config.values.style, theme: config.values.theme, mode: config.values.mode },
       overrides: { style: opts.style, theme: opts.theme, mode: opts.mode },
       onProgress: (msg) => fail(`  ${msg}`)
@@ -5516,9 +5668,9 @@ async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }
     }
     return reportError(e, fail);
   }
-  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join4(amHome(env), "videos", `${slug(result.meta.title)}-${stamp()}.html`);
-  mkdirSync3(dirname2(file), { recursive: true });
-  writeFileSync4(file, result.html);
+  const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join5(amHome(env), "videos", `${slug(result.meta.title)}-${stamp()}.html`);
+  mkdirSync4(dirname2(file), { recursive: true });
+  writeFileSync5(file, result.html);
   print(`\u2713 ${file}`);
   print(`  video \xB7 ${result.stats.panels} \u573A\u666F \xB7 ${result.beats} \u53E5\u65C1\u767D \xB7 ${result.duration.toFixed(1)}s \xB7 \u914D\u97F3\uFF1A${result.voiceName}`);
   printWarnings(result.warnings, print, result.meta.style);
@@ -5534,7 +5686,37 @@ async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }
       return 1;
     }
   }
+  printHints({ env, config, io, print });
   if (shouldOpen(opts, env, config.values)) openFile(file);
+  return 0;
+}
+function printHints({ env, config, io, print }) {
+  try {
+    const hints = afterRender({
+      home: amHome(env),
+      env,
+      config: config.values,
+      current: VERSION,
+      scriptPath: io.scriptPath,
+      background: Boolean(io.background)
+    });
+    hints.forEach((h2) => print(h2));
+  } catch {
+  }
+}
+function cmdClean(opts, { print, fail, env }) {
+  const days = opts.days === void 0 ? CLEAN.days : Number(opts.days);
+  if (!Number.isInteger(days) || days < 0) {
+    fail("\u2717 --days \u9700\u8981\u975E\u8D1F\u6574\u6570");
+    return 2;
+  }
+  const home = amHome(env);
+  const before = usage(home);
+  const dry = Boolean(opts["dry-run"]);
+  const r = clean2(home, { days, all: Boolean(opts.all), dryRun: dry });
+  const scope = opts.all ? "\u5168\u90E8\u9875\u9762\u548C\u89C6\u9891" : `${days} \u5929\u524D\u7684\u9875\u9762\u548C\u89C6\u9891`;
+  print(`\u6570\u636E\u76EE\u5F55\uFF1A${home}\uFF08\u5171 ${mb(before.total)}\uFF1A\u9875\u9762 ${before.pages.count} \u4E2A\uFF0C\u89C6\u9891 ${before.videos.count} \u4E2A\uFF0C\u914D\u97F3\u7F13\u5B58 ${mb(before.cache.bytes)}\uFF09`);
+  print(dry ? `\u5C06\u5220\u9664 ${r.files} \u4E2A\u6587\u4EF6\uFF0C\u91CA\u653E ${mb(r.bytes)}\uFF08${scope} + \u914D\u97F3\u7F13\u5B58\uFF09\u3002\u53BB\u6389 --dry-run \u6267\u884C\u3002` : `\u2713 \u5DF2\u5220\u9664 ${r.files} \u4E2A\u6587\u4EF6\uFF0C\u91CA\u653E ${mb(r.bytes)}\uFF08${scope} + \u914D\u97F3\u7F13\u5B58\uFF09\u3002\u914D\u7F6E\u5DF2\u4FDD\u7559\u3002`);
   return 0;
 }
 function cmdLint(src, opts, { print, fail }) {
@@ -5610,7 +5792,7 @@ function cmdConfig(args, { print, fail, env }) {
   for (const [k2, spec] of Object.entries(CONFIG_KEYS)) {
     const mark = k2 in stored ? "*" : " ";
     const options = spec.type === "bool" ? "on | off" : spec.choices.join(" | ");
-    print(`${mark} ${k2.padEnd(7)}${showValue(values[k2]).padEnd(10)}${spec.label}\uFF08${options}\uFF09`);
+    print(`${mark} ${k2.padEnd(13)}${showValue(values[k2]).padEnd(10)}${spec.label}\uFF08${options}\uFF09`);
   }
   if (env.AM_NO_OPEN && env.AM_NO_OPEN !== "0") print("\u6CE8\u610F\uFF1A\u73AF\u5883\u53D8\u91CF AM_NO_OPEN \u751F\u6548\u4E2D\uFF0C\u4F1A\u8986\u76D6 open \u914D\u7F6E\u3002");
   print("* \u8868\u793A\u4F60\u6539\u8FC7\u7684\u503C\u3002\u4FEE\u6539\uFF1Aam config set <\u952E> <\u503C>\uFF1B\u6062\u590D\u9ED8\u8BA4\uFF1Aam config reset [\u952E]");
@@ -5656,14 +5838,14 @@ function stamp(d = /* @__PURE__ */ new Date()) {
 function openFile(file) {
   const [cmd, args] = process.platform === "darwin" ? ["open", [file]] : process.platform === "win32" ? ["cmd", ["/c", "start", "", file]] : ["xdg-open", [file]];
   try {
-    spawn3(cmd, args, { detached: true, stdio: "ignore" }).on("error", () => {
+    spawn4(cmd, args, { detached: true, stdio: "ignore" }).on("error", () => {
     }).unref();
   } catch {
   }
 }
 
 // bin/am.js
-main(process.argv.slice(2)).then(
+main(process.argv.slice(2), { background: true, scriptPath: process.argv[1] }).then(
   (code) => {
     process.exitCode = code;
   },

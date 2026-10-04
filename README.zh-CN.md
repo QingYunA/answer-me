@@ -28,11 +28,9 @@
 
 Agent 会写一份很短的 Markdown 稿件，交给 skill 自带的 CLI。大约 50 毫秒后，你就得到一页：
 
-<p align="center">
-  <img src="docs/demo/demo.gif" alt="演示：Agent 在终端回答，并附上生成的页面" width="100%">
-</p>
+https://github.com/user-attachments/assets/1f13b1fe-70a9-4c39-8530-b12e553e17ea
 
-<p align="center"><sub>24 秒演示。带音乐的版本请看 <a href="docs/demo/demo.mp4">MP4</a>。</sub></p>
+<p align="center"><sub>24 秒演示，打开声音可以听到配乐。</sub></p>
 
 ## 为什么不直接让 AI 输出 HTML？
 
@@ -159,6 +157,7 @@ Server -> Client: SYN-ACK
 | `theme` | `blueprint` | 默认主题：`blueprint` 或 `shadcn` |
 | `mode` | `auto` | 默认明暗：`auto`、`light` 或 `dark` |
 | `style` | `80` | 写作检查：`off`、`80`（只提醒）或 `strict`（不达标不生成） |
+| `update_check` | `on` | 每周向 GitHub 查一次新版本并提醒你，不会自己更新 |
 | `voice` | `auto` | 视频配音：`auto`（有 `ELEVENLABS_API_KEY` 用 ElevenLabs，否则用系统语音）、`elevenlabs`、`system` 或 `off` |
 
 配置保存在 `~/.answer-me-with-html/config.json`。稿件里写明的主题优先于默认值。`--open` 和 `--no-open` 只影响这一次。
@@ -181,6 +180,20 @@ Server -> Client: SYN-ACK
 **其他 Agent：** 把下面这段话粘贴给你的 Agent，让它写进自己的规则文件（比如 `AGENTS.md`）：
 
 > 帮我打开 Answer me with HTML 的高频模式：在你的全局规则文件里加一条规则——"[answer-me-with-html always-on] 只要回复里给出了结论、总结、方案、对比、评审或讲解，就同时用 answer-me-with-html skill 生成一页 HTML（日常结论用 2～4 个面板），并在回复最后附上页面路径。哪怕回答很短也要出，不要因为答案不长就跳过。渲染时加 --no-open，不要弹出浏览器。闲聊、没有结论的一两句话、纯命令输出、我要求纯文本时除外。"
+
+## 更新与清理
+
+**更新**：需要手动更新，但有新版本时会提醒你。工具每周在后台向 GitHub 查询一次最新版本号，只读这一个数字，不上传任何内容，也不会拖慢你要的页面。有新版本时，下一次出页面会附一行提示，Agent 会问你要不要更新。关掉提醒：`/answer-me-with-html:config update_check off`。
+
+| 安装方式 | 更新方法 |
+| :--- | :--- |
+| `npx skills add` | `npx skills update answer-me-with-html -y`，或直接对 Agent 说"更新一下 answer-me-with-html" |
+| Claude Code 插件 | `/plugin marketplace update answer-me-with-html`，再 `/reload-plugins`。想自动更新，就在 `/plugin` → Marketplaces 里给这个插件市场打开自动更新。第三方插件市场默认不自动更新 |
+
+**清理**：页面、视频和配音缓存都存在 `~/.answer-me-with-html/`。目录超过 200 MB，或超过 20 MB 且 30 天没清理过，Agent 会问你要不要清理，每周最多问一次。没有你的同意，什么都不会删。
+
+- `/answer-me-with-html:clean`（插件），或者直接说"清理一下页面"：先预演，再问你。
+- `am clean`：删除 30 天前的页面和视频，清空配音缓存。`--days N` 改天数，`--all` 删除全部页面和视频，`--dry-run` 只看不删。配置始终保留。
 
 ## 为什么做这个
 
@@ -336,12 +349,13 @@ git clone https://github.com/QingYunA/answer-me-with-html.git && cd answer-me-wi
 npm install
 npm test          # 跑测试
 AM_E2E=1 npm test # 连同视频端到端测试一起跑（需要系统 TTS、Chrome、ffmpeg）
+npm run smoke:install # 用 npx skills 真实安装一次，并校验插件清单（需要联网）
 npm run build     # 改了 src/ 之后，重新打包 skills/answer-me-with-html/scripts/am.mjs
 ```
 
 运行时依赖只有两个：[marked](https://github.com/markedjs/marked) 负责解析 Markdown，[@dagrejs/dagre](https://github.com/dagrejs/dagre) 负责流程图布局。打包时它们会被一起打进 `am.mjs`。
 
-更新演示视频：把 [docs/demo/demo.html](docs/demo/demo.html) 和渲染好的 [examples/tcp.en.md](examples/tcp.en.md)（`tcp.html`）放在一起通过 HTTP 提供，用 1920×1080 打开，等待 `window.ready` 后，依次调用 `window.render(i / 30)` 并截图为 `frame-0000.jpg` … `frame-0719.jpg`，再执行 `node docs/demo/make-demo.mjs <帧目录>` 配乐并编码。动画由时间唯一决定，背景音乐由 [docs/demo/music.mjs](docs/demo/music.mjs) 按 120 BPM 合成，每个镜头切换都落在节拍上。
+更新演示视频：把 [docs/demo/demo.html](docs/demo/demo.html) 和渲染好的 [examples/tcp.en.md](examples/tcp.en.md)（`tcp.html`）放在一起通过 HTTP 提供，用 1920×1080 打开，等待 `window.ready` 后，依次调用 `window.render(i / 30)` 并截图为 `frame-0000.jpg` … `frame-0719.jpg`，再执行 `node docs/demo/make-demo.mjs <帧目录>` 配乐并编码。生成的 MP4 和 GIF 不入库，因为插件安装会拷贝整个仓库。把 MP4 上传到 GitHub 评论里，再在 README 里引用那个链接。动画由时间唯一决定，背景音乐由 [docs/demo/music.mjs](docs/demo/music.mjs) 按 120 BPM 合成，每个镜头切换都落在节拍上。
 
 ## Star 历史
 

@@ -30,7 +30,7 @@ The agent writes a short Markdown draft and hands it to the CLI that ships with 
 
 https://github.com/user-attachments/assets/1f13b1fe-70a9-4c39-8530-b12e553e17ea
 
-<p align="center"><sub>24-second demo. <a href="docs/demo/demo.mp4">Watch the MP4</a> for the version with music.</sub></p>
+<p align="center"><sub>24-second demo. Turn the sound on for the music.</sub></p>
 
 ## Why not just ask for HTML?
 
@@ -157,6 +157,7 @@ Change settings with a slash command. There are no config files to edit by hand.
 | `theme` | `blueprint` | Default theme: `blueprint` or `shadcn` |
 | `mode` | `auto` | Default color mode: `auto`, `light` or `dark` |
 | `style` | `80` | Writing check: `off`, `80` (warn only) or `strict` (refuse to render) |
+| `update_check` | `on` | Check GitHub for a new version once a week and mention it. Never updates by itself |
 | `voice` | `auto` | Video narration: `auto` (ElevenLabs if `ELEVENLABS_API_KEY` is set, else system voice), `elevenlabs`, `system` or `off` |
 
 Settings live in `~/.answer-me-with-html/config.json`. A theme written in a draft beats the default. `--open` and `--no-open` affect one run only.
@@ -179,6 +180,20 @@ Pause it with `/answer-me-with-html:config always off`. You don't need to uninst
 **Other agents:** paste this to your agent so it writes the rule into its own rules file, such as `AGENTS.md`:
 
 > Turn on always-on mode for Answer me with HTML: add a global rule — "[answer-me-with-html always-on] Whenever a reply gives a conclusion, summary, plan, comparison, review or explanation, even a short one, also make a page with the answer-me-with-html skill (2 to 4 panels for routine answers), render it with --no-open, and end the reply with the page path. Skip casual chat, one- or two-sentence replies with no conclusion, pure command output, and requests for plain text."
+
+## Updating and cleaning up
+
+**Updating.** Updates are manual, and the tool tells you when one is out. Once a week, a background process downloads this project's `package.json` from GitHub to read the latest version number. Nothing about you or your pages is sent, and the page you asked for never waits on it. When there is a newer version, the next render adds a one-line notice and the agent asks whether you want to update. Turn this off with `/answer-me-with-html:config update_check off`.
+
+| Installed with | Update with |
+| :--- | :--- |
+| `npx skills add` | `npx skills update answer-me-with-html -y`, or tell your agent "update answer-me-with-html" |
+| Claude Code plugin | `/plugin marketplace update answer-me-with-html`, then `/reload-plugins`. To update automatically, turn on auto-update for this marketplace in `/plugin` → Marketplaces. Claude Code leaves it off for third-party marketplaces |
+
+**Cleaning up.** Pages, videos and the narration cache build up in `~/.answer-me-with-html/`. If that folder grows past 200 MB, or passes 20 MB with no cleanup for 30 days, the agent asks once a week whether to clean it. Nothing is deleted without your OK.
+
+- `/answer-me-with-html:clean` (plugin), or say "clean up the pages", previews first and then asks.
+- `am clean` deletes pages and videos older than 30 days and empties the narration cache. `--days N` changes the cutoff, `--all` removes every page and video, and `--dry-run` only shows what would go. Your settings are always kept.
 
 ## Background
 
@@ -334,12 +349,13 @@ git clone https://github.com/QingYunA/answer-me-with-html.git && cd answer-me-wi
 npm install
 npm test          # run the tests
 AM_E2E=1 npm test # also run end-to-end video tests (system TTS, Chrome, ffmpeg)
+npm run smoke:install # install for real with npx skills and validate the plugin manifests (needs network)
 npm run build     # after changing src/, rebuild skills/answer-me-with-html/scripts/am.mjs
 ```
 
 There are two runtime dependencies: [marked](https://github.com/markedjs/marked) parses Markdown and [@dagrejs/dagre](https://github.com/dagrejs/dagre) lays out flow charts. Both are bundled into `am.mjs`.
 
-To refresh the demo video: serve [docs/demo/demo.html](docs/demo/demo.html) next to the rendered [examples/tcp.en.md](examples/tcp.en.md) (`tcp.html`), open it at 1920×1080, wait for `window.ready`, then call `window.render(i / 30)` and screenshot `frame-0000.jpg` … `frame-0719.jpg`. Run `node docs/demo/make-demo.mjs <frames-dir>` to add the music and encode. The animation is deterministic, and the music from [docs/demo/music.mjs](docs/demo/music.mjs) is synthesized at 120 BPM, so every scene change lands on a beat.
+To refresh the demo video: serve [docs/demo/demo.html](docs/demo/demo.html) next to the rendered [examples/tcp.en.md](examples/tcp.en.md) (`tcp.html`), open it at 1920×1080, wait for `window.ready`, then call `window.render(i / 30)` and screenshot `frame-0000.jpg` … `frame-0719.jpg`. Run `node docs/demo/make-demo.mjs <frames-dir>` to add the music and encode. The MP4 and GIF are not committed, because plugin installs copy the whole repository. Upload the MP4 to a GitHub comment and use that link in the README. The animation is deterministic, and the music from [docs/demo/music.mjs](docs/demo/music.mjs) is synthesized at 120 BPM, so every scene change lands on a beat.
 
 ## Star History
 

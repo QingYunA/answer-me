@@ -13,6 +13,7 @@ import { THEMES } from './themes/index.js';
 import { renderVideo } from './video/render.js';
 import { pickProvider, TtsError, VOICES } from './video/tts.js';
 import { exportMp4, ExportError } from './video/export.js';
+import { afterRender, clean, usage, mb, runUpdateCheck, CLEAN } from './housekeeping.js';
 import { amHome, readConfig, setConfig, resetConfig, CONFIG_KEYS, ConfigError } from './config.js';
 
 const MAX_LISTED_WARNINGS = 20;
@@ -27,6 +28,7 @@ const USAGE = `Answer me with HTML ${VERSION} — 把 Markdown 内容稿渲染�
                                                   把视频稿渲染成 3b1b 风格的解释视频播放页（--mp4 另存视频文件）
   am lint   <file|->  [--style off|80|strict]     只做 STE 受控写作检查
   am config [set <键> <值> | get <键> | reset [键]] 查看或修改配置
+  am clean  [--days 30] [--all] [--dry-run]       清理旧页面、旧视频和配音缓存
   am list                                         列出模板、主题、组件
   am help [组件名|format]                          查看组件语法 / 稿件格式
 
@@ -115,6 +117,9 @@ export async function main(argv, io = {}) {
         mode: { type: 'string' },
         voice: { type: 'string' },
         mp4: { type: 'boolean' },
+        days: { type: 'string' },
+        all: { type: 'boolean' },
+        'dry-run': { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
         version: { type: 'boolean', short: 'v' },
       },
@@ -129,10 +134,12 @@ export async function main(argv, io = {}) {
   if (opts.help || !cmd) return print(USAGE), 0;
 
   switch (cmd) {
-    case 'render': return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd }));
-    case 'video': return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider }));
+    case 'render': return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd, io }));
+    case 'video': return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider, io }));
     case 'lint': return withSource(arg, io, fail, (src) => cmdLint(src, opts, { print, fail }));
     case 'config': return cmdConfig([arg, ...rest].filter((x) => x !== undefined), { print, fail, env });
+    case 'clean': return cmdClean(opts, { print, fail, env });
+    case '__update-check': return (await runUpdateCheck(amHome(env))) ? 0 : 1;
     case 'list': return cmdList(print), 0;
     case 'help': return cmdHelp(arg, { print, fail });
     default:
@@ -175,7 +182,7 @@ export function shouldOpen(opts, env, config) {
   return config.open !== false;
 }
 
-function cmdRender(src, opts, { print, fail, env, cwd }) {
+function cmdRender(src, opts, { print, fail, env, cwd, io }) {
   const config = readConfig(env);
   if (config.warning) fail(`! ${config.warning}`);
   const { theme, mode, style } = config.values;
@@ -195,11 +202,12 @@ function cmdRender(src, opts, { print, fail, env, cwd }) {
   print(`✓ ${file}`);
   print(`  ${result.meta.template} · ${result.meta.theme} · ${result.stats.panels} 面板${comps ? ` · ${comps}` : ''}`);
   printWarnings(result.warnings, print, result.meta.style);
+  printHints({ env, config, io, print });
   if (shouldOpen(opts, env, config.values)) openFile(file);
   return 0;
 }
 
-async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }) {
+async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected, io }) {
   const config = readConfig(env);
   if (config.warning) fail(`! ${config.warning}`);
   const voice = opts.voice ?? config.values.voice;
@@ -246,7 +254,39 @@ async function cmdVideo(src, opts, { print, fail, env, cwd, provider: injected }
       return 1;
     }
   }
+  printHints({ env, config, io, print });
   if (shouldOpen(opts, env, config.values)) openFile(file);
+  return 0;
+}
+
+// 渲染成功后附带的提示（清理、更新），给 Agent 看，由 Agent 询问用户。
+function printHints({ env, config, io, print }) {
+  try {
+    const hints = afterRender({
+      home: amHome(env), env, config: config.values, current: VERSION,
+      scriptPath: io.scriptPath, background: Boolean(io.background),
+    });
+    hints.forEach((h) => print(h));
+  } catch {
+    // 维护提示出错不影响渲染结果。
+  }
+}
+
+function cmdClean(opts, { print, fail, env }) {
+  const days = opts.days === undefined ? CLEAN.days : Number(opts.days);
+  if (!Number.isInteger(days) || days < 0) {
+    fail('✗ --days 需要非负整数');
+    return 2;
+  }
+  const home = amHome(env);
+  const before = usage(home);
+  const dry = Boolean(opts['dry-run']);
+  const r = clean(home, { days, all: Boolean(opts.all), dryRun: dry });
+  const scope = opts.all ? '全部页面和视频' : `${days} 天前的页面和视频`;
+  print(`数据目录：${home}（共 ${mb(before.total)}：页面 ${before.pages.count} 个，视频 ${before.videos.count} 个，配音缓存 ${mb(before.cache.bytes)}）`);
+  print(dry
+    ? `将删除 ${r.files} 个文件，释放 ${mb(r.bytes)}（${scope} + 配音缓存）。去掉 --dry-run 执行。`
+    : `✓ 已删除 ${r.files} 个文件，释放 ${mb(r.bytes)}（${scope} + 配音缓存）。配置已保留。`);
   return 0;
 }
 
@@ -326,7 +366,7 @@ function cmdConfig(args, { print, fail, env }) {
   for (const [k, spec] of Object.entries(CONFIG_KEYS)) {
     const mark = k in stored ? '*' : ' ';
     const options = spec.type === 'bool' ? 'on | off' : spec.choices.join(' | ');
-    print(`${mark} ${k.padEnd(7)}${showValue(values[k]).padEnd(10)}${spec.label}（${options}）`);
+    print(`${mark} ${k.padEnd(13)}${showValue(values[k]).padEnd(10)}${spec.label}（${options}）`);
   }
   if (env.AM_NO_OPEN && env.AM_NO_OPEN !== '0') print('注意：环境变量 AM_NO_OPEN 生效中，会覆盖 open 配置。');
   print('* 表示你改过的值。修改：am config set <键> <值>；恢复默认：am config reset [键]');

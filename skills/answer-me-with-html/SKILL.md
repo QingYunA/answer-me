@@ -30,7 +30,11 @@ description: >-
 - `config <键> <值>`：运行 `am config set <键> <值>`。
 - `config reset [键]`：运行 `am config reset [键]`。
 
-用户用自然语言提出时（"别再自动弹浏览器了""关掉高频模式""默认用卡片主题"），同样换算成 `am config set`。可配置项：`open`（自动打开浏览器）、`always`（高频模式）、`theme`、`mode`、`style`，运行 `am config` 可看全部说明。
+用户用自然语言提出时（"别再自动弹浏览器了""关掉高频模式""默认用卡片主题"），同样换算成 `am config set`。可配置项：`open`（自动打开浏览器）、`always`（高频模式）、`theme`、`mode`、`style`、`voice`（视频配音）、`update_check`（新版本提示），运行 `am config` 可看全部说明。
+
+参数以 `clean` 开头，或用户说"清理一下页面 / 缓存"时：先运行 `am clean --dry-run`，把将删除的数量和大小告诉用户，用户同意后再运行 `am clean`（加 `--all` 删除全部页面和视频，`--days N` 改保留天数）。
+
+参数以 `update` 开头，或用户说"更新一下这个 skill"时：按安装方式更新——`npx skills` 安装的运行 `npx skills update answer-me-with-html -y`；Claude Code 插件安装的请用户运行 `/plugin marketplace update answer-me-with-html` 和 `/reload-plugins`。
 
 ## 1. 判断：要不要出页面
 
@@ -84,6 +88,7 @@ AM_EOF
    - `✓ <路径>`：成功。是否自动打开浏览器由用户配置决定（`am config`）；加 `--no-open` 只影响这一次。
    - `✗ L<行号> [组件] …` + 正确示例：照示例改那一行，再渲染一次。
    - `STE n 条警告`：按建议改写对应行，再渲染一次。最多重试 2 轮，仍有警告就保留页面并说明。
+   - `! 清理提示：…` 或 `! 更新提示：…`：在回复末尾用一句话转告用户，问要不要清理 / 更新。**不要自己执行 am clean 或更新命令**，等用户同意。CLI 会节流：清理提示每 7 天最多一次，更新提示每 3 天最多一次。
 5. 在终端只回 2～3 行：一句核心结论 + 页面路径。不要把稿件或 HTML 贴回终端。
 
 ## 3. 稿件格式速查

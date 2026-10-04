@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: '17 3 * * 1'   # 每周一跑一次：上游 skills CLI / Claude Code 变化导致安装失败时尽早发现
+  workflow_dispatch:
 
 jobs:
   test:
@@ -26,3 +29,13 @@ jobs:
           for f in examples/*.md; do
             node bin/am.js render "$f" --no-open -o "out/$(basename "$f" .md).html"
           done
+
+  install:
+    # 真实安装冒烟测试：npx skills add 能识别并安装 skill，装好的 am.mjs 能出页面，插件清单通过 claude plugin validate。
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run smoke:install

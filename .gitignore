@@ -9,3 +9,7 @@ bench/en/
 
 # 社交媒体宣传图（本地制作，不入库）
 docs/social/
+
+# 演示视频成品体积大，不入库（插件安装会拷贝整个仓库）。README 里用 GitHub 附件链接。
+docs/demo/*.mp4
+docs/demo/*.gif
