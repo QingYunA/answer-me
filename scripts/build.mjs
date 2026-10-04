@@ -4,7 +4,8 @@ import { build } from 'esbuild';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
+// 统一成 LF，产物不随检出平台的换行设置变化。
+const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8').replace(/\r\n?/g, '\n');
 
 // 用内联字符串替换 src/assets.js，去掉运行时对磁盘文件的依赖。
 const inlineAssets = {

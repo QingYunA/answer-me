@@ -1,0 +1,5 @@
+# 全部文本文件统一用 LF：打包时会把 CSS / JS 原样内联进 am.mjs，换行不一致会让 CI 的"打包是否最新"检查在 Windows 上失败。
+* text=auto eol=lf
+*.png binary
+*.gif binary
+*.mp4 binary
