@@ -90,6 +90,7 @@ test('cli list / help', async () => {
   const h = await run(['help', 'sequence']);
   assert.match(h.out, /sequence — 时序图[\s\S]*示例：\n```sequence/);
   assert.match((await run(['help', 'format'])).out, /template: sheet/);
+  assert.match((await run(['help', 'patch'])).out, /#am-source/);
   assert.equal((await run(['help', 'nope'])).code, 2);
 });
 
@@ -128,6 +129,74 @@ test('cli config: 布尔值输出 on/off；非法键或值返回 2', async () =>
   assert.match(bad.err, /blueprint \| shadcn/);
   assert.equal((await run(['config', 'set', 'nope', '1'])).code, 2);
   assert.equal((await run(['config', 'frob'])).code, 2);
+});
+
+function panelSection(html, id) {
+  const m = html.match(new RegExp(`<section class="am-panel[^"]*" id="panel-${id}"[\\s\\S]*?</section>`));
+  return m && m[0];
+}
+
+const THREE = `---
+title: 三面板
+---
+## A 甲
+甲旧文。
+## B 乙
+乙旧文。
+## C 丙
+丙旧文。
+`;
+
+test('cli patch: 渲染后改一个面板，其余面板不变，仍写回原文件', async () => {
+  const rendered = await run(['render', '-', '-o', 'page.html'], { stdin: THREE });
+  assert.equal(rendered.code, 0, rendered.err);
+  const file = rendered.out.match(/✓ (.+\.html)/)[1];
+  assert.equal(file, join(dir, 'page.html'));
+  const before = readFileSync(file, 'utf8');
+  const beforeB = panelSection(before, 'B');
+  const beforeC = panelSection(before, 'C');
+  assert.match(before, /甲旧文/);
+  assert.match(before, /乙旧文/);
+
+  const patched = await run(['patch', 'page.html', '--panel', '甲'], { stdin: '## A 甲\n甲新文。\n' });
+  assert.equal(patched.code, 0, patched.err);
+  const outFile = patched.out.match(/✓ (.+\.html)/)[1];
+  assert.equal(outFile, file, '必须覆盖原 HTML，不能另写时间戳文件');
+
+  const after = readFileSync(file, 'utf8');
+  assert.match(after, /甲新文/);
+  assert.doesNotMatch(after, /甲旧文/);
+  assert.equal(panelSection(after, 'B'), beforeB, '未点名的面板 B 应保持不变');
+  assert.equal(panelSection(after, 'C'), beforeC, '未点名的面板 C 应保持不变');
+});
+
+test('cli patch: --from 读文件；缺面板或缺 #am-source 不改文件', async () => {
+  const rendered = await run(['render', '-', '-o', 'keep.html'], { stdin: THREE });
+  const file = rendered.out.match(/✓ (.+\.html)/)[1];
+  const original = readFileSync(file, 'utf8');
+  writeFileSync(join(dir, 'panel.md'), '## B 乙\n乙新文。\n');
+
+  const fromFile = await run(['patch', 'keep.html', '--panel', '乙', '--from', 'panel.md']);
+  assert.equal(fromFile.code, 0, fromFile.err);
+  const afterFrom = readFileSync(file, 'utf8');
+  assert.match(afterFrom, /乙新文/);
+
+  const missingPanel = await run(['patch', 'keep.html', '--panel', '不存在'], { stdin: 'x\n' });
+  assert.equal(missingPanel.code, 1);
+  assert.match(missingPanel.err, /没有找到/);
+  assert.equal(readFileSync(file, 'utf8'), afterFrom, '找不到面板时不得改文件');
+
+  writeFileSync(join(dir, 'plain.html'), '<html><body>no source</body></html>');
+  const beforePlain = readFileSync(join(dir, 'plain.html'), 'utf8');
+  const noSource = await run(['patch', 'plain.html', '--panel', '甲'], { stdin: 'x\n' });
+  assert.equal(noSource.code, 1);
+  assert.match(noSource.err, /#am-source/);
+  assert.equal(readFileSync(join(dir, 'plain.html'), 'utf8'), beforePlain);
+
+  const noPanelFlag = await run(['patch', 'keep.html'], { stdin: 'x\n' });
+  assert.equal(noPanelFlag.code, 2);
+
+  assert.notEqual(original, readFileSync(file, 'utf8'));
 });
 
 test('shouldOpen: --no-open > AM_NO_OPEN > 配置 open；--open 强制打开', async () => {

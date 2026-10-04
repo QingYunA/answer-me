@@ -5309,6 +5309,77 @@ function resetConfig(key, env = process.env) {
   writeStored(next, env);
 }
 
+// src/patch.js
+var SOURCE_RE = /<textarea id="am-source"[^>]*>([\s\S]*?)<\/textarea>/;
+var ATTR_BLOCK2 = /\s*\{([^{}]*)\}\s*$/;
+var PatchError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "PatchError";
+  }
+};
+function extractSource(html) {
+  const m = String(html).match(SOURCE_RE);
+  if (!m) return null;
+  return unescapeHtml(m[1]);
+}
+function unescapeHtml(s) {
+  return s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+}
+function normalizePanelQuery(query) {
+  let q3 = String(query ?? "").trim();
+  if (q3.startsWith("##")) q3 = q3.replace(/^##\s*/, "");
+  q3 = q3.replace(ATTR_BLOCK2, "").trim();
+  return q3;
+}
+function panelKeys(panel) {
+  const title = panel.title.trim();
+  const id = String(panel.id || "").trim();
+  const keys = /* @__PURE__ */ new Set([title]);
+  if (id) {
+    keys.add(id);
+    if (title) keys.add(`${id} ${title}`);
+  }
+  return keys;
+}
+function findPanel(doc2, query) {
+  const q3 = normalizePanelQuery(query);
+  if (!q3) throw new PatchError("\u7F3A\u5C11 --panel \u6807\u9898");
+  const matches = doc2.panels.filter((p) => panelKeys(p).has(q3));
+  if (matches.length === 0) throw new PatchError(`\u6CA1\u6709\u627E\u5230\u6807\u9898\u4E3A "${query}" \u7684\u9762\u677F`);
+  if (matches.length > 1) throw new PatchError(`\u6807\u9898 "${query}" \u5339\u914D\u5230\u591A\u4E2A\u9762\u677F`);
+  return matches[0];
+}
+function asSinglePanelMarkdown(replacement) {
+  const text = String(replacement).replace(/\r\n?/g, "\n");
+  if (!text.trim()) throw new PatchError("\u65B0\u9762\u677F\u7A3F\u4EF6\u4E3A\u7A7A");
+  const looksLikeHeading = /^\s*##\s+/.test(text);
+  try {
+    const doc2 = parseDoc(looksLikeHeading ? text : `## _
+${text}`);
+    if (doc2.panels.length !== 1) {
+      throw new PatchError("\u65B0\u9762\u677F\u7A3F\u4EF6\u5FC5\u987B\u53EA\u5305\u542B\u4E00\u4E2A ## \u9762\u677F");
+    }
+  } catch (e) {
+    if (e instanceof PatchError || e instanceof ParseError) throw e;
+    throw e;
+  }
+  return { text, looksLikeHeading };
+}
+function replacePanel(source, query, replacement) {
+  const doc2 = parseDoc(source);
+  const panel = findPanel(doc2, query);
+  const idx = doc2.panels.indexOf(panel);
+  const lines = String(source).replace(/\r\n?/g, "\n").split("\n");
+  const start = panel.line - 1;
+  const end = doc2.panels[idx + 1] ? doc2.panels[idx + 1].line - 1 : lines.length;
+  const { text, looksLikeHeading } = asSinglePanelMarkdown(replacement);
+  const section = looksLikeHeading ? text : `${lines[start]}
+${text.replace(/^\n+/, "")}`;
+  const newLines = section.replace(/\n$/, "").split("\n");
+  return [...lines.slice(0, start), ...newLines, ...lines.slice(end)].join("\n");
+}
+
 // src/cli.js
 var MAX_LISTED_WARNINGS = 20;
 var USAGE = `Answer me with HTML ${VERSION} \u2014 \u628A Markdown \u5185\u5BB9\u7A3F\u6E32\u67D3\u6210\u5355\u6587\u4EF6 HTML \u89E3\u91CA\u9875
@@ -5316,17 +5387,20 @@ var USAGE = `Answer me with HTML ${VERSION} \u2014 \u628A Markdown \u5185\u5BB9\
 \u7528\u6CD5:
   am render <file|->  [-o \u8F93\u51FA\u8DEF\u5F84] [--no-open] [--theme blueprint|shadcn]
                       [--template sheet|doc] [--style off|80|strict] [--mode auto|light|dark]
+  am patch  <html> --panel <\u6807\u9898> [file|-] [--from file] [--no-open]
+                                                  \u66FF\u6362\u5DF2\u6709\u9875\u9762\u4E2D\u7684\u4E00\u4E2A ## \u9762\u677F\uFF0C\u539F\u5730\u8986\u76D6\u8BE5 HTML
   am video  <file|->  [-o \u8F93\u51FA\u8DEF\u5F84] [--voice auto|elevenlabs|system|off] [--mp4] [--no-open]
                       [--theme blueprint|shadcn|3b1b] [--mode light|dark]
                                                   \u628A\u89C6\u9891\u7A3F\u6E32\u67D3\u6210 3b1b \u98CE\u683C\u7684\u89E3\u91CA\u89C6\u9891\u64AD\u653E\u9875\uFF08--mp4 \u53E6\u5B58\u89C6\u9891\u6587\u4EF6\uFF09
   am lint   <file|->  [--style off|80|strict]     \u53EA\u505A STE \u53D7\u63A7\u5199\u4F5C\u68C0\u67E5
   am config [set <\u952E> <\u503C> | get <\u952E> | reset [\u952E]] \u67E5\u770B\u6216\u4FEE\u6539\u914D\u7F6E
   am list                                         \u5217\u51FA\u6A21\u677F\u3001\u4E3B\u9898\u3001\u7EC4\u4EF6
-  am help [\u7EC4\u4EF6\u540D|format]                          \u67E5\u770B\u7EC4\u4EF6\u8BED\u6CD5 / \u7A3F\u4EF6\u683C\u5F0F
+  am help [\u7EC4\u4EF6\u540D|format|patch]                    \u67E5\u770B\u7EC4\u4EF6\u8BED\u6CD5 / \u7A3F\u4EF6\u683C\u5F0F
 
 - \u6587\u4EF6\u53C2\u6570\u5199 - \u8868\u793A\u4ECE stdin \u8BFB\u53D6\uFF08\u9002\u5408 heredoc\uFF1Aam render - <<'EOF' ... EOF\uFF09\u3002
 - \u9ED8\u8BA4\u8F93\u51FA\u5230 ~/.answer-me-with-html/pages/\uFF08\u53EF\u7528\u73AF\u5883\u53D8\u91CF AM_HOME \u4FEE\u6539\uFF09\u3002
-- \u662F\u5426\u81EA\u52A8\u6253\u5F00\u6D4F\u89C8\u5668\u3001\u9ED8\u8BA4\u4E3B\u9898\u7B49\u7528 am config \u8BBE\u7F6E\uFF1B--open / --no-open \u53EA\u5F71\u54CD\u8FD9\u4E00\u6B21\u3002`;
+- \u662F\u5426\u81EA\u52A8\u6253\u5F00\u6D4F\u89C8\u5668\u3001\u9ED8\u8BA4\u4E3B\u9898\u7B49\u7528 am config \u8BBE\u7F6E\uFF1B--open / --no-open \u53EA\u5F71\u54CD\u8FD9\u4E00\u6B21\u3002
+- am patch \u4ECE\u9875\u9762\u9690\u85CF\u7684 #am-source \u53D6\u56DE\u6E90\u7A3F\uFF0C\u53EA\u6539 --panel \u5BF9\u5E94\u7684 ## \u5C0F\u8282\uFF0C\u518D\u6309\u539F\u8DEF\u5F84\u5199\u56DE\u3002`;
 var FORMAT = `\u7A3F\u4EF6\u683C\u5F0F\uFF08\u6269\u5C55 Markdown\uFF09
 
 ---
@@ -5407,6 +5481,8 @@ async function main(argv, io = {}) {
         mode: { type: "string" },
         voice: { type: "string" },
         mp4: { type: "boolean" },
+        panel: { type: "string" },
+        from: { type: "string" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" }
       }
@@ -5423,6 +5499,8 @@ ${USAGE}`);
   switch (cmd) {
     case "render":
       return withSource(arg, io, fail, (src) => cmdRender(src, opts, { print, fail, env, cwd: io.cwd }));
+    case "patch":
+      return cmdPatch(arg, opts, rest[0], { print, fail, env, cwd: io.cwd, stdin: io.stdin });
     case "video":
       return withSource(arg, io, fail, (src) => cmdVideo(src, opts, { print, fail, env, cwd: io.cwd, provider: io.ttsProvider }));
     case "lint":
@@ -5482,6 +5560,79 @@ function cmdRender(src, opts, { print, fail, env, cwd }) {
   }
   const file = opts.out ? resolve(cwd ?? process.cwd(), opts.out) : join4(amHome(env), "pages", `${slug(result.meta.title)}-${stamp()}.html`);
   mkdirSync3(dirname2(file), { recursive: true });
+  writeFileSync4(file, result.html);
+  const comps = Object.entries(result.stats.components).map(([k2, v]) => `${k2}\xD7${v}`).join(" ");
+  print(`\u2713 ${file}`);
+  print(`  ${result.meta.template} \xB7 ${result.meta.theme} \xB7 ${result.stats.panels} \u9762\u677F${comps ? ` \xB7 ${comps}` : ""}`);
+  printWarnings(result.warnings, print, result.meta.style);
+  if (shouldOpen(opts, env, config.values)) openFile(file);
+  return 0;
+}
+var PATCH_HELP = `\u539F\u5730\u66FF\u6362\u5DF2\u6E32\u67D3\u9875\u9762\u4E2D\u7684\u4E00\u4E2A\u9762\u677F
+
+\u7528\u6CD5:
+  am patch <html-file> --panel <\u6807\u9898> < new-panel.md
+  am patch <html-file> --panel <\u6807\u9898> --from new-panel.md
+  am patch <html-file> --panel <\u6807\u9898> -
+
+- \u4ECE <html-file> \u91CC\u9690\u85CF\u7684 <textarea id="am-source"> \u53D6\u56DE\u6E90\u7A3F\u3002
+- --panel \u5339\u914D ## \u5C0F\u8282\u7684\u6807\u9898\u3001\u5B57\u6BCD ID\uFF0C\u6216 "ID \u6807\u9898"\u3002
+- \u65B0\u7A3F\u4EF6\u4ECE stdin \u6216 --from / \u7B2C\u4E8C\u4E2A\u6587\u4EF6\u53C2\u6570\u8BFB\u53D6\uFF1A\u53EF\u5E26 ## \u6807\u9898\uFF0C\u4E5F\u53EF\u53EA\u5199\u9762\u677F\u6B63\u6587\u3002
+- \u7528\u73B0\u6709 renderer \u91CD\u6E32\u540E\u8986\u76D6\u540C\u4E00\u4E2A HTML \u8DEF\u5F84\uFF0C\u4E0D\u53E6\u5199\u5E26\u65F6\u95F4\u6233\u7684\u65B0\u6587\u4EF6\u3002
+- \u627E\u4E0D\u5230\u8BE5\u9762\u677F\uFF0C\u6216\u9875\u9762\u6CA1\u6709 #am-source\uFF0C\u9000\u51FA\u7801\u975E 0 \u4E14\u4E0D\u6539\u6587\u4EF6\u3002`;
+async function cmdPatch(htmlArg, opts, fromArg, { print, fail, env, cwd, stdin }) {
+  if (!htmlArg) {
+    fail("\u2717 \u7F3A\u5C11 HTML \u6587\u4EF6\u8DEF\u5F84");
+    return 2;
+  }
+  if (htmlArg === "-") {
+    fail("\u2717 patch \u9700\u8981\u5DF2\u6709 HTML \u6587\u4EF6\u8DEF\u5F84\uFF0C\u4E0D\u80FD\u4ECE stdin \u8BFB\u9875\u9762");
+    return 2;
+  }
+  if (!opts.panel || !String(opts.panel).trim()) {
+    fail("\u2717 \u7F3A\u5C11 --panel <\u6807\u9898>");
+    return 2;
+  }
+  const file = resolve(cwd ?? process.cwd(), htmlArg);
+  let html;
+  try {
+    html = readFileSync3(file, "utf8");
+  } catch (e) {
+    fail(`\u2717 \u65E0\u6CD5\u8BFB\u53D6 HTML\uFF1A${e.message}`);
+    return 2;
+  }
+  const source = extractSource(html);
+  if (source == null) {
+    fail("\u2717 \u9875\u9762\u91CC\u6CA1\u6709 #am-source\uFF0C\u65E0\u6CD5\u53D6\u56DE\u6E90\u7A3F");
+    return 1;
+  }
+  const from = opts.from ?? fromArg;
+  let replacement;
+  try {
+    replacement = !from || from === "-" ? await readStream(stdin ?? process.stdin) : readFileSync3(resolve(cwd ?? process.cwd(), from), "utf8");
+  } catch (e) {
+    fail(`\u2717 \u65E0\u6CD5\u8BFB\u53D6\u65B0\u9762\u677F\u7A3F\u4EF6\uFF1A${e.message}`);
+    return 2;
+  }
+  let patched;
+  try {
+    patched = replacePanel(source, opts.panel, replacement);
+  } catch (e) {
+    if (e instanceof PatchError) {
+      fail(`\u2717 ${e.message}`);
+      return 1;
+    }
+    return reportError(e, fail);
+  }
+  const config = readConfig(env);
+  if (config.warning) fail(`! ${config.warning}`);
+  const { theme, mode, style } = config.values;
+  let result;
+  try {
+    result = renderDoc(patched, {}, { theme, mode, style });
+  } catch (e) {
+    return reportError(e, fail);
+  }
   writeFileSync4(file, result.html);
   const comps = Object.entries(result.stats.components).map(([k2, v]) => `${k2}\xD7${v}`).join(" ");
   print(`\u2713 ${file}`);
@@ -5632,9 +5783,10 @@ function cmdHelp(name, { print, fail }) {
   if (!name) return print(USAGE), 0;
   if (name === "format") return print(FORMAT), 0;
   if (name === "video") return print(VIDEO_FORMAT), 0;
+  if (name === "patch") return print(PATCH_HELP), 0;
   const comp = COMPONENTS.get(name);
   if (!comp) {
-    fail(`\u2717 \u6CA1\u6709\u7EC4\u4EF6 "${name}"\u3002\u53EF\u7528\uFF1A${[...COMPONENTS.keys()].join(", ")}, format`);
+    fail(`\u2717 \u6CA1\u6709\u7EC4\u4EF6 "${name}"\u3002\u53EF\u7528\uFF1A${[...COMPONENTS.keys()].join(", ")}, format, patch`);
     return 2;
   }
   print(`${comp.name} \u2014 ${comp.summary}

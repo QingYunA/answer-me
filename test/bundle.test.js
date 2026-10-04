@@ -29,6 +29,15 @@ test('bundle: skill 目录单独复制出去后仍能渲染', () => {
     assert.match(html, /<h1>打包测试<\/h1>/);
     assert.match(html, /class="am-node /);
     assert.match(html, /--font-mono/, 'CSS 已内联');
+
+    const patched = spawnSync(process.execPath, [cli, 'patch', out, '--panel', 'A'], {
+      input: '## A\n只改这一格。\n', encoding: 'utf8', env, cwd: dir,
+    });
+    assert.equal(patched.status, 0, patched.stderr);
+    assert.match(patched.stdout, new RegExp(out.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    const after = readFileSync(out, 'utf8');
+    assert.match(after, /只改这一格/);
+    assert.doesNotMatch(after, /class="am-node /);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

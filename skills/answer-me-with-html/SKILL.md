@@ -86,6 +86,17 @@ AM_EOF
    - `STE n 条警告`：按建议改写对应行，再渲染一次。最多重试 2 轮，仍有警告就保留页面并说明。
 5. 在终端只回 2～3 行：一句核心结论 + 页面路径。不要把稿件或 HTML 贴回终端。
 
+已经有页面、只需改其中一个面板时，不要整页重写。从该 HTML 的 `#am-source` 取回源稿，只替换对应的 `##` 小节，再原地覆盖：
+
+````bash
+node "${CLAUDE_SKILL_DIR}/scripts/am.mjs" patch page.html --panel "面板标题" <<'AM_EOF'
+## A 面板标题
+新的内容
+AM_EOF
+````
+
+`--panel` 匹配标题、字母 ID 或 `ID 标题`。找不到该面板或页面没有 `#am-source` 时不要改文件。完整用法：`am help patch`。
+
 ## 3. 稿件格式速查
 
 ```markdown

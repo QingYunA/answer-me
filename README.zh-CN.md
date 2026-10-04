@@ -300,6 +300,7 @@ AM=skills/answer-me-with-html/scripts/am.mjs
 node $AM render examples/tcp.md                  # 渲染并用浏览器打开
 node $AM render notes.md -o out.html --no-open   # 指定输出位置，不自动打开
 node $AM render notes.md --theme shadcn          # 这一次换主题
+node $AM patch page.html --panel "为什么是三次" < panel.md   # 只换一个 ## 面板，覆盖原 HTML
 node $AM lint notes.md                           # 只做写作检查
 node $AM list                                    # 列出所有组件
 node $AM config                                  # 查看配置
